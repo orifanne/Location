@@ -1,42 +1,20 @@
 package location;
 
-/** 
-* Представляет базовую станцию. 
-* @author Pokrovskaya Oksana
-*/
-public class Station {
-
-	/** Абсцисса */
-	private int x;
-	/** Ордината */
-	private int y;
-
-	/** Базовая сила сигнала */
-	private int s;
+public class Station extends AbstractStation {
 
 	public Station() {
-		x = 0;
-		y = 0;
-		s = 0;
+		// TODO Auto-generated constructor stub
 	}
 
-	/** 
-	* @param x1 абсцисса 
-	* @param y1 ордината 
-	* @param s1 базовая сила сигнала
-	*/
 	public Station(int x1, int y1, int s1) {
-		x = x1;
-		y = y1;
-		s = s1;
+		super(x1, y1, s1);
+		// TODO Auto-generated constructor stub
 	}
 
-	/** 
-	* Рассчитывает силу сигнала.
-	* @param tail ячейка, в которой необходимо рассчитать силу сигнала 
-	*/
+	@Override
 	public void explode(Tail tail) {
-		//...
+		// TODO Auto-generated method stub
+
 	}
 
 }

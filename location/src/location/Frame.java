@@ -47,6 +47,12 @@ public class Frame extends Tail{
 	}
 
 
+	public Frame(double x11, double y11, double x21, double y21) {
+		// TODO Auto-generated constructor stub
+		super(x11, y11, x21, y21);
+		used = false;
+	}
+
 	/** Получить флаг использования */
 	public boolean isUsed() {
 		return used;

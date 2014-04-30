@@ -1,68 +1,23 @@
 package location;
 
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+
 /** 
 * Представляет стену. 
 * @author Pokrovskaya Oksana
 */
-public class Wall {
-	/** Абсцисса первого конца */
-	private int x1;
-	/** Ордината первого конца */
-	private int y1;
-	/** Абсцисса второго конца */
-	private int x2;
-	/** Ордината второго конца */
-	private int y2;
+public class Wall extends Line2D.Double {
 
-	public Wall() {
-		x1 = 0;
-		x2 = 0;
-		y1 = 0;
-		y2 = 0;
+	public Wall(double x1, double y1, double x2, double y2) {
+		// TODO Auto-generated constructor stub
+		this.x1 = x1;
+		this.y1 = y1;
+		this.x2 = x2;
+		this.y2 = y2;
 	}
 
-	/** 
-	* @param x11 абсцисса первого конца
-	* @param y11 ордината первого конца
-	* @param x21 абсцисса второго конца
-	* @param y21 ордината второго конца
-	*/
-	public Wall(int x11, int y11, int x21, int y21) {
-		//если отрезок не параллелен одной из осей
-		if (!((x11 == x21) || (y11 == y21))) {
-			//add exeption
-		}
-		x1 = x11;
-		x2 = x21;
-		y1 = y11;
-		y2 = y21;
-	}
+	
 
-    	/** 
-    	* Получить абсциссу первого конца.
-    	*/
-	public int getX1() {
-		return x1;
-	}
-
-    	/** 
-    	* Получить абсциссу второго конца.
-    	*/
-	public int getX2() {
-		return x2;
-	}
-
-    	/** 
-    	* Получить ординату первого конца.
-    	*/
-	public int getY1() {
-		return y1;
-	}
-
-    	/** 
-    	* Получить ординату второго конца.
-    	*/
-	public int getY2() {
-		return y2;
-	}
 }

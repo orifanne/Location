@@ -7,13 +7,13 @@ package location;
 public class Tail {
 
 	/** Абсцисса левого верхнего угла */
-	private int x1;
+	private double x1;
 	/** Ордината левого верхнего угла */
-	private int y1;
+	private double y1;
 	/** Абсцисса правого нижнего угла */
-	private int x2;
+	private double x2;
 	/** Ордината правого нижнего угла */
-	private int y2;
+	private double y2;
 
 	/** Список законов распределения */
 	private Law laws;
@@ -42,31 +42,39 @@ public class Tail {
 		y2 = y21;
 	}
 
+	public Tail(double x11, double y11, double x21, double y21) {
+		// TODO Auto-generated constructor stub
+		x1 = x11;
+		x2 = x21;
+		y1 = y11;
+		y2 = y21;
+	}
+
 	/** 
 	* Получить абсциссу левого верхнего угла.
 	*/
-public int getX1() {
+public double getX1() {
 	return x1;
 }
 
 	/** 
 	* Получить абсциссу правого нижнего угла.
 	*/
-public int getX2() {
+public double getX2() {
 	return x2;
 }
 
 	/** 
 	* Получить ординату левого верхнего угла.
 	*/
-public int getY1() {
+public double getY1() {
 	return y1;
 }
 
 	/** 
 	* Получить ординату правого нижнего угла.
 	*/
-public int getY2() {
+public double getY2() {
 	return y2;
 }
 

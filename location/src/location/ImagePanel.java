@@ -114,10 +114,10 @@ public class ImagePanel extends JPanel {
 			g.setStroke(w);
 			if (location.hasOpenFile())
 				for (int i = 0; i < plan.getWalls().length; i++) {
-					g.drawLine(plan.getWall(i).getX1() * m * bar, 
-					plan.getWall(i).getY1() * m * bar, 
-					plan.getWall(i).getX2() * m * bar, 
-					plan.getWall(i).getY2() * m * bar);
+					g.drawLine((int) plan.getWall(i).getX1() * m * bar, 
+							(int) plan.getWall(i).getY1() * m * bar, 
+							(int) plan.getWall(i).getX2() * m * bar, 
+							(int) plan.getWall(i).getY2() * m * bar);
 				}
 
 			//отрисовываем внешний контур
@@ -165,10 +165,10 @@ public class ImagePanel extends JPanel {
 				g.setColor(Color.red);
 				Tail[] t = location.getTails();
 				for (int i = 0; i < location.getTailsNum(); i++)
-					g.drawRect(t[i].getX1() * m * bar,
-						t[i].getY1() * m * bar,
-						(t[i].getX2() - t[i].getX1()) * m * bar,
-	 				(t[i].getY2() - t[i].getY1()) * m * bar);
+					g.drawRect((int) t[i].getX1() * m * bar,
+							(int) t[i].getY1() * m * bar,
+							(int) (t[i].getX2() - t[i].getX1()) * m * bar,
+							(int) (t[i].getY2() - t[i].getY1()) * m * bar);
 			}
  	}
 

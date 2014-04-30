@@ -25,14 +25,14 @@ public class Plan {
 	* v[i][1] - меньшая координата y
 	* v[i][2] - большая координата y
 	*/
-	private int[][] v;
+	private double[][] v;
 
 	/** Массив горизонтальных стен, упорядоченных сверху вниз.
 	* h[i][0] - координата y
 	* h[i][1] - меньшая координата x
 	* h[i][2] - большая координата x
 	*/
-	private int[][] h;
+	private double[][] h;
 
 	/** Количество вертикальных стен. */
 	private int vNum;
@@ -78,8 +78,8 @@ public class Plan {
 	private void doArrays() {
 		vNum = 0;
 		hNum = 0;
-		v = new int[walls.length][3];
-		h = new int[walls.length][3];
+		v = new double[walls.length][3];
+		h = new double[walls.length][3];
 		//заполняем массивы вертикальных и горизонтальных стен
 		for (int i = 0; i < walls.length; i++) {
 			//если стена вертикальная
@@ -148,14 +148,14 @@ public class Plan {
 		//заполняем массив стен
 		n = doc.getElementsByTagName("wall");
 		k = null;
-		int x1, x2, y1, y2;
+		double x1, x2, y1, y2;
 		walls = new Wall[n.getLength()];
 		for (int i = 0; i < n.getLength(); i++) {
 			k = n.item(i).getAttributes();
-			x1 = Integer.parseInt(k.getNamedItem("x1").getNodeValue());
-			x2 = Integer.parseInt(k.getNamedItem("x2").getNodeValue());
-			y1 = Integer.parseInt(k.getNamedItem("y1").getNodeValue());
-			y2 = Integer.parseInt(k.getNamedItem("y2").getNodeValue());
+			x1 = Double.parseDouble(k.getNamedItem("x1").getNodeValue());
+			x2 = Double.parseDouble(k.getNamedItem("x2").getNodeValue());
+			y1 = Double.parseDouble(k.getNamedItem("y1").getNodeValue());
+			y2 = Double.parseDouble(k.getNamedItem("y2").getNodeValue());
 			walls[i] = new Wall(x1, y1, x2, y2);
 		}
 		doArrays();
@@ -175,13 +175,13 @@ public class Plan {
     	* [2] - справа;
     	* [3] - слева.
     	*/
-	public boolean[] isBordered(int x1, int y1, int x2, int y2) {
+	public boolean[] isBordered(double x1, double y1, double x2, double y2) {
 		boolean up = false;
 		boolean down = false;
 		boolean right = false;
 		boolean left = false;
-		float x = ((float) x1 + (float) x2) / 2;
-		float y = ((float) y1 + (float) y2) / 2;
+		double x = (x1 + x2) / 2;
+		double y = (y1 + y2) / 2;
 		for (int i = 0; i < vNum; i++)
 			//если эта стена на одном уровне по вертикали с точкой
 			//if ((y < v[i][1]) && (y > v[i][2]) || (y > v[i][1]) && (y < v[i][2])) {

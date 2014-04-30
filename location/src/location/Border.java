@@ -105,9 +105,9 @@ public class Border {
     	/** 
     	* Сообщает, лежит ли ячейка, определяемая координатами x1 y1 x2 y2, внутри контура.
     	*/
-	public boolean isInternal(int x1, int y1, int x2, int y2) {
-		float x = ((float) x1 + (float) x2) / 2;
-		float y = ((float) y1 + (float) y2) / 2;
+	public boolean isInternal(double x1, double y1, double x2, double y2) {
+		double x = (x1 + x2) / 2;
+		double y = (y1 + y2) / 2;
 		
 		//подсчитываем количество вертикальных отрезков левее точки (x, y)
 		int n = 0;
@@ -130,13 +130,13 @@ public class Border {
     	* [2] - справа;
     	* [3] - слева.
     	*/
-	public boolean[] isBordered(int x1, int y1, int x2, int y2) {
+	public boolean[] isBordered(double x1, double y1, double x2, double y2) {
 		boolean up = false;
 		boolean down = false;
 		boolean right = false;
 		boolean left = false;
-		float x = ((float) x1 + (float) x2) / 2;
-		float y = ((float) y1 + (float) y2) / 2;
+		double x = (x1 + x2) / 2;
+		double y = (y1 + y2) / 2;
 		for (int i = 0; i < vNum; i++)
 			//если этот отрезок на одном уровне по вертикали с точкой
 			//if ((y < v[i][1]) && (y > v[i][2]) || (y > v[i][1]) && (y < v[i][2])) {

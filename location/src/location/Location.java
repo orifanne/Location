@@ -63,9 +63,9 @@ public class Location extends JFrame {
    	private File openedFile = null;
 
 	//массив точек по горизонтали
-	private ArrayList <Integer> vDotes = null;
+	private ArrayList <Double> vDotes = null;
 	//массив точек по вертикали
-	private ArrayList <Integer> hDotes = null;
+	private ArrayList <Double> hDotes = null;
 	//количество точек по горизонтали
 	private int hDotesNum;
 	//количество точек по вертикали
@@ -75,9 +75,9 @@ public class Location extends JFrame {
 	private Frame[][] frames;
 
 	//финальные фреймы
-	private Frame[] finalFrames;
+	Frame[] finalFrames;
 	//количество финальных фрейймов
-	private int finalFramesNum;
+	int finalFramesNum;
 	
 	JScrollPane scrollPane = new JScrollPane(panel);
 	
@@ -184,9 +184,9 @@ public class Location extends JFrame {
     		if (openedFile == null)
     			return;
 
-		int x1, y1, x2, y2;
-		vDotes = new ArrayList<Integer>();
-		hDotes = new ArrayList<Integer>();
+		double x1, y1, x2, y2;
+		vDotes = new ArrayList<Double>();
+		hDotes = new ArrayList<Double>();
 		vDotesNum = 0;
 		hDotesNum = 0;
 
@@ -279,12 +279,12 @@ public class Location extends JFrame {
     	tailsNum = 0;
     	tails = new Tail[maxTailsNum];
     	for (int i = 0; i < finalFramesNum; i++) {
-    		int a = finalFrames[i].getX2() - finalFrames[i].getX1();
-    		int b = finalFrames[i].getY2() - finalFrames[i].getY1();
+    		double a = finalFrames[i].getX2() - finalFrames[i].getX1();
+    		double b = finalFrames[i].getY2() - finalFrames[i].getY1();
     		
     		int finalSizeA = tailSize;
     		if (a >= tailSize) {
-	    		if (((float) a % tailSize) < ((float) tailSize / 2.0))
+	    		if ((a % tailSize) < ((double) tailSize / 2.0))
 	    			while ((a % finalSizeA) != 0)
 	    				finalSizeA++;
 	    		else
@@ -294,7 +294,7 @@ public class Location extends JFrame {
     		
     		int finalSizeB = tailSize;
     		if (b >= tailSize) {
-	    		if (((float) b % tailSize) < ((float) tailSize / 2.0))
+	    		if ((b % tailSize) < ((double) tailSize / 2.0))
 	    			while ((b % finalSizeB) != 0) 
 	    				finalSizeB++;
 	    		else
@@ -303,8 +303,8 @@ public class Location extends JFrame {
     		}
     		
     		if ((a >= tailSize) && (b >= tailSize)) {
-	    		for (int u = finalFrames[i].getX1(); u < finalFrames[i].getX2(); u += finalSizeA)
-	    			for (int v = finalFrames[i].getY1(); v < finalFrames[i].getY2(); v += finalSizeB) {
+	    		for (double u = finalFrames[i].getX1(); u < finalFrames[i].getX2(); u += finalSizeA)
+	    			for (double v = finalFrames[i].getY1(); v < finalFrames[i].getY2(); v += finalSizeB) {
 	    				tails[tailsNum] = new Tail(u, v, u + finalSizeA, v + finalSizeB);
 	    				tailsNum++;
 	    			}
@@ -312,7 +312,7 @@ public class Location extends JFrame {
     		}
     		
     		if (a >= tailSize) {
-	    		for (int u = finalFrames[i].getX1(); u < finalFrames[i].getX2(); u += finalSizeA) {
+	    		for (double u = finalFrames[i].getX1(); u < finalFrames[i].getX2(); u += finalSizeA) {
 	    				tails[tailsNum] = new Tail(u, finalFrames[i].getY1(), u + finalSizeA, finalFrames[i].getY2());
 	    				tailsNum++;
 	    			}
@@ -320,7 +320,7 @@ public class Location extends JFrame {
     		}
     		
     		if (b >= tailSize) {
-	    		for (int v = finalFrames[i].getY1(); v < finalFrames[i].getY2(); v += finalSizeB) {
+	    		for (double v = finalFrames[i].getY1(); v < finalFrames[i].getY2(); v += finalSizeB) {
 	    			tails[tailsNum] = new Tail(finalFrames[i].getX1(), v, finalFrames[i].getX2(), v + finalSizeB);
 	    			tailsNum++;
 	    		}
