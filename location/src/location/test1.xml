@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<location>
+
+	<plan>
+
+		<dote x="3" y="3"></dote>
+		<dote x="13" y="3"></dote>
+		<dote x="13" y="11"></dote>
+		<dote x="3" y="11"></dote>
+		<dote x="3" y="3"></dote>
+
+		
+			<wall x1="5" y1="3" x2="8" y2="3"></wall>
+			<wall x1="3" y1="5" x2="5" y2="5"></wall>
+			<wall x1="4" y1="9" x2="6" y2="9"></wall>
+			<wall x1="6" y1="11" x2="8" y2="11"></wall>
+			<wall x1="10" y1="10" x2="13" y2="10"></wall>
+			<wall x1="11" y1="7" x2="13" y2="7"></wall>
+			<wall x1="6" y1="7" x2="8" y2="7"></wall>
+			<wall x1="8" y1="6" x2="10" y2="6"></wall>
+			<wall x1="8" y1="4" x2="13" y2="4"></wall>
+			<wall x1="3" y1="7" x2="5" y2="7"></wall>
+		
+
+		
+			<wall x1="3" y1="5" x2="3" y2="7"></wall>
+			<wall x1="4" y1="9" x2="4" y2="7"></wall>
+			<wall x1="6" y1="11" x2="6" y2="9"></wall>
+			<wall x1="8" y1="11" x2="8" y2="6"></wall>
+			<wall x1="6" y1="7" x2="6" y2="3"></wall>
+			<wall x1="8" y1="4" x2="8" y2="3"></wall>
+			<wall x1="10" y1="10" x2="10" y2="6"></wall>
+			<wall x1="11" y1="8" x2="11" y2="7"></wall>
+			<wall x1="13" y1="10" x2="13" y2="4"></wall>
+			<wall x1="5" y1="5" x2="5" y2="3"></wall>
+		
+
+	</plan>
+
+</location>
