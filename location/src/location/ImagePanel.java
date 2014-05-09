@@ -103,7 +103,7 @@ public class ImagePanel extends JPanel {
 			//отрисовываем внешний контур
 			drawBorder(g);
 			
-			drawInnerFrames(g);
+			//drawInnerFrames(g);
 			
 			//отрисовываем конечные €чейки
 			drawTails(g);
@@ -159,13 +159,16 @@ public class ImagePanel extends JPanel {
 		g.setStroke(brd);
 		if (location.hasOpenFile()) {
 			Border border = plan.getBorder();
-			for (int i = 0; i < border.getDotes().length - 1; i++) {
-				g.drawLine(border.getDote(i)[0] * m * bar, 
-				border.getDote(i)[1] * m * bar, 
-				border.getDote(i + 1)[0] * m * bar, 
-				border.getDote(i + 1)[1] * m * bar);
+			for (int i = 0; i < border.npoints - 1; i++) {
+				g.drawLine(border.xpoints[i] * m * bar, 
+				border.ypoints[i] * m * bar, 
+				border.xpoints[i + 1] * m * bar, 
+				border.ypoints[i + 1] * m * bar);
 			}
-			//g.drawPolygon(border);
+			g.drawLine(border.xpoints[border.npoints - 1] * m * bar, 
+					border.ypoints[border.npoints - 1] * m * bar, 
+					border.xpoints[0] * m * bar, 
+					border.ypoints[0] * m * bar);
 		}
     }
 

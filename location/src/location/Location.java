@@ -229,7 +229,7 @@ public class Location extends JFrame {
 		Collections.sort(hDotes);
 		Collections.sort(vDotes);
 		
-		System.out.println(vDotesNum + " " + hDotesNum);
+		//System.out.println(vDotesNum + " " + hDotesNum);
 
 		//составляем фреймы по массивам точек
 		frames = new Frame[vDotesNum - 1][hDotesNum - 1];
