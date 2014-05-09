@@ -1,5 +1,7 @@
 package location;
 
+import java.util.ArrayList;
+
 /** 
 * Представляет позиционируемый объект. 
 * @author Pokrovskaya Oksana
@@ -7,16 +9,23 @@ package location;
 public class PosObject {
 
 	/** Абсцисса */
-	private int x;
+	private double x;
 	/** Ордината */
-	private int y;
+	private double y;
 
 	/** Вектор сил сигнала */
-	private int[] s;
+	private ArrayList<Integer> s;
 
 	public PosObject() {
 		x = 0;
 		y = 0;
+		s = new ArrayList<Integer>();
+	}
+	
+	public PosObject(double x, double y) {
+		this.x = x;
+		this.y = y;
+		s = new ArrayList<Integer>();
 	}
 
 }
