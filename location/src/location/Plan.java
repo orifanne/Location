@@ -155,20 +155,14 @@ public class Plan {
 		//заполняем внешний контур
 		NodeList n = doc.getElementsByTagName("dote");
 		NamedNodeMap k = null;
-		int[][] d = new int[n.getLength()][2];
+		int[] xDotes = new int[n.getLength()];
+		int[] yDotes = new int[n.getLength()];
 		for (int i = 0; i < n.getLength(); i++) {
 			k = n.item(i).getAttributes();
-			d[i][0] = Integer.parseInt(k.getNamedItem("x").getNodeValue());
-			d[i][1] = Integer.parseInt(k.getNamedItem("y").getNodeValue());
+			xDotes[i] = Integer.parseInt(k.getNamedItem("x").getNodeValue());
+			yDotes[i] = Integer.parseInt(k.getNamedItem("y").getNodeValue());
 		}
-		int[] xDotes = new int[d.length - 1];
-		int[] yDotes = new int[d.length - 1];
-		
-		for (int i = 0; i < (d.length - 1); i++) {
-			xDotes[i] = d[i][0];
-			yDotes[i] = d[i][1];
-		}
-		border = new Border(d, xDotes, yDotes);
+		border = new Border(xDotes, yDotes);
 
 		//заполняем массив стен
 		n = doc.getElementsByTagName("wall");

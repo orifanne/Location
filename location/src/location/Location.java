@@ -63,10 +63,6 @@ public class Location extends JFrame {
 	private ArrayList <Double> vDotes = null;
 	//массив точек по вертикали
 	private ArrayList <Double> hDotes = null;
-	//количество точек по горизонтали
-	private int hDotesNum;
-	//количество точек по вертикали
-	private int vDotesNum;
 
 	//вспомогательные фреймы
 	private Frame[][] frames;
@@ -182,8 +178,6 @@ public class Location extends JFrame {
 		double x1, y1, x2, y2;
 		vDotes = new ArrayList<Double>();
 		hDotes = new ArrayList<Double>();
-		vDotesNum = 0;
-		hDotesNum = 0;
 
 		for (int i = 0; i < plan.getWalls().length; i++) {
 			
@@ -192,22 +186,14 @@ public class Location extends JFrame {
 			y1 = plan.getWall(i).getY1();
 			y2 = plan.getWall(i).getY2();
 
-			if (!vDotes.contains(y1)) {
+			if (!vDotes.contains(y1))
 				vDotes.add(y1);
-				vDotesNum++;
-			}
-			if (!vDotes.contains(y2)) {
+			if (!vDotes.contains(y2))
 				vDotes.add(y2);
-				vDotesNum++;
-			}
-			if (!hDotes.contains(x1)) {
+			if (!hDotes.contains(x1))
 				hDotes.add(x1);
-				hDotesNum++;
-			}
-			if (!hDotes.contains(x2)) {
+			if (!hDotes.contains(x2))
 				hDotes.add(x2);
-				hDotesNum++;
-			}
 			
 		}
 
@@ -215,15 +201,10 @@ public class Location extends JFrame {
 		for (int i = 0; i < plan.getBorder().xpoints.length; i++) {
 			x1 = plan.getBorder().xpoints[i];
 			y1 = plan.getBorder().ypoints[i];
-			if (!vDotes.contains(y1)) {
+			if (!vDotes.contains(y1))
 				vDotes.add(y1);
-				vDotesNum++;
-			}
-			if (!hDotes.contains(x1)) {
+			if (!hDotes.contains(x1))
 				hDotes.add(x1);
-				hDotesNum++;
-			}
-			
 		}
 		
 		Collections.sort(hDotes);
@@ -232,10 +213,10 @@ public class Location extends JFrame {
 		//System.out.println(vDotesNum + " " + hDotesNum);
 
 		//составляем фреймы по массивам точек
-		frames = new Frame[vDotesNum - 1][hDotesNum - 1];
+		frames = new Frame[vDotes.size() - 1][hDotes.size() - 1];
 		maxTailsNum = 0;
-		for (int i = 0; i < vDotesNum - 1; i++) {
-			for (int j = 0; j < hDotesNum - 1; j++) {
+		for (int i = 0; i < vDotes.size() - 1; i++) {
+			for (int j = 0; j < hDotes.size() - 1; j++) {
 				frames[i][j] = new Frame(hDotes.get(j), vDotes.get(i), 
 						hDotes.get(j + 1), vDotes.get(i + 1));
 				//если этот фрейм не внутри контура
@@ -337,17 +318,17 @@ public class Location extends JFrame {
 	private void finalFrames() {
 		if (openedFile == null)
 			return;
-		finalFrames = new Frame[(vDotesNum - 1) * (hDotesNum - 1)];
+		finalFrames = new Frame[(vDotes.size() - 1) * (hDotes.size() - 1)];
 		finalFramesNum = 0;
-		for (int i = 0; i < vDotesNum - 1; i++) {
-			for (int j = 0; j < hDotesNum - 1; j++) {
+		for (int i = 0; i < vDotes.size() - 1; i++) {
+			for (int j = 0; j < hDotes.size() - 1; j++) {
 				if (!frames[i][j].isUsed()) {
-					int minW = hDotesNum;
+					int minW = hDotes.size();
 					int k;
-					for (k = i; k < vDotesNum - 1; k++) {
+					for (k = i; k < vDotes.size() - 1; k++) {
 						int t;
 						if (frames[k][j].down == true) {
-							for (t = j; t < hDotesNum - 1; t++) {
+							for (t = j; t < hDotes.size() - 1; t++) {
 								if (frames[k][t].right == true) 
 									break;
 							}
@@ -356,7 +337,7 @@ public class Location extends JFrame {
 							break;
 						}
 						else {
-							for (t = j; t < hDotesNum - 2; t++) {
+							for (t = j; t < hDotes.size() - 2; t++) {
 								if ((frames[k][t].right == true) || (frames[k][t + 1].down == true)) 
 									break;
 							}
@@ -379,9 +360,9 @@ public class Location extends JFrame {
 								frames[u - 1][v].down = true;
 							if (v > 0)
 								frames[u][v - 1].right = true;
-							if (u < vDotesNum - 2)
+							if (u < vDotes.size() - 2)
 								frames[u + 1][v].up = true;
-							if (v < hDotesNum - 2)
+							if (v < hDotes.size() - 2)
 								frames[u][v + 1].left = true;
 						}
 				}
