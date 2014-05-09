@@ -208,7 +208,7 @@ public class ImagePanel extends JPanel {
     public void drawStations(Graphics2D g) {
     	
 		if (location.hasOpenFile()) {
-			BasicStroke b = new BasicStroke(bPen); 
+			BasicStroke b = new BasicStroke(borderPen); 
 			g.setStroke(b);
 			g.setColor(Color.BLUE);
 			for (int i = 0; i < plan.getStations().size(); i++)
