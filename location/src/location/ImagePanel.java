@@ -103,6 +103,8 @@ public class ImagePanel extends JPanel {
 			//отрисовываем внешний контур
 			drawBorder(g);
 			
+			drawInnerFrames(g);
+			
 			//отрисовываем конечные €чейки
 			drawTails(g);
 			
@@ -115,11 +117,13 @@ public class ImagePanel extends JPanel {
     		Frame[][] frames = location.getStartFrames();
 			for (int i = 0; i < frames.length; i++)
 				for (int j = 0; j < frames[0].length; j++)
-					if (!frames[i][j].isUsed())
+					if (!frames[i][j].isUsed()) {
 						fillColor(frames[i][j].getX1() * m * bar, 
 						frames[i][j].getY1() * m * bar,
 						frames[i][j].getX2() * m * bar, 
 						frames[i][j].getY2() * m * bar);
+						System.out.println(i + " " + j);
+					}
     	}
     }
     	
@@ -161,6 +165,7 @@ public class ImagePanel extends JPanel {
 				border.getDote(i + 1)[0] * m * bar, 
 				border.getDote(i + 1)[1] * m * bar);
 			}
+			//g.drawPolygon(border);
 		}
     }
 
