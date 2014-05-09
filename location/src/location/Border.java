@@ -1,6 +1,8 @@
 package location;
 
 import java.awt.Polygon;
+import java.awt.geom.Line2D;
+import java.awt.geom.PathIterator;
 
 /** 
 * Представляет внешний контур. 
@@ -137,42 +139,62 @@ public class Border extends Polygon {
     	* [3] - слева.
     	*/
 	public boolean[] isBordered(double x1, double y1, double x2, double y2) {
+		PathIterator pi = this.getPathIterator(null);
 		boolean up = false;
 		boolean down = false;
 		boolean right = false;
 		boolean left = false;
-		double x = (x1 + x2) / 2;
-		double y = (y1 + y2) / 2;
-		for (int i = 0; i < vNum; i++)
-			//если этот отрезок на одном уровне по вертикали с точкой
-			//if ((y < v[i][1]) && (y > v[i][2]) || (y > v[i][1]) && (y < v[i][2])) {
-			if ((y > v[i][1]) && (y < v[i][2])) {
-				//и примыкает к правому краю
-				if (x2 == v[i][0]) {
-					right = true;
-					break;
-				}
-				//и примыкает к левому краю
-				if (x1 == v[i][0]) {
-					left = true;
-					break;
-				}
-			}
-		for (int i = 0; i < hNum; i++)
-			//если этот отрезок на одном уровне по горизонтали с точкой
-			//if ((x < h[i][1]) && (x > h[i][2]) || (x > h[i][1]) && (x < h[i][2])) {
-			if ((x > h[i][1]) && (x < h[i][2])) {
-				//и примыкает к нижнему краю
-				if (y2 == h[i][0]) {
-					down = true;
-					break;
-				}
-				//и примыкает к верхнему краю
-				if (y1 == h[i][0]) {
-					up = true;
-					break;
-				}
-			}
+		float coords[] = new float[6];
+		float prev[] = new float[2];
+		float first[] = new float[2];
+		while (!pi.isDone()) {
+            switch (pi.currentSegment(coords)) {
+                    case PathIterator.SEG_MOVETO:
+                    	prev[0] = coords[0];
+                    	prev[1] = coords[1];
+                    	first[0] = coords[0];
+                    	first[1] = coords[1];
+                        break;
+                    case PathIterator.SEG_LINETO:
+                    	Line2D.Float line = new Line2D.Float(prev[0], prev[1],
+                    			coords[0], coords[1]);
+                    	//System.out.println(prev[0] + " " + prev[1] + " " +
+                    			//coords[0] + " " + coords[1]);
+                    	if (line.intersectsLine(x1, y1, x2, y1))
+                    		up = true;
+                    	if (line.intersectsLine(x2, y2, x1, y2))
+                    		down = true;
+                    	if (line.intersectsLine(x1, y1, x1, y2))
+                    		left = true;
+                    	if (line.intersectsLine(x2, y2, x2, y1))
+                    		right = true;
+                    	prev[0] = coords[0];
+                    	prev[1] = coords[1];
+                        break;
+                    case PathIterator.SEG_QUADTO:
+                    	//ignored
+                            break;
+                    case PathIterator.SEG_CUBICTO:
+                    	//ignored
+                            break;
+                    case PathIterator.SEG_CLOSE:
+                    	Line2D.Float line1 = new Line2D.Float(prev[0], prev[1],
+                    			first[0], first[1]);
+                    	//System.out.println("close " + prev[0] + " " + prev[1] + " " +
+                    			//first[0] + " " + first[1]);
+                    	if (line1.intersectsLine(x1, y1, x2, y1))
+                    		up = true;
+                    	if (line1.intersectsLine(x2, y2, x1, y2))
+                    		down = true;
+                    	if (line1.intersectsLine(x1, y1, x1, y2))
+                    		left = true;
+                    	if (line1.intersectsLine(x2, y2, x2, y1))
+                    		right = true;
+                        break;
+            }
+            pi.next();
+		}
+
 		boolean[] b = new boolean[4];
 		b[0] = up;
 		b[1] = down;

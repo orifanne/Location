@@ -360,14 +360,14 @@ public class Location extends JFrame {
 								if ((frames[k][t].right == true) || (frames[k][t + 1].down == true)) 
 									break;
 							}
-							if ((frames[k][t].right == false) && (frames[k][t + 1].down == false))
-								t++;
 							if ((t - j) < minW) {
 								minW = (t - j);
 								//f = true;
 							}
 						}
+						//System.out.println(t);
 					}
+					//System.out.println(i + " " + j + "     " + k + " " + (j + minW));
 					finalFrames[finalFramesNum] = new Frame(frames[i][j].getX1(),
 					frames[i][j].getY1(), frames[k][j + minW].getX2(),
 					frames[k][j + minW].getY2());
