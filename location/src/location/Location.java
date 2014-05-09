@@ -212,9 +212,9 @@ public class Location extends JFrame {
 		}
 
 		//заполняем массивы точек
-		for (int i = 0; i < plan.getBorder().getDotes().length; i++) {
-			x1 = plan.getBorder().getDote(i)[0];
-			y1 = plan.getBorder().getDote(i)[1];
+		for (int i = 0; i < plan.getBorder().xpoints.length; i++) {
+			x1 = plan.getBorder().xpoints[i];
+			y1 = plan.getBorder().ypoints[i];
 			if (!vDotes.contains(y1)) {
 				vDotes.add(y1);
 				vDotesNum++;
@@ -225,8 +225,11 @@ public class Location extends JFrame {
 			}
 			
 		}
+		
 		Collections.sort(hDotes);
 		Collections.sort(vDotes);
+		
+		System.out.println(vDotesNum + " " + hDotesNum);
 
 		//составляем фреймы по массивам точек
 		frames = new Frame[vDotesNum - 1][hDotesNum - 1];
@@ -239,7 +242,7 @@ public class Location extends JFrame {
 				if (!plan.getBorder().isInternal(frames[i][j])) {
 					//исключаем его из дальнейшего рассмотрения
 					frames[i][j].used(true);
-					System.out.println("external");
+					//System.out.println("external");
 				}
 				//иначе проверяем на ограниченность
 				else {
