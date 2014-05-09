@@ -3,12 +3,15 @@ package location;
 public class Station extends AbstractStation {
 
 	public Station() {
-		// TODO Auto-generated constructor stub
+		super();
 	}
 
 	public Station(int x1, int y1, int s1) {
 		super(x1, y1, s1);
-		// TODO Auto-generated constructor stub
+	}
+
+	public Station(double x, double y) {
+		super(x, y);
 	}
 
 	@Override
@@ -17,4 +20,9 @@ public class Station extends AbstractStation {
 
 	}
 
+	@Override
+	public void explode(Tail[] tails) {
+		// TODO Auto-generated method stub
+		
+	}
 }

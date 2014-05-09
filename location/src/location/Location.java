@@ -54,9 +54,6 @@ public class Location extends JFrame {
    	/** Панель, отрисовывающая план здания. */
    	private ImagePanel panel = new ImagePanel(width , height, this);
 
-   	/** Запоминает предыдущие координаты мыши для отрисовки перетаскивания. */
-   	private int x, y;
-
    	/** План здания. */
    	private Plan plan = null;
    	/** Открытый файл. */
@@ -102,8 +99,6 @@ public class Location extends JFrame {
 	   	setJMenuBar(menu);
 		//завершить программу при закрытии окна
 	   	setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
-	   	init();
 
 		//будем прослушивать события мыши 
 		panel.addMouseListener(new NewMouseListener());
@@ -139,13 +134,6 @@ public class Location extends JFrame {
         container.add(mainpanel);
     }
 
-	/** 
- 	* Инициализирует данные для начала  .
- 	*/
-    	public void init() {
-
-    	}
-
 	/**
 	* Сообщает, открыт ли какой-нибудь файл.
 	*/
@@ -168,6 +156,13 @@ public class Location extends JFrame {
 	*/
 	public Tail[] getTails() {
 		return tails;
+	}
+	
+	/**
+	* Получить начальные фреймы.
+	*/
+	public Frame[][] getStartFrames() {
+		return frames;
 	}
 	
 	/**
@@ -464,6 +459,8 @@ public class Location extends JFrame {
 				JSlider js = (JSlider) e.getSource();
                 panel.setM(js.getValue());
                 panel.repaint();
+                //scrollPane.revalidate();
+                scrollPane.getViewport().revalidate();
 			}
     	}
     	

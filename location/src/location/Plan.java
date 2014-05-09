@@ -7,12 +7,16 @@ import org.w3c.dom.*;
 import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 import java.io.IOException;
+import java.util.ArrayList;
 
 /** 
 * Представляет план здания. 
 * @author Pokrovskaya Oksana
 */
 public class Plan {
+	
+	/** Базовые станции */
+	ArrayList<Station> stations;
 	
 	/** Массив стен. */
 	private Wall[] walls = null;
@@ -45,6 +49,20 @@ public class Plan {
 	*/
 	public Wall[] getWalls() {
 		return walls;
+	}
+	
+	/**
+	* Получить список базовых станций.
+	*/
+	public ArrayList<Station> getStations() {
+		return stations;
+	}
+	
+	/**
+	* Получить список базовых станций.
+	*/
+	public Station getStation(int i) {
+		return stations.get(i);
 	}
 
     /** 
@@ -159,6 +177,18 @@ public class Plan {
 			walls[i] = new Wall(x1, y1, x2, y2);
 		}
 		doArrays();
+		
+		n = doc.getElementsByTagName("station");
+		k = null;
+		double x, y;
+		stations = new ArrayList<Station>();
+		for (int i = 0; i < n.getLength(); i++) {
+			k = n.item(i).getAttributes();
+			x = Double.parseDouble(k.getNamedItem("x").getNodeValue());
+			y = Double.parseDouble(k.getNamedItem("y").getNodeValue());
+			System.out.println(x + " " + y);
+			stations.add(new Station(x, y));
+		}
 	}
 
     	/** 

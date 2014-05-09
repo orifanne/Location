@@ -5,15 +5,6 @@ package location;
 * @author Pokrovskaya Oksana
 */
 public class Frame extends Tail{
-	
-	/** Абсцисса левого верхнего угла */
-	private int x1;
-	/** Ордината левого верхнего угла */
-	private int y1;
-	/** Абсцисса правого нижнего угла */
-	private int x2;
-	/** Ордината правого нижнего угла */
-	private int y2;
 
 	/** Флаг использования */
 	private boolean used;
