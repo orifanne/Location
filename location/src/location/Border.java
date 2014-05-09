@@ -1,10 +1,12 @@
 package location;
 
+import java.awt.Polygon;
+
 /** 
 * Представляет внешний контур. 
 * @author Pokrovskaya Oksana
 */
-public class Border {
+public class Border extends Polygon {
 	
 	/** Массив точек в порядке их соединения. */
 	private int[][] dotes;
@@ -36,11 +38,13 @@ public class Border {
 	/** 
 	* @param d массив точек в порядке их соединения
 	*/
-	public Border(int[][] d) {
+	public Border(int[][] d, int[] x, int[] y) {
 		//если есть не горизонтальные или не вертикальные отрезки
 		//if (...) {
 			//add exeption
 		//}
+		
+		super(x, y, x.length);
 
 		dotes = d;
 
@@ -109,8 +113,10 @@ public class Border {
 		double x = (x1 + x2) / 2;
 		double y = (y1 + y2) / 2;
 		
+		return super.contains(x, y);
+		
 		//подсчитываем количество вертикальных отрезков левее точки (x, y)
-		int n = 0;
+		/*int n = 0;
 		for (int i = 0; i < vNum; i++)
 			//если этот отрезок на одном уровне по вертикали с точкой
 			if ((y < v[i][1]) && (y > v[i][2]) || (y > v[i][1]) && (y < v[i][2]))
@@ -120,7 +126,7 @@ public class Border {
 		if (n % 2 != 0)
 			return true;
 		else 
-			return false;
+			return false;*/
 	}
 
     	/** 

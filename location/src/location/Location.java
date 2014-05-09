@@ -239,7 +239,7 @@ public class Location extends JFrame {
 				if (!plan.getBorder().isInternal(frames[i][j])) {
 					//исключаем его из дальнейшего рассмотрения
 					frames[i][j].used(true);
-					//System.out.println("external");
+					System.out.println("external");
 				}
 				//иначе проверяем на ограниченность
 				else {
@@ -473,7 +473,7 @@ public class Location extends JFrame {
 			public void stateChanged(ChangeEvent e) {
 				JSlider js = (JSlider) e.getSource();
                 tailSize = js.getValue();
-                System.out.println(tailSize);
+                //System.out.println(tailSize);
                 devide();
                 panel.repaint();
 			}

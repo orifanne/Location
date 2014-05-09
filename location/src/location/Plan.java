@@ -161,7 +161,14 @@ public class Plan {
 			d[i][0] = Integer.parseInt(k.getNamedItem("x").getNodeValue());
 			d[i][1] = Integer.parseInt(k.getNamedItem("y").getNodeValue());
 		}
-		border = new Border(d);
+		int[] xDotes = new int[d.length - 1];
+		int[] yDotes = new int[d.length - 1];
+		
+		for (int i = 0; i < (d.length - 1); i++) {
+			xDotes[i] = d[i][0];
+			yDotes[i] = d[i][1];
+		}
+		border = new Border(d, xDotes, yDotes);
 
 		//заполняем массив стен
 		n = doc.getElementsByTagName("wall");
