@@ -22,7 +22,7 @@ public class Station extends AbstractStation {
 
 	@Override
 	public void explode(Tail[] tails) {
-		// TODO Auto-generated method stub
-		
+		for (int i = 0; i < tails.length; i++)
+			explode(tails[i]);
 	}
 }

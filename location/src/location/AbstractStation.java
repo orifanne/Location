@@ -1,6 +1,6 @@
 package location;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 
 /** 
 * Представляет базовую станцию. 
@@ -17,13 +17,13 @@ public abstract class AbstractStation {
 	private double s;
 	
 	/** Карта уровней сигнала */
-	ArrayList<Law> laws;
+	HashMap<Tail, Law> map;
 
 	public AbstractStation() {
 		x = 0;
 		y = 0;
 		s = 0;
-		laws = new ArrayList<Law>();
+		map = new HashMap<Tail, Law>();
 	}
 
 	/** 
@@ -35,7 +35,7 @@ public abstract class AbstractStation {
 		x = x1;
 		y = y1;
 		s = s1;
-		laws = new ArrayList<Law>();
+		map = new HashMap<Tail, Law>();
 	}
 	
 	/** 
@@ -46,7 +46,7 @@ public abstract class AbstractStation {
 		x = x1;
 		y = y1;
 		s = 0;
-		laws = new ArrayList<Law>();
+		map = new HashMap<Tail, Law>();
 	}
 
 	/** 
