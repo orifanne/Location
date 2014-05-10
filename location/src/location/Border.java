@@ -21,16 +21,17 @@ public class Border extends Polygon {
 		
 		super(x, y, x.length);
 	}
-    	/** 
-    	* —ообщает, лежит ли фрейм внутри контура.
-    	*/
+	
+    /** 
+    * —ообщает, лежит ли фрейм внутри контура.
+    */
 	public boolean isInternal(Frame f) {
-		return isInternal(f.getX1(), f.getY1(), f.getX2(), f.getY2());
+		return super.contains(f.getX(), f.getY());
 	}
 
-    	/** 
-    	* —ообщает, лежит ли €чейка, определ€ема€ координатами x1 y1 x2 y2, внутри контура.
-    	*/
+    /** 
+    * —ообщает, лежит ли €чейка, определ€ема€ координатами x1 y1 x2 y2, внутри контура.
+    */
 	public boolean isInternal(double x1, double y1, double x2, double y2) {
 		double x = (x1 + x2) / 2;
 		double y = (y1 + y2) / 2;

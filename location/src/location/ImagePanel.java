@@ -106,9 +106,9 @@ public class ImagePanel extends JPanel {
 			//drawInnerFrames(g);
 			
 			//отрисовываем конечные ячейки
-			//drawTails(g);
+			drawTails(g);
 			
-			drawFinalFrames(g);
+			//drawFinalFrames(g);
 			
 			//отрисовываем базовые станции
 			drawStations(g);
