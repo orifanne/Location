@@ -8,12 +8,34 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 
 /** 
 * Представляет план здания. 
 * @author Pokrovskaya Oksana
 */
 public class Plan {
+	
+
+	//массив точек по горизонтали
+	private ArrayList <Double> vDotes = null;
+	//массив точек по вертикали
+	private ArrayList <Double> hDotes = null;
+
+	//вспомогательные фреймы
+	private Frame[][] frames;
+
+	//финальные фреймы
+	Frame[] finalFrames;
+	//количество финальных фрейймов
+	int finalFramesNum;
+	
+	/** Конечные ячейки. */
+	private Tail[] tails;
+	/** Количество конечных ячеек. */
+	private int tailsNum;
+	//оценка максимального количества конечных ячеек
+	private int maxTailsNum;
 	
 	/** Базовые станции */
 	ArrayList<Station> stations;
@@ -49,6 +71,226 @@ public class Plan {
 	*/
 	public Wall[] getWalls() {
 		return walls;
+	}	
+	
+	/**
+	* Получить конечные ячейки.
+	*/
+	public Tail[] getTails() {
+		return tails;
+	}
+	
+	/**
+	* Получить начальные фреймы.
+	*/
+	public Frame[][] getStartFrames() {
+		return frames;
+	}
+	
+	/**
+	* Получить конечные ячейки.
+	*/
+	public int getTailsNum() {
+		return tailsNum;
+	}
+		
+
+	/** 
+  	* Разбивает область локации на ячейки.
+  	*/
+     	public void devide(int tailSize) {
+
+		double x1, y1, x2, y2;
+		vDotes = new ArrayList<Double>();
+		hDotes = new ArrayList<Double>();
+
+		for (int i = 0; i < walls.length; i++) {
+			
+			x1 = walls[i].getX1();
+			x2 = walls[i].getX2();
+			y1 = walls[i].getY1();
+			y2 = walls[i].getY2();
+
+			if (!vDotes.contains(y1))
+				vDotes.add(y1);
+			if (!vDotes.contains(y2))
+				vDotes.add(y2);
+			if (!hDotes.contains(x1))
+				hDotes.add(x1);
+			if (!hDotes.contains(x2))
+				hDotes.add(x2);
+			
+		}
+
+		//заполняем массивы точек
+		for (int i = 0; i < border.xpoints.length; i++) {
+			x1 = border.xpoints[i];
+			y1 = border.ypoints[i];
+			if (!vDotes.contains(y1))
+				vDotes.add(y1);
+			if (!hDotes.contains(x1))
+				hDotes.add(x1);
+		}
+		
+		Collections.sort(hDotes);
+		Collections.sort(vDotes);
+		
+		//System.out.println(vDotesNum + " " + hDotesNum);
+
+		//составляем фреймы по массивам точек
+		frames = new Frame[vDotes.size() - 1][hDotes.size() - 1];
+		maxTailsNum = 0;
+		for (int i = 0; i < vDotes.size() - 1; i++) {
+			for (int j = 0; j < hDotes.size() - 1; j++) {
+				frames[i][j] = new Frame(hDotes.get(j), vDotes.get(i), 
+						hDotes.get(j + 1), vDotes.get(i + 1));
+				//если этот фрейм не внутри контура
+				if (!border.isInternal(frames[i][j])) {
+					//исключаем его из дальнейшего рассмотрения
+					frames[i][j].used(true);
+					//System.out.println("external");
+				}
+				//иначе проверяем на ограниченность
+				else {
+					boolean[] b = new boolean[4];
+					b = isBordered(frames[i][j]);
+					if (b[0])
+						frames[i][j].up = true;
+					if (b[1])
+						frames[i][j].down = true;
+					if (b[2])
+						frames[i][j].right = true;
+					if (b[3])
+						frames[i][j].left = true;
+					//оцениваем максимальное количество конечных ячеек
+					maxTailsNum += (frames[i][j].getX2() - frames[i][j].getX1()) * (frames[i][j].getY2() - frames[i][j].getY1());
+				}
+			}
+		}
+
+		//составляем финальные фреймы
+		finalFrames();
+		
+		//разбиваеи их на конечные ячейки
+		doTails(tailSize);
+	}
+     	
+    	
+    /** 
+    * Разбивает на конечные ячейки.
+    */
+    private void doTails(int tailSize) {
+    	tailsNum = 0;
+    	tails = new Tail[maxTailsNum];
+    	for (int i = 0; i < finalFramesNum; i++) {
+    		double a = finalFrames[i].getX2() - finalFrames[i].getX1();
+    		double b = finalFrames[i].getY2() - finalFrames[i].getY1();
+    		
+    		int finalSizeA = tailSize;
+    		if (a >= tailSize) {
+	    		if ((a % tailSize) < ((double) tailSize / 2.0))
+	    			while ((a % finalSizeA) != 0)
+	    				finalSizeA++;
+	    		else
+	    			while ((a % finalSizeA) != 0)
+						finalSizeA--;
+    		}
+    		
+    		int finalSizeB = tailSize;
+    		if (b >= tailSize) {
+	    		if ((b % tailSize) < ((double) tailSize / 2.0))
+	    			while ((b % finalSizeB) != 0) 
+	    				finalSizeB++;
+	    		else
+	    			while ((b % finalSizeB) != 0)
+	    				finalSizeB--;
+    		}
+    		
+    		if ((a >= tailSize) && (b >= tailSize)) {
+	    		for (double u = finalFrames[i].getX1(); u < finalFrames[i].getX2(); u += finalSizeA)
+	    			for (double v = finalFrames[i].getY1(); v < finalFrames[i].getY2(); v += finalSizeB) {
+	    				tails[tailsNum] = new Tail(u, v, u + finalSizeA, v + finalSizeB);
+	    				tailsNum++;
+	    			}
+	    		continue;
+    		}
+    		
+    		if (a >= tailSize) {
+	    		for (double u = finalFrames[i].getX1(); u < finalFrames[i].getX2(); u += finalSizeA) {
+	    				tails[tailsNum] = new Tail(u, finalFrames[i].getY1(), u + finalSizeA, finalFrames[i].getY2());
+	    				tailsNum++;
+	    			}
+	    		continue;
+    		}
+    		
+    		if (b >= tailSize) {
+	    		for (double v = finalFrames[i].getY1(); v < finalFrames[i].getY2(); v += finalSizeB) {
+	    			tails[tailsNum] = new Tail(finalFrames[i].getX1(), v, finalFrames[i].getX2(), v + finalSizeB);
+	    			tailsNum++;
+	    		}
+	    		continue;
+    		}
+    		
+    		tails[tailsNum] = new Tail(finalFrames[i].getX1(), finalFrames[i].getY1(), finalFrames[i].getX2(), finalFrames[i].getY2());
+			tailsNum++;
+    	}
+    }
+
+    /** 
+    * Составляет финальные фреймы.
+    * В будущем лучше заменить на разбиение по принципу запрета на пересечение со стенами и границей.
+    */
+	private void finalFrames() {
+		finalFrames = new Frame[(vDotes.size() - 1) * (hDotes.size() - 1)];
+		finalFramesNum = 0;
+		for (int i = 0; i < vDotes.size() - 1; i++) {
+			for (int j = 0; j < hDotes.size() - 1; j++) {
+				if (!frames[i][j].isUsed()) {
+					int minW = hDotes.size();
+					int k;
+					for (k = i; k < vDotes.size() - 1; k++) {
+						int t;
+						if (frames[k][j].down == true) {
+							for (t = j; t < hDotes.size() - 1; t++) {
+								if (frames[k][t].right == true) 
+									break;
+							}
+							if ((t - j) < minW)
+								minW = (t - j);
+							break;
+						}
+						else {
+							for (t = j; t < hDotes.size() - 2; t++) {
+								if ((frames[k][t].right == true) || (frames[k][t + 1].down == true)) 
+									break;
+							}
+							if ((t - j) < minW) {
+								minW = (t - j);
+								//f = true;
+							}
+						}
+						//System.out.println(t);
+					}
+					//System.out.println(i + " " + j + "     " + k + " " + (j + minW));
+					finalFrames[finalFramesNum] = new Frame(frames[i][j].getX1(),
+					frames[i][j].getY1(), frames[k][j + minW].getX2(),
+					frames[k][j + minW].getY2());
+					finalFramesNum++;
+					for (int u = i; u <= k; u++)
+						for (int v = j; v <= j + minW; v++) {
+							frames[u][v].used(true);
+							if (u > 0)
+								frames[u - 1][v].down = true;
+							if (v > 0)
+								frames[u][v - 1].right = true;
+							if (u < vDotes.size() - 2)
+								frames[u + 1][v].up = true;
+							if (v < hDotes.size() - 2)
+								frames[u][v + 1].left = true;
+						}
+				}
+			}
+		}
 	}
 	
 	/**

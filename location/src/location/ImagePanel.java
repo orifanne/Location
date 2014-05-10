@@ -114,7 +114,7 @@ public class ImagePanel extends JPanel {
     	
     public void drawInnerFrames(Graphics2D g) {
     	if (location.hasOpenFile()) {
-    		Frame[][] frames = location.getStartFrames();
+    		Frame[][] frames = location.getPlan().getStartFrames();
 			for (int i = 0; i < frames.length; i++)
 				for (int j = 0; j < frames[0].length; j++)
 					if (!frames[i][j].isUsed()) {
@@ -178,8 +178,8 @@ public class ImagePanel extends JPanel {
     		BasicStroke b = new BasicStroke(bPen); 
 			g.setStroke(b);
 			g.setColor(Color.red);
-			Tail[] t = location.getTails();
-			for (int i = 0; i < location.getTailsNum(); i++)
+			Tail[] t = location.getPlan().getTails();
+			for (int i = 0; i < location.getPlan().getTailsNum(); i++)
 				g.drawRect((int) t[i].getX1() * m * bar,
 						(int) t[i].getY1() * m * bar,
 						(int) (t[i].getX2() - t[i].getX1()) * m * bar,

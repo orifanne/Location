@@ -27,7 +27,6 @@ public class Border extends Polygon {
 	public boolean isInternal(Frame f) {
 		return isInternal(f.getX1(), f.getY1(), f.getX2(), f.getY2());
 	}
-		
 
     	/** 
     	* —ообщает, лежит ли €чейка, определ€ема€ координатами x1 y1 x2 y2, внутри контура.
