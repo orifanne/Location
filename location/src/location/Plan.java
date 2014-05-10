@@ -52,6 +52,13 @@ public class Plan {
 	}
 	
 	/**
+	* Добавить базовую станцию.
+	*/
+	//private void addStation(double x, double y) {
+		//stations.add(new Station(x, y));
+	//}
+	
+	/**
 	* Получить список базовых станций.
 	*/
 	public ArrayList<Station> getStations() {

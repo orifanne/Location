@@ -58,6 +58,9 @@ public class Location extends JFrame {
    	private Plan plan = null;
    	/** Открытый файл. */
    	private File openedFile = null;
+   	
+   	//объект для позиционирования
+   	PosObject object;
 
 	//массив точек по горизонтали
 	private ArrayList <Double> vDotes = null;
@@ -128,6 +131,8 @@ public class Location extends JFrame {
         mainpanel.setDoubleBuffered(true);
 		Container container = getContentPane();
         container.add(mainpanel);
+        
+        object = new PosObject();
     }
 
 	/**
@@ -167,6 +172,13 @@ public class Location extends JFrame {
 	public int getTailsNum() {
 		return tailsNum;
 	}
+	
+	/*public void teach(Station st, PosObject object, int num) {
+		for (int i = 0; i < num; i++) {
+			object.nextStep(plan);
+			
+		}
+	}*/
 
 	/** 
   	* Разбивает область локации на ячейки.
@@ -314,6 +326,7 @@ public class Location extends JFrame {
 
     /** 
     * Составляет финальные фреймы.
+    * В будущем лучше заменить на разбиение по принципу запрета на пересечение со стенами и границей.
     */
 	private void finalFrames() {
 		if (openedFile == null)
