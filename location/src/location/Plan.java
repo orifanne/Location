@@ -46,26 +46,6 @@ public class Plan {
 	/** Внешний контур. */
 	private Border border = null;
 
-	/** Массив вертикальных стен, упорядоченных слева направо.
-	* v[i][0] - координата x
-	* v[i][1] - меньшая координата y
-	* v[i][2] - большая координата y
-	*/
-	private double[][] v;
-
-	/** Массив горизонтальных стен, упорядоченных сверху вниз.
-	* h[i][0] - координата y
-	* h[i][1] - меньшая координата x
-	* h[i][2] - большая координата x
-	*/
-	private double[][] h;
-
-	/** Количество вертикальных стен. */
-	private int vNum;
-
-	/** Количество горизонтальных стен. */
-	private int hNum;
-
 	/**
 	* Получить массив стен.
 	*/
@@ -330,55 +310,6 @@ public class Plan {
 	}
 
 	/** 
-	* @param w массив стен
-	* @param b внешний контур
-	*/
-	public Plan(Wall[] w, Border b) {
-		walls = w;
-		border = b;
-		doArrays();
-	}
-
-	/** 
-  	* Организует массивы вертикальных и горизонтальных стен.
-  	*/
-	private void doArrays() {
-		vNum = 0;
-		hNum = 0;
-		v = new double[walls.length][3];
-		h = new double[walls.length][3];
-		//заполняем массивы вертикальных и горизонтальных стен
-		for (int i = 0; i < walls.length; i++) {
-			//если стена вертикальная
-			if (walls[i].getX1() == walls[i].getX2()) {
-				v[vNum][0] = walls[i].getX1();
-				if (walls[i].getY1() < walls[i].getY2()) {
-					v[vNum][1] = walls[i].getY1();
-					v[vNum][2] = walls[i].getY2();
-				}
-				else {
-					v[vNum][1] = walls[i].getY2();
-					v[vNum][2] = walls[i].getY1();
-				}
-				vNum++;
-			}
-			//если стена горизонтальная
-			else {
-				h[hNum][0] = walls[i].getY1();
-				if (walls[i].getX1() < walls[i].getX2()) {
-					h[hNum][1] = walls[i].getX1();
-					h[hNum][2] = walls[i].getX2();
-				}
-				else {
-					h[hNum][1] = walls[i].getX2();
-					h[hNum][2] = walls[i].getX1();
-				}
-				hNum++;
-			}
-		}
-	}
-
-	/** 
   	* @param file xml-файл с описанием плана
   	*/
      	public Plan(File file) {
@@ -426,7 +357,6 @@ public class Plan {
 			y2 = Double.parseDouble(k.getNamedItem("y2").getNodeValue());
 			walls[i] = new Wall(x1, y1, x2, y2);
 		}
-		doArrays();
 		
 		n = doc.getElementsByTagName("station");
 		k = null;
@@ -460,34 +390,16 @@ public class Plan {
 		boolean down = false;
 		boolean right = false;
 		boolean left = false;
-		double x = (x1 + x2) / 2;
-		double y = (y1 + y2) / 2;
-		for (int i = 0; i < vNum; i++)
-			//если эта стена на одном уровне по вертикали с точкой
-			//if ((y < v[i][1]) && (y > v[i][2]) || (y > v[i][1]) && (y < v[i][2])) {
-			if ((y > v[i][1]) && (y < v[i][2])) {
-				if (right && left)
-					break;
-				//и примыкает к правому краю
-				if (x2 == v[i][0]) 
-					right = true;
-				//и примыкает к левому краю
-				if (x1 == v[i][0]) 
-					left = true;
-			}
-		for (int i = 0; i < hNum; i++)
-			//если эта стена на одном уровне по горизонтали с точкой
-			//if ((x < h[i][1]) && (x > h[i][2]) || (x > h[i][1]) && (x < h[i][2])) {
-			if ((x > h[i][1]) && (x < h[i][2])) {
-				if (up && down)
-					break;
-				//и примыкает к нижнему краю
-				if (y2 == h[i][0]) 
-					down = true;
-				//и примыкает к верхнему краю
-				if (y1 == h[i][0]) 
-					up = true;
-			}
+		for(int i = 0; i < walls.length; i++) {
+			if (walls[i].intersectsLine(x1, y1, x2, y1))
+	    		up = true;
+	    	if (walls[i].intersectsLine(x2, y2, x1, y2))
+	    		down = true;
+	    	if (walls[i].intersectsLine(x1, y1, x1, y2))
+	    		left = true;
+	    	if (walls[i].intersectsLine(x2, y2, x2, y1))
+	    		right = true;
+		}
 
 		boolean[] b1 = new boolean[4];
 		if (!(up && down && left && right))

@@ -106,7 +106,9 @@ public class ImagePanel extends JPanel {
 			//drawInnerFrames(g);
 			
 			//отрисовываем конечные ячейки
-			drawTails(g);
+			//drawTails(g);
+			
+			drawFinalFrames(g);
 			
 			//отрисовываем базовые станции
 			drawStations(g);
@@ -201,17 +203,19 @@ public class ImagePanel extends JPanel {
 			}
     }
     
-    /*public void drawFinalFrames(Graphics2D g) {
+    public void drawFinalFrames(Graphics2D g) {
     	
     	if (location.hasOpenFile()) {
 			g.setColor(Color.BLUE);
-			//g.setStroke(brd);
-			for (int i = 0; i < location.finalFramesNum; i++)
-				g.drawRect(location.finalFrames[i].getX1() * m * bar + 5,
-					location.finalFrames[i].getY1() * m * bar + 5,
-				((location.finalFrames[i].getX2() - location.finalFrames[i].getX1()) * m * bar) - 10,
- 				((location.finalFrames[i].getY2() - location.finalFrames[i].getY1()) * m * bar) - 10);
-    }*/
+			BasicStroke b = new BasicStroke(bPen); 
+			g.setStroke(b);
+			for (int i = 0; i < location.getPlan().finalFramesNum; i++)
+				g.drawRect((int) (location.getPlan().finalFrames[i].getX1() * m * bar + 5),
+						(int) (location.getPlan().finalFrames[i].getY1() * m * bar + 5),
+						(int) ((location.getPlan().finalFrames[i].getX2() - location.getPlan().finalFrames[i].getX1()) * m * bar) - 10,
+						(int) ((location.getPlan().finalFrames[i].getY2() - location.getPlan().finalFrames[i].getY1()) * m * bar) - 10);
+    	}
+    }
     	
     public void drawStations(Graphics2D g) {
     	
