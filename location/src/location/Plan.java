@@ -142,6 +142,7 @@ public class Plan {
 						frames[i][j].right = true;
 					if (b[3])
 						frames[i][j].left = true;
+					//System.out.println(b[0] + " " + " " + b[1] + " " + b[2] + " " + b[3]);
 					//оцениваем максимальное количество конечных €чеек
 					maxTailsNum += (frames[i][j].getX2() - frames[i][j].getX1()) * (frames[i][j].getY2() - frames[i][j].getY1());
 				}
@@ -366,7 +367,7 @@ public class Plan {
 			k = n.item(i).getAttributes();
 			x = Double.parseDouble(k.getNamedItem("x").getNodeValue());
 			y = Double.parseDouble(k.getNamedItem("y").getNodeValue());
-			System.out.println(x + " " + y);
+			//System.out.println(x + " " + y);
 			stations.add(new Station(x, y));
 		}
 	}
@@ -391,14 +392,25 @@ public class Plan {
 		boolean right = false;
 		boolean left = false;
 		for(int i = 0; i < walls.length; i++) {
-			if (walls[i].intersectsLine(x1, y1, x2, y1))
-	    		up = true;
-	    	if (walls[i].intersectsLine(x2, y2, x1, y2))
-	    		down = true;
-	    	if (walls[i].intersectsLine(x1, y1, x1, y2))
-	    		left = true;
-	    	if (walls[i].intersectsLine(x2, y2, x2, y1))
-	    		right = true;
+			System.out.println(i);
+			if (walls[i].intersectsLine((x1+ x2) / 2, y1, (x1+ x2) / 2, y2)) {
+				if (walls[i].getY1() == walls[i].getY2()) {
+					if (walls[i].getY1() == y1)
+						up = true;
+					if (walls[i].getY2() == y2)
+						down = true;
+					//continue;
+				}
+			}
+			if (walls[i].intersectsLine(x1, (y1 + y2) / 2, x2, (y1 + y2) / 2)) {
+				if (walls[i].getX1() == walls[i].getX2()) {
+					if (walls[i].getX1() == x1)
+						left = true;
+					if (walls[i].getX2() == x2)
+						right = true;
+					//continue;
+				}
+			}
 		}
 
 		boolean[] b1 = new boolean[4];

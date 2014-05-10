@@ -66,14 +66,24 @@ public class Border extends Polygon {
                     			coords[0], coords[1]);
                     	//System.out.println(prev[0] + " " + prev[1] + " " +
                     			//coords[0] + " " + coords[1]);
-                    	if (line.intersectsLine(x1, y1, x2, y1))
-                    		up = true;
-                    	if (line.intersectsLine(x2, y2, x1, y2))
-                    		down = true;
-                    	if (line.intersectsLine(x1, y1, x1, y2))
-                    		left = true;
-                    	if (line.intersectsLine(x2, y2, x2, y1))
-                    		right = true;
+                    	if (line.intersectsLine((x1+ x2) / 2, y1, (x1+ x2) / 2, y2)) {
+            				if (line.getY1() == line.getY2()) {
+            					if (line.getY1() == y1)
+            						up = true;
+            					if (line.getY2() == y2)
+            						down = true;
+            					//continue;
+            				}
+            			}
+            			if (line.intersectsLine(x1, (y1 + y2) / 2, x2, (y1 + y2) / 2)) {
+            				if (line.getX1() == line.getX2()) {
+            					if (line.getX1() == x1)
+            						left = true;
+            					if (line.getX2() == x2)
+            						right = true;
+            					//continue;
+            				}
+            			}
                     	prev[0] = coords[0];
                     	prev[1] = coords[1];
                         break;
@@ -88,14 +98,24 @@ public class Border extends Polygon {
                     			first[0], first[1]);
                     	//System.out.println("close " + prev[0] + " " + prev[1] + " " +
                     			//first[0] + " " + first[1]);
-                    	if (line1.intersectsLine(x1, y1, x2, y1))
-                    		up = true;
-                    	if (line1.intersectsLine(x2, y2, x1, y2))
-                    		down = true;
-                    	if (line1.intersectsLine(x1, y1, x1, y2))
-                    		left = true;
-                    	if (line1.intersectsLine(x2, y2, x2, y1))
-                    		right = true;
+                    	if (line1.intersectsLine((x1+ x2) / 2, y1, (x1+ x2) / 2, y2)) {
+            				if (line1.getY1() == line1.getY2()) {
+            					if (line1.getY1() == y1)
+            						up = true;
+            					if (line1.getY2() == y2)
+            						down = true;
+            					//continue;
+            				}
+            			}
+            			if (line1.intersectsLine(x1, (y1 + y2) / 2, x2, (y1 + y2) / 2)) {
+            				if (line1.getX1() == line1.getX2()) {
+            					if (line1.getX1() == x1)
+            						left = true;
+            					if (line1.getX2() == x2)
+            						right = true;
+            					//continue;
+            				}
+            			}
                         break;
             }
             pi.next();
