@@ -6,9 +6,9 @@ package location;
 */
 public class Law {
 	/** Математическое ожидание */
-	private double a;
+	private double a = 0;
 	/** Дисперсия */
-	private double q;
+	private double q = 0;
 
 	public Law() {
 		a = 0;
@@ -19,7 +19,8 @@ public class Law {
 	* @param a1 математическое ожидание
 	*/
 	public Law(double a1) {
-		a = a1;
+		if (a1 >= 0)
+			a = a1;
 		q = 0;
 	}
 
@@ -28,8 +29,10 @@ public class Law {
 	* @param q1 дисперсия
 	*/
 	public Law(double a1, double q1) {
-		a = a1;
-		q = q1;
+		if (a1 >= 0)
+			a = a1;
+		if (q1 >= 0)
+			q = q1;
 	}
 
 	/** 

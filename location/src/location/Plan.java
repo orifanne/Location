@@ -222,7 +222,7 @@ public class Plan {
 
 	public void explodeAllStations() {
 		for (int i = 0; i < stations.size(); i++) {
-			stations.get(i).explode(tails);
+			stations.get(i).explode(tails, this);
 		}
 	}
 

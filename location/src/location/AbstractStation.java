@@ -75,6 +75,20 @@ public abstract class AbstractStation {
 	* @param tails €чейки, дл€ которых необходимо построить карту уровней сигнала
 	*/
 	public abstract void explode(ArrayList<Tail> tails);
+	
+	/** 
+	* –ассчитывает уровень сигнала с учетом плана помещени€.
+	* @param tail €чейка, в которой необходимо рассчитать уровень сигнала 
+	* @param plan план помещени€
+	*/
+	public abstract void explode(Tail tail, Plan plan);
+	
+	/** 
+	* —троит карту уровней сигнала с учетом плана помещени€.
+	* @param tails €чейки, дл€ которых необходимо построить карту уровней сигнала
+	* @param plan план помещени€
+	*/
+	public abstract void explode(ArrayList<Tail> tails, Plan plan);
 
 	public double getX() {
 		// TODO Auto-generated method stub

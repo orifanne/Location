@@ -124,20 +124,11 @@ public class ImagePanel extends JPanel {
 			//отрисовываем внешний контур
 			drawBorder(g);
 			
-			//drawInnerFrames(g);
-			
 			//отрисовываем конечные ячейки
 			drawTails(g);
 			
-			//drawFinalFrames(g);
-			
 			//отрисовываем базовые станции
 			drawStations(g);
-			
-			/*plan = location.getPlan();
-			if (plan == null)
-				System.out.println("*******null plan!");*/
-			
  	}
     	
     public void drawInnerFrames(Graphics2D g) {
@@ -157,15 +148,17 @@ public class ImagePanel extends JPanel {
     
     public void drawMap(Graphics2D g) {
     	if (location.hasOpenFile()) {
-			ArrayList<Tail> t = location.getPlan().getTails();
-			Station s = location.getPlan().getStation(location.getStationNumber());
-			for (int i = 0; i < location.getPlan().getTailsNum(); i++) {
-				if (s.getMap().containsKey(t.get(i))) {
-					Law l = s.getMap().get(t.get(i));
-					if (l != null)
-						drawMapTail(g, t.get(i), l.getA());
+    		if (location.getPlan().getStations().size() > 0) {
+				ArrayList<Tail> t = location.getPlan().getTails();
+				Station s = location.getPlan().getStation(location.getStationNumber());
+				for (int i = 0; i < location.getPlan().getTailsNum(); i++) {
+					if (s.getMap().containsKey(t.get(i))) {
+						Law l = s.getMap().get(t.get(i));
+						if (l != null)
+							drawMapTail(g, t.get(i), l.getA());
+					}
 				}
-			}
+    		}
     	}
     }
     	
@@ -275,14 +268,20 @@ public class ImagePanel extends JPanel {
     public void drawStations(Graphics2D g) {
     	
 		if (location.hasOpenFile()) {
-			BasicStroke b = new BasicStroke(borderPen); 
-			g.setStroke(b);
-			g.setColor(Color.BLUE);
-			plan = location.getPlan();
-			for (int i = 0; i < plan.getStations().size(); i++)
-				g.drawOval((int) (plan.getStation(i).getX() * m * bar - rad * bar), 
-						(int) (plan.getStation(i).getY() * m * bar - rad * bar), 
+			if (location.getPlan().getStations().size() > 0) {
+				BasicStroke b = new BasicStroke(borderPen); 
+				g.setStroke(b);
+				g.setColor(Color.BLUE);
+				plan = location.getPlan();
+				for (int i = 0; i < plan.getStations().size(); i++)
+					g.drawOval((int) (plan.getStation(i).getX() * m * bar - rad * bar), 
+							(int) (plan.getStation(i).getY() * m * bar - rad * bar), 
+							(int) (rad * bar * 2), (int) (rad * bar * 2));
+				g.setColor(Color.red);
+				g.drawOval((int) (plan.getStation(location.getStationNumber()).getX() * m * bar - rad * bar), 
+						(int) (plan.getStation(location.getStationNumber()).getY() * m * bar - rad * bar), 
 						(int) (rad * bar * 2), (int) (rad * bar * 2));
+			}
 		}
     }
 
