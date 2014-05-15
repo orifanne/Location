@@ -1,5 +1,6 @@
 package location;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /** 
@@ -14,16 +15,11 @@ public abstract class AbstractStation {
 	protected double y;
 
 	/** Базовая сила сигнала */
-	private double s;
-	
-	/** Карта уровней сигнала */
-	HashMap<Tail, Law> map;
+	protected double s = 150;
 
 	public AbstractStation() {
 		x = 0;
 		y = 0;
-		s = 0;
-		map = new HashMap<Tail, Law>();
 	}
 
 	/** 
@@ -35,7 +31,6 @@ public abstract class AbstractStation {
 		x = x1;
 		y = y1;
 		s = s1;
-		map = new HashMap<Tail, Law>();
 	}
 	
 	/** 
@@ -45,8 +40,6 @@ public abstract class AbstractStation {
 	public AbstractStation(double x1, double y1) {
 		x = x1;
 		y = y1;
-		s = 0;
-		map = new HashMap<Tail, Law>();
 	}
 
 	/** 
@@ -59,7 +52,7 @@ public abstract class AbstractStation {
 	* Строит карту уровней сигнала.
 	* @param tails ячейки, для которых необходимо построить карту уровней сигнала
 	*/
-	public abstract void explode(Tail[] tails);
+	public abstract void explode(ArrayList<Tail> tails);
 
 	public double getX() {
 		// TODO Auto-generated method stub

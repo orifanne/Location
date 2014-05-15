@@ -3,6 +3,7 @@ package location;
 import javax.swing.*;
 
 import java.awt.*;
+import java.util.ArrayList;
 
 /** 
 * ѕанель, отрисовывающа€ план здани€.
@@ -29,6 +30,20 @@ public class ImagePanel extends JPanel {
 	private int width;
 	/** ¬ысота панели */
 	private int height;
+	
+	/**  оличество оттенков дл€ отображени€ карты */
+	private int range = 10;
+	/** ћинимальное значение уровн€ сигнала */
+	private double minA = 5;
+	/** ћаксимальное значение уровн€ сигнала */
+	private double maxA = 150;
+	
+	//шаг уровн€ сигнала
+	private double d;
+	//границы прозрачности цвета
+	private double[] r;
+	//границы уровн€ сигнала
+	private double[] f;
 	
 	/** ћаксимальный масштаб */
 	private int maxM = 10;
@@ -83,19 +98,26 @@ public class ImagePanel extends JPanel {
 		//рассчитываем количество €чеек, умещающихс€ по горизонтали и вертикали
 		hBars = width / bar;
 		vBars = height / bar;
-   	}
-
-   	public void update(Graphics gr) {
-   		paintComponent(gr);
+		
+		//рассчитываем шаг и границы дл€ тображени€ карт сигнала
+		d = (maxA - minA) / range;
+		r = new double[range];
+		f = new double[range];
+		for(int i = 0; i < range; i++) {
+			f[i] = (0.5 / (double) range) * i;
+			r[i] = d * i;
+		}
    	}
 
     	public void paintComponent(Graphics gr) {
         	super.paintComponent(gr);
+        	System.out.println("paintComponent");
 			Graphics2D g = (Graphics2D) gr;
-			plan = location.getPlan();
 			
 			//отрисоываваем базовую сетку
 			drawBaseLines(g);
+			
+			drawMap(g);
 			
 			//отрисовываем стены
 			drawWalls(g);
@@ -112,6 +134,11 @@ public class ImagePanel extends JPanel {
 			
 			//отрисовываем базовые станции
 			drawStations(g);
+			
+			/*plan = location.getPlan();
+			if (plan == null)
+				System.out.println("*******null plan!");*/
+			
  	}
     	
     public void drawInnerFrames(Graphics2D g) {
@@ -128,8 +155,34 @@ public class ImagePanel extends JPanel {
 					}
     	}
     }
+    
+    public void drawMap(Graphics2D g) {
+    	if (location.hasOpenFile()) {
+			ArrayList<Tail> t = location.getPlan().getTails();
+			Station s = location.getPlan().getStation(0);
+			for (int i = 0; i < location.getPlan().getTailsNum(); i++) {
+				if (s.getMap().containsKey(t.get(i))) {
+					Law l = s.getMap().get(t.get(i));
+					if (l != null)
+						drawMapTail(g, t.get(i), l.getA());
+				}
+			}
+    	}
+    }
     	
-    public void drawBaseLines(Graphics2D g) {
+    private void drawMapTail(Graphics2D g, Tail t, double a) {		
+		int i;
+		for(i = 0; i < range; i++)
+			if (a < r[i])
+				break;
+		
+		Color c = new Color((float) 0.0, (float) 0.0, (float) 0.01, (float) f[i]);
+		g.setColor(c);
+		g.fillRect((int) t.getX1() * m * bar, (int) t.getY1() * m * bar, 
+				(int) (t.getX2() - t.getX1()) * m * bar, (int) (t.getY2() - t.getY1()) * m * bar);
+	}
+
+	public void drawBaseLines(Graphics2D g) {
        	
     	BasicStroke b = new BasicStroke(bPen); 
 		g.setStroke(b);
@@ -146,7 +199,7 @@ public class ImagePanel extends JPanel {
 		g.setColor(Color.RED);
 		if (location.hasOpenFile()) {
 			for (int i = 0; i < location.hDotesNum; i++)
-				g.drawLine(location.hDotes.get(i) * m * bar, 0, 
+				g.drawLine(location.h Dotes.get(i) * m * bar, 0, 
 				location.hDotes.get(i) * m * bar, height);
 			for (int i = 0; i < location.vDotesNum; i++)
 				g.drawLine(0, location.vDotes.get(i) * m * bar, 
@@ -160,6 +213,7 @@ public class ImagePanel extends JPanel {
 		BasicStroke brd = new BasicStroke(borderPen); 
 		g.setStroke(brd);
 		if (location.hasOpenFile()) {
+			plan = location.getPlan();
 			Border border = plan.getBorder();
 			for (int i = 0; i < border.npoints - 1; i++) {
 				g.drawLine(border.xpoints[i] * m * bar, 
@@ -180,12 +234,12 @@ public class ImagePanel extends JPanel {
     		BasicStroke b = new BasicStroke(bPen); 
 			g.setStroke(b);
 			g.setColor(Color.red);
-			Tail[] t = location.getPlan().getTails();
+			ArrayList<Tail> t = location.getPlan().getTails();
 			for (int i = 0; i < location.getPlan().getTailsNum(); i++)
-				g.drawRect((int) t[i].getX1() * m * bar,
-						(int) t[i].getY1() * m * bar,
-						(int) (t[i].getX2() - t[i].getX1()) * m * bar,
-						(int) (t[i].getY2() - t[i].getY1()) * m * bar);
+				g.drawRect((int) t.get(i).getX1() * m * bar,
+						(int) t.get(i).getY1() * m * bar,
+						(int) (t.get(i).getX2() - t.get(i).getX1()) * m * bar,
+						(int) (t.get(i).getY2() - t.get(i).getY1()) * m * bar);
 		}
     }
     
@@ -194,13 +248,15 @@ public class ImagePanel extends JPanel {
     	g.setColor(Color.BLACK);
 		BasicStroke w = new BasicStroke(wPen); 
 		g.setStroke(w);
-		if (location.hasOpenFile())
+		if (location.hasOpenFile()) {
+			plan = location.getPlan();
 			for (int i = 0; i < plan.getWalls().length; i++) {
 				g.drawLine((int) plan.getWall(i).getX1() * m * bar, 
 						(int) plan.getWall(i).getY1() * m * bar, 
 						(int) plan.getWall(i).getX2() * m * bar, 
 						(int) plan.getWall(i).getY2() * m * bar);
 			}
+		}
     }
     
     public void drawFinalFrames(Graphics2D g) {
@@ -223,6 +279,7 @@ public class ImagePanel extends JPanel {
 			BasicStroke b = new BasicStroke(borderPen); 
 			g.setStroke(b);
 			g.setColor(Color.BLUE);
+			plan = location.getPlan();
 			for (int i = 0; i < plan.getStations().size(); i++)
 				g.drawOval((int) (plan.getStation(i).getX() * m * bar - rad * bar), 
 						(int) (plan.getStation(i).getY() * m * bar - rad * bar), 

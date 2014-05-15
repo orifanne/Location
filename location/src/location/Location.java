@@ -85,6 +85,7 @@ public class Location extends JFrame {
 		panel.addMouseListener(new NewMouseListener());
 		panel.addMouseMotionListener(new NewMouseMotionListener());
 		panel.setDoubleBuffered(true);
+		//panel.setOpaque(true);
 		
 		panel.setPreferredSize(new Dimension(width, height));
 		panel.setMinimumSize(new Dimension(width, height));
@@ -141,8 +142,6 @@ public class Location extends JFrame {
 		}
 	}*/
 
- 
-
     	/** 
     	* Создает меню.
     	*/
@@ -187,16 +186,16 @@ public class Location extends JFrame {
 			//	System.exit(0);
 		    	//}
 		    	if ("open".equals(command)) {
-				JFileChooser fileopen = new JFileChooser();    
-				FileFilter filter = new ExtensionFileFilter("xml", "xml");
-    				fileopen.setFileFilter(filter);        
-				int ret = fileopen.showDialog(null, "Открыть файл");
-				if (ret == JFileChooser.APPROVE_OPTION) {
-					openedFile = fileopen.getSelectedFile();
-					plan = new Plan(openedFile);
-					plan.devide(tailSize);
-					panel.repaint();
-				}
+					JFileChooser fileopen = new JFileChooser();    
+					FileFilter filter = new ExtensionFileFilter("xml", "xml");
+	    				fileopen.setFileFilter(filter);        
+					int ret = fileopen.showDialog(null, "Открыть файл");
+					if (ret == JFileChooser.APPROVE_OPTION) {
+						openedFile = fileopen.getSelectedFile();
+						plan = new Plan(openedFile);
+						plan.devide(tailSize);
+						panel.repaint();
+					}
 		    	}
 			if ("close".equals(command)) {
 				openedFile = null;

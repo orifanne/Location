@@ -6,66 +6,32 @@ package location;
 */
 public class Law {
 	/** Математическое ожидание */
-	private int a;
+	private double a;
 	/** Дисперсия */
-	private int q;
-	/** Базовая станция, с которой связан закон */
-	private AbstractStation station;
+	private double q;
 
 	public Law() {
 		a = 0;
 		q = 0;
-		station = null;
 	}
 	
 	/** 
 	* @param a1 математическое ожидание
 	*/
-	public Law(int a1) {
+	public Law(double a1) {
 		a = a1;
 		q = 0;
-		station = null;
 	}
-
-	/** 
-	* @param a1 математическое ожидание
-	* @param s1 базовая станция
-	*/
-	public Law(int a1, AbstractStation s1) {
-		a = a1;
-		q = 0;
-		station = s1;
-	}
-
-	/** 
-	* @param a1 математическое ожидание
-	* @param s1 базовая станция
-	* @param q1 дисперсия
-	*/
-	public Law(int a1, int q1, AbstractStation s1) {
-		a = a1;
-		q = q1;
-		station = s1;
-	}
-
-	/** 
-	* @param s1 базовая станция
-	*/
-	public Law(AbstractStation s1) {
-		station = s1;
-	}
-
 
 	/** 
 	* @param a1 математическое ожидание
 	* @param q1 дисперсия
 	*/
-	public Law(int a1, int q1) {
+	public Law(double a1, double q1) {
 		a = a1;
 		q = q1;
-		station = null;
 	}
-	
+
 	/** 
 	* Изменяет математическое ожидание.
 	* @param a1 математическое ожидание
@@ -81,12 +47,37 @@ public class Law {
 	public void chQ(int q1) {
 		q = q1;
 	}
-	
-	/** 
-	* Изменяет базовую станцию.
-	* @param s1 базовая станция
-	*/
-	public void chStation(AbstractStation s1) {
-		station = s1;
+
+	public double getA() {
+		return a;
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		long temp;
+		temp = Double.doubleToLongBits(a);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(q);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Law other = (Law) obj;
+		if (Double.doubleToLongBits(a) != Double.doubleToLongBits(other.a))
+			return false;
+		if (Double.doubleToLongBits(q) != Double.doubleToLongBits(other.q))
+			return false;
+		return true;
+	}
+
 }

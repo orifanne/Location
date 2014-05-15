@@ -31,7 +31,7 @@ public class Plan {
 	int finalFramesNum;
 	
 	/** Конечные ячейки. */
-	private Tail[] tails;
+	private  ArrayList <Tail> tails;
 	/** Количество конечных ячеек. */
 	private int tailsNum;
 	//оценка максимального количества конечных ячеек
@@ -56,7 +56,7 @@ public class Plan {
 	/**
 	* Получить конечные ячейки.
 	*/
-	public Tail[] getTails() {
+	public ArrayList<Tail> getTails() {
 		return tails;
 	}
 	
@@ -154,6 +154,8 @@ public class Plan {
 		
 		//разбиваеи их на конечные ячейки
 		doTails(tailSize);
+		
+		explodeAllStations();
 	}
      	
     	
@@ -162,7 +164,7 @@ public class Plan {
     */
     private void doTails(int tailSize) {
     	tailsNum = 0;
-    	tails = new Tail[maxTailsNum];
+    	tails = new ArrayList<Tail>();
     	for (int i = 0; i < finalFramesNum; i++) {
     		double a = finalFrames[i].getX2() - finalFrames[i].getX1();
     		double b = finalFrames[i].getY2() - finalFrames[i].getY1();
@@ -190,7 +192,7 @@ public class Plan {
     		if ((a >= tailSize) && (b >= tailSize)) {
 	    		for (double u = finalFrames[i].getX1(); u < finalFrames[i].getX2(); u += finalSizeA)
 	    			for (double v = finalFrames[i].getY1(); v < finalFrames[i].getY2(); v += finalSizeB) {
-	    				tails[tailsNum] = new Tail(u, v, u + finalSizeA, v + finalSizeB);
+	    				tails.add(new Tail(u, v, u + finalSizeA, v + finalSizeB));
 	    				tailsNum++;
 	    			}
 	    		continue;
@@ -198,7 +200,7 @@ public class Plan {
     		
     		if (a >= tailSize) {
 	    		for (double u = finalFrames[i].getX1(); u < finalFrames[i].getX2(); u += finalSizeA) {
-	    				tails[tailsNum] = new Tail(u, finalFrames[i].getY1(), u + finalSizeA, finalFrames[i].getY2());
+	    			tails.add(new Tail(u, finalFrames[i].getY1(), u + finalSizeA, finalFrames[i].getY2()));
 	    				tailsNum++;
 	    			}
 	    		continue;
@@ -206,16 +208,23 @@ public class Plan {
     		
     		if (b >= tailSize) {
 	    		for (double v = finalFrames[i].getY1(); v < finalFrames[i].getY2(); v += finalSizeB) {
-	    			tails[tailsNum] = new Tail(finalFrames[i].getX1(), v, finalFrames[i].getX2(), v + finalSizeB);
+	    			tails.add(new Tail(finalFrames[i].getX1(), v, finalFrames[i].getX2(), v + finalSizeB));
 	    			tailsNum++;
 	    		}
 	    		continue;
     		}
     		
-    		tails[tailsNum] = new Tail(finalFrames[i].getX1(), finalFrames[i].getY1(), finalFrames[i].getX2(), finalFrames[i].getY2());
+    		tails.add(new Tail(finalFrames[i].getX1(), finalFrames[i].getY1(), finalFrames[i].getX2(), finalFrames[i].getY2()));
 			tailsNum++;
     	}
     }
+    
+
+	public void explodeAllStations() {
+		for (int i = 0; i < stations.size(); i++) {
+			stations.get(i).explode(tails);
+		}
+	}
 
     /** 
     * Составляет финальные фреймы.
@@ -289,7 +298,7 @@ public class Plan {
 	}
 	
 	/**
-	* Получить список базовых станций.
+	* Получить базовую станцию.
 	*/
 	public Station getStation(int i) {
 		return stations.get(i);
@@ -392,7 +401,7 @@ public class Plan {
 		boolean right = false;
 		boolean left = false;
 		for(int i = 0; i < walls.length; i++) {
-			System.out.println(i);
+			//System.out.println(i);
 			if (walls[i].intersectsLine((x1+ x2) / 2, y1, (x1+ x2) / 2, y2)) {
 				if (walls[i].getY1() == walls[i].getY2()) {
 					if (walls[i].getY1() == y1)
