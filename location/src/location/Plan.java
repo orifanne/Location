@@ -371,13 +371,15 @@ public class Plan {
 		n = doc.getElementsByTagName("station");
 		k = null;
 		double x, y;
+		String name;
 		stations = new ArrayList<Station>();
 		for (int i = 0; i < n.getLength(); i++) {
 			k = n.item(i).getAttributes();
 			x = Double.parseDouble(k.getNamedItem("x").getNodeValue());
 			y = Double.parseDouble(k.getNamedItem("y").getNodeValue());
+			name = k.getNamedItem("name").getNodeValue();
 			//System.out.println(x + " " + y);
-			stations.add(new Station(x, y));
+			stations.add(new Station(x, y, name));
 		}
 	}
 

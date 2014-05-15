@@ -28,6 +28,11 @@ public class Station extends AbstractStation {
 		map = new HashMap<Tail, Law>();
 	}
 	
+	public Station(double x, double y, String name) {
+		super(x, y, name);
+		map = new HashMap<Tail, Law>();
+	}
+
 	private double countFSL(double d) {
 		//-27,55 + 20·log10F+20·log10d
 		return -27.55 + 20 * Math.log10(2440) + 20 * Math.log10(d);

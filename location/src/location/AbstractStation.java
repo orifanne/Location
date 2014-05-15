@@ -17,6 +17,22 @@ public abstract class AbstractStation {
 	/** Базовая сила сигнала */
 	protected double s = 150;
 
+	/** Имя станции */
+	protected String name = "station";
+
+	@Override
+	public String toString() {
+		return name;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	public AbstractStation() {
 		x = 0;
 		y = 0;
@@ -40,6 +56,12 @@ public abstract class AbstractStation {
 	public AbstractStation(double x1, double y1) {
 		x = x1;
 		y = y1;
+	}
+
+	public AbstractStation(double x2, double y2, String name2) {
+		x = x2;
+		y = y2;
+		name = name2;
 	}
 
 	/** 

@@ -111,7 +111,6 @@ public class ImagePanel extends JPanel {
 
     	public void paintComponent(Graphics gr) {
         	super.paintComponent(gr);
-        	System.out.println("paintComponent");
 			Graphics2D g = (Graphics2D) gr;
 			
 			//отрисоываваем базовую сетку
@@ -159,7 +158,7 @@ public class ImagePanel extends JPanel {
     public void drawMap(Graphics2D g) {
     	if (location.hasOpenFile()) {
 			ArrayList<Tail> t = location.getPlan().getTails();
-			Station s = location.getPlan().getStation(0);
+			Station s = location.getPlan().getStation(location.getStationNumber());
 			for (int i = 0; i < location.getPlan().getTailsNum(); i++) {
 				if (s.getMap().containsKey(t.get(i))) {
 					Law l = s.getMap().get(t.get(i));

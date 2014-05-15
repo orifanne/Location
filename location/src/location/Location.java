@@ -38,6 +38,9 @@ public class Location extends JFrame {
    	private int width = 900;
    	/** Высота окна. */
    	private int height = 500;
+   	
+   	/** Номер выбранной станции. */
+   	private int stationNumber = 0;
 
    	/** Главный компоновщик, отвечает за взаимное расположение панели инструментов и поля для рисования. */
    	private JPanel mainpanel = new JPanel();
@@ -67,7 +70,8 @@ public class Location extends JFrame {
 	/** Размер конечной ячейки. */
 	private int tailSize = 1;
 	
-
+	/** Список с выбором для станций */
+	JComboBox<String> stationsComboBox;
 
    	public Location() {
 		//заголовок окна
@@ -80,6 +84,9 @@ public class Location extends JFrame {
 	   	setJMenuBar(menu);
 		//завершить программу при закрытии окна
 	   	setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+	   	stationsComboBox = new JComboBox<String>();
+	   	stationsComboBox.addActionListener(new StationsChooseListener());
 
 		//будем прослушивать события мыши 
 		panel.addMouseListener(new NewMouseListener());
@@ -105,6 +112,11 @@ public class Location extends JFrame {
 		instrumentsPanel.setLayout(new BoxLayout(instrumentsPanel, BoxLayout.Y_AXIS));
 		instrumentsPanel.add(scale);
 		instrumentsPanel.add(scaleTail);
+
+	   	stationsComboBox.setMaximumSize(new Dimension(instrumentsPanel.getPreferredSize().width, 25));
+	   	stationsComboBox.setMinimumSize(new Dimension(instrumentsPanel.getPreferredSize().width, 25));
+
+		instrumentsPanel.add(stationsComboBox);
 
 		//компановка главной панели
 		mainpanel.setLayout(new BoxLayout(mainpanel, BoxLayout.X_AXIS));
@@ -195,12 +207,16 @@ public class Location extends JFrame {
 						plan = new Plan(openedFile);
 						plan.devide(tailSize);
 						panel.repaint();
+						stationsComboBox.removeAllItems();
+						for (int i = 0; i < plan.getStations().size(); i++)
+							stationsComboBox.addItem(plan.getStation(i).getName());
 					}
 		    	}
 			if ("close".equals(command)) {
 				openedFile = null;
 				plan = null;
 				panel.repaint();
+				stationsComboBox.removeAllItems();
 		    }
 		}
     }
@@ -221,7 +237,6 @@ public class Location extends JFrame {
     	
     	/** 
     	* Прослушиватель событий слайдера размера ячейки.
-    	* 
     	*/
     	private class NewTailChangeListener implements ChangeListener {
 			public void stateChanged(ChangeEvent e) {
@@ -232,8 +247,24 @@ public class Location extends JFrame {
                 panel.repaint();
 			}
     	}
-
+    	
     	/** 
+    	* Прослушиватель событий выбора станции для отображения карты.
+    	*/
+    	private class  StationsChooseListener implements ActionListener  {
+    	    public void actionPerformed(ActionEvent e) {
+    	    	JComboBox<String> c = (JComboBox<String>) e.getSource();
+    	    	stationNumber = c.getSelectedIndex();
+    	    	System.out.println(c.getSelectedIndex());
+    	    	panel.repaint();
+    	    }
+    	};
+
+    	public int getStationNumber() {
+			return stationNumber;
+		}
+
+		/** 
     	* Прослушиватель перемещений мыши.
     	*/
     	private class NewMouseMotionListener implements MouseMotionListener {
@@ -260,5 +291,6 @@ public class Location extends JFrame {
 		/** Пустой обработчик. */
 		public void mouseClicked(MouseEvent e) {}
     	}
+
 
 }
