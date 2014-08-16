@@ -97,8 +97,8 @@ public class Location extends JFrame {
 		// завершить программу при закрытии окна
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		taught = new JRadioButton("taught");
-		orign = new JRadioButton("orign");
+		taught = new JRadioButton("Построенная алгоритмом обучения");
+		orign = new JRadioButton("Со смоделированным распространением сигнала");
 		bg = new ButtonGroup();
 
 		bg.add(orign);
@@ -132,16 +132,24 @@ public class Location extends JFrame {
 		// компановка панели инструментов
 		instrumentsPanel.setLayout(new BoxLayout(instrumentsPanel,
 				BoxLayout.Y_AXIS));
+		
+		instrumentsPanel.setPreferredSize(new Dimension(width / 5, height));
+		instrumentsPanel.setMinimumSize(new Dimension(width / 5, height));
+		
+		instrumentsPanel.add(new JLabel("Масштаб:"));
 		instrumentsPanel.add(scale);
+		instrumentsPanel.add(new JLabel("Размер ячейки:"));
 		instrumentsPanel.add(scaleTail);
 
 		stationsComboBox.setMaximumSize(new Dimension(instrumentsPanel
 				.getPreferredSize().width, 25));
 		stationsComboBox.setMinimumSize(new Dimension(instrumentsPanel
 				.getPreferredSize().width, 25));
-
+		
+		instrumentsPanel.add(new JLabel("Выбор базовой станции:"));
 		instrumentsPanel.add(stationsComboBox);
 
+		instrumentsPanel.add(new JLabel("Выбор карты уровней сигналов:"));
 		instrumentsPanel.add(orign);
 		instrumentsPanel.add(taught);
 		orign.addActionListener(new RadioListener());
@@ -252,7 +260,8 @@ public class Location extends JFrame {
 			JSlider js = (JSlider) e.getSource();
 			tailSize = js.getValue();
 			// System.out.println(tailSize);
-			plan.devide(tailSize);
+			if (plan != null)
+					plan.devide(tailSize);
 			panel.repaint();
 		}
 	}
@@ -276,7 +285,7 @@ public class Location extends JFrame {
 	private class RadioListener implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if ((plan != null) && (object != null)) {
+			if ((plan != null) && (object != null) && (stationNumber > 0)) {
 				if (orign.isSelected())
 					displayTaught = false;
 				else {
