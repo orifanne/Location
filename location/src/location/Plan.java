@@ -223,6 +223,7 @@ public class Plan {
 	public void explodeAllStations() {
 		for (int i = 0; i < stations.size(); i++) {
 			stations.get(i).explode(tails, this);
+			stations.get(i).setTaught(true);
 		}
 	}
 
@@ -320,6 +321,7 @@ public class Plan {
 	}
 
 	/** 
+	* Строит план помещения по xml-файлу. 
   	* @param file xml-файл с описанием плана
   	*/
      	public Plan(File file) {
@@ -383,9 +385,9 @@ public class Plan {
 		}
 	}
 
-    	/** 
-    	* Сообщает, ограничен ли фрейм.
-    	*/
+    /** 
+    * Сообщает, ограничен ли фрейм.
+    */
 	public boolean[] isBordered(Frame f) {
 		return isBordered(f.getX1(), f.getY1(), f.getX2(), f.getY2());
 	}

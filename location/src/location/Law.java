@@ -6,7 +6,7 @@ package location;
 */
 public class Law {
 	/** Математическое ожидание */
-	private double a = 0;
+	double a = 0;
 	/** Дисперсия */
 	private double q = 0;
 
@@ -53,6 +53,10 @@ public class Law {
 
 	public double getA() {
 		return a;
+	}
+	
+	public double getQ() {
+		return q;
 	}
 
 	@Override

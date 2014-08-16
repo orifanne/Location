@@ -32,7 +32,7 @@ public class ImagePanel extends JPanel {
 	private int height;
 	
 	/** Количество оттенков для отображения карты */
-	private int range = 10;
+	private int range = 5;
 	/** Минимальное значение уровня сигнала */
 	private double minA = 5;
 	/** Максимальное значение уровня сигнала */
@@ -152,10 +152,19 @@ public class ImagePanel extends JPanel {
 				ArrayList<Tail> t = location.getPlan().getTails();
 				Station s = location.getPlan().getStation(location.getStationNumber());
 				for (int i = 0; i < location.getPlan().getTailsNum(); i++) {
-					if (s.getMap().containsKey(t.get(i))) {
-						Law l = s.getMap().get(t.get(i));
-						if (l != null)
-							drawMapTail(g, t.get(i), l.getA());
+					if (location.displayTaught) {
+						if (s.getTMap().containsKey(t.get(i))) {
+							Law l = s.getTMap().get(t.get(i));
+							if (l != null)
+								drawMapTail(g, t.get(i), l.getA());
+						}
+					}
+					else {
+						if (s.getMap().containsKey(t.get(i))) {
+							Law l = s.getMap().get(t.get(i));
+							if (l != null)
+								drawMapTail(g, t.get(i), l.getA());
+						}
 					}
 				}
     		}
@@ -167,6 +176,8 @@ public class ImagePanel extends JPanel {
 		for(i = 0; i < range; i++)
 			if (a < r[i])
 				break;
+		if (i == range)
+			i--;
 		
 		Color c = new Color((float) 0.0, (float) 0.0, (float) 0.01, (float) f[i]);
 		g.setColor(c);

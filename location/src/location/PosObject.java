@@ -17,21 +17,26 @@ public class PosObject extends Point2D.Double {
 	private double probY;
 	
 	/** Вектор сил сигнала */
-	private ArrayList<Integer> s;
+	private ArrayList<java.lang.Double> s;
+	
+	/** Ячейка, в которой находится объект */
+	private Tail t;
 
 	public PosObject() {
 		x = 0;
 		y = 0;
+		t = null;
 		probX = 0;
 		probY = 0;
-		s = new ArrayList<Integer>();
+		s = new ArrayList<java.lang.Double>();
 	}
 	
-	public PosObject(double x, double y) {
+	public PosObject(double x, double y, Tail t) {
 		super(x, y);
 		probX = 0;
 		probY = 0;
-		s = new ArrayList<Integer>();
+		this.t = t;
+		s = new ArrayList<java.lang.Double>();
 	}
 	
 	public void nextStep(Plan plan) {
@@ -39,7 +44,22 @@ public class PosObject extends Point2D.Double {
 		int p = rand.nextInt(plan.getTails().size());
 		x = plan.getTails().get(p).getX();
 		y = plan.getTails().get(p).getY();
-		
+		t = plan.getTails().get(p);
+		getVector(plan);
+	}
+	
+	public void getVector(Plan plan) {
+		s = new ArrayList<java.lang.Double>();
+		Random rand = new Random(new Date().getTime());
+		for (int i = 0; i < plan.getStations().size(); i++) {
+			double alpha = plan.getStation(i).getMap().get(t).getA();
+			double sigma = plan.getStation(i).getMap().get(t).getQ();
+			s.add((java.lang.Double) (rand.nextGaussian() * sigma + alpha));
+		}
+	}
+
+	public double getVector(int k) {
+		return s.get(k);
 	}
 
 }

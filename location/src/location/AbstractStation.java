@@ -19,6 +19,16 @@ public abstract class AbstractStation {
 
 	/** »м€ станции */
 	protected String name = "station";
+	
+	protected boolean taught = false;
+
+	public boolean isTaught() {
+		return taught;
+	}
+
+	public void setTaught(boolean taught) {
+		this.taught = taught;
+	}
 
 	@Override
 	public String toString() {
@@ -82,6 +92,8 @@ public abstract class AbstractStation {
 	* @param plan план помещени€
 	*/
 	public abstract void explode(Tail tail, Plan plan);
+	
+	public abstract void teach(PosObject object, Plan plan, int num);
 	
 	/** 
 	* —троит карту уровней сигнала с учетом плана помещени€.

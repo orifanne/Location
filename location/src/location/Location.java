@@ -41,7 +41,11 @@ public class Location extends JFrame {
    	
    	/** Номер выбранной станции. */
    	private int stationNumber = 0;
-
+   	
+   	private JRadioButton orign, taught;
+   	private ButtonGroup bg;
+   	boolean displayTaught = false;
+   	
    	/** Главный компоновщик, отвечает за взаимное расположение панели инструментов и поля для рисования. */
    	private JPanel mainpanel = new JPanel();
    	
@@ -55,7 +59,7 @@ public class Location extends JFrame {
    	private JSlider scaleTail;
 
    	/** Панель, отрисовывающая план здания. */
-   	private ImagePanel panel = new ImagePanel(width , height, this);
+   	private ImagePanel panel = new ImagePanel(width * 5 , height * 5, this);
 
    	/** План здания. */
    	private Plan plan = null;
@@ -84,6 +88,13 @@ public class Location extends JFrame {
 	   	setJMenuBar(menu);
 		//завершить программу при закрытии окна
 	   	setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	   	
+	   	taught = new JRadioButton("taught");
+	   	orign = new JRadioButton("orign");
+	   	bg = new ButtonGroup();
+	   	
+	   	bg.add(orign);
+	   	bg.add(taught);
 
 	   	stationsComboBox = new JComboBox<String>();
 	   	stationsComboBox.addActionListener(new StationsChooseListener());
@@ -94,8 +105,8 @@ public class Location extends JFrame {
 		panel.setDoubleBuffered(true);
 		//panel.setOpaque(true);
 		
-		panel.setPreferredSize(new Dimension(width, height));
-		panel.setMinimumSize(new Dimension(width, height));
+		panel.setPreferredSize(new Dimension(width * 5, height * 5));
+		panel.setMinimumSize(new Dimension(width * 5, height * 5));
 		
 		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
@@ -117,6 +128,11 @@ public class Location extends JFrame {
 	   	stationsComboBox.setMinimumSize(new Dimension(instrumentsPanel.getPreferredSize().width, 25));
 
 		instrumentsPanel.add(stationsComboBox);
+		
+		instrumentsPanel.add(orign);
+		instrumentsPanel.add(taught);
+		orign.addActionListener(new RadioListener());
+		taught.addActionListener(new RadioListener());
 
 		//компановка главной панели
 		mainpanel.setLayout(new BoxLayout(mainpanel, BoxLayout.X_AXIS));
@@ -146,13 +162,6 @@ public class Location extends JFrame {
 	public Plan getPlan() {
 		return plan;
 	}
-	
-	/*public void teach(Station st, PosObject object, int num) {
-		for (int i = 0; i < num; i++) {
-			object.nextStep(plan);
-			
-		}
-	}*/
 
     	/** 
     	* Создает меню.
@@ -263,6 +272,23 @@ public class Location extends JFrame {
     	public int getStationNumber() {
 			return stationNumber;
 		}
+    	
+    	private class RadioListener implements ActionListener {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if ((plan != null) && (object != null)) {
+					if (orign.isSelected())
+						displayTaught = false;
+					else {
+						plan.getStation(stationNumber).teach(object, plan, 1000);
+						displayTaught = true;
+					}
+					panel.repaint();
+				}
+			}
+    		
+    	}
 
 		/** 
     	* Прослушиватель перемещений мыши.
