@@ -26,129 +26,323 @@ import org.xml.sax.SAXException;
 
 import javax.swing.filechooser.FileFilter;
 
-/** 
-* Реализует основную функциональность . 
-* @author Pokrovskaya Oksana
-*/
+/**
+ * Реализует основную функциональность .
+ * 
+ * @author Pokrovskaya Oksana
+ */
 public class Location extends JFrame {
 
 	/** Панель меню. */
-    private JMenuBar menu = null;
-   	/** Ширина окна. */
-   	private int width = 900;
-   	/** Высота окна. */
-   	private int height = 500;
-   	
-   	/** Номер выбранной станции. */
-   	private int stationNumber = 0;
-   	
-   	private JRadioButton orign, taught;
-   	private ButtonGroup bg;
-   	boolean displayTaught = false;
-   	
-   	/** Главный компоновщик, отвечает за взаимное расположение панели инструментов и поля для рисования. */
-   	private JPanel mainpanel = new JPanel();
-   	
-   	/** Отвечает за взаимное расположение инструментов на панели. */
-   	private JPanel instrumentsPanel = new JPanel();
-   	
-   	/** Слайдер для регулировки масштаба. */
-   	private JSlider scale;
-   	
-   	/** Слайдер для регулировки размера ячеек. */
-   	private JSlider scaleTail;
+	private JMenuBar menu = null;
+	/** Ширина окна. */
+	private int width = 900;
+	/** Высота окна. */
+	private int height = 500;
 
-   	/** Панель, отрисовывающая план здания. */
-   	private ImagePanel panel = new ImagePanel(width * 5 , height * 5, this);
+	/** Номер выбранной станции. */
+	private int stationNumber = 0;
 
-   	/** План здания. */
-   	private Plan plan = null;
-   	/** Открытый файл. */
-   	private File openedFile = null;
-   	
-   	//объект для позиционирования
-   	PosObject object;
+	private JRadioButton orign, taught;
+	private ButtonGroup bg;
+	boolean displayTaught = false;
+
+	/**
+	 * Главный компоновщик, отвечает за взаимное расположение панели
+	 * инструментов и поля для рисования.
+	 */
+	private JPanel mainpanel = new JPanel();
+
+	/** Отвечает за взаимное расположение инструментов на панели. */
+	private JPanel instrumentsPanel = new JPanel();
+
+	/** Слайдер для регулировки масштаба. */
+	private JSlider scale;
+
+	/** Слайдер для регулировки размера ячеек. */
+	private JSlider scaleTail;
+
+	/** Панель, отрисовывающая план здания. */
+	private ImagePanel panel = new ImagePanel(width * 5, height * 5, this);
+
+	/** План здания. */
+	private Plan plan = null;
+	/** Открытый файл. */
+	private File openedFile = null;
+
+	// объект для позиционирования
+	PosObject object;
 
 	JScrollPane scrollPane = new JScrollPane(panel);
-	
+
 	/** Размер конечной ячейки. */
 	private int tailSize = 1;
-	
+
 	/** Список с выбором для станций */
 	JComboBox<String> stationsComboBox;
 
-   	public Location() {
-		//заголовок окна
-	   	super("Location");
-		//координаты левого верхнего угла + ширина и высота
-	   	setBounds(0, 0, width, height);
-		//нельзя изменять размер окна
-	   	setResizable(false);
-	   	createMenu();
-	   	setJMenuBar(menu);
-		//завершить программу при закрытии окна
-	   	setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	   	
-	   	taught = new JRadioButton("taught");
-	   	orign = new JRadioButton("orign");
-	   	bg = new ButtonGroup();
-	   	
-	   	bg.add(orign);
-	   	bg.add(taught);
+	
+	
+	
+	
+	public Location() {
+		// заголовок окна
+		super("Location");
+		// координаты левого верхнего угла + ширина и высота
+		setBounds(0, 0, width, height);
+		// нельзя изменять размер окна
+		setResizable(false);
+		createMenu();
+		setJMenuBar(menu);
+		// завершить программу при закрытии окна
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-	   	stationsComboBox = new JComboBox<String>();
-	   	stationsComboBox.addActionListener(new StationsChooseListener());
+		taught = new JRadioButton("taught");
+		orign = new JRadioButton("orign");
+		bg = new ButtonGroup();
 
-		//будем прослушивать события мыши 
+		bg.add(orign);
+		bg.add(taught);
+
+		stationsComboBox = new JComboBox<String>();
+		stationsComboBox.addActionListener(new StationsChooseListener());
+
+		// будем прослушивать события мыши
 		panel.addMouseListener(new NewMouseListener());
 		panel.addMouseMotionListener(new NewMouseMotionListener());
 		panel.setDoubleBuffered(true);
-		//panel.setOpaque(true);
-		
+		// panel.setOpaque(true);
+
 		panel.setPreferredSize(new Dimension(width * 5, height * 5));
 		panel.setMinimumSize(new Dimension(width * 5, height * 5));
-		
-		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+
+		scrollPane
+				.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+		scrollPane
+				.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
 		scrollPane.setPreferredSize(new Dimension(width - 200, height));
-		
+
 		scale = new JSlider(JSlider.HORIZONTAL, 1, 10, panel.getM());
 		scale.addChangeListener(new NewChangeListener());
-		
+
 		scaleTail = new JSlider(JSlider.HORIZONTAL, 1, 10, tailSize);
 		scaleTail.addChangeListener(new NewTailChangeListener());
-		
-		//компановка панели инструментов
-		instrumentsPanel.setLayout(new BoxLayout(instrumentsPanel, BoxLayout.Y_AXIS));
+
+		// компановка панели инструментов
+		instrumentsPanel.setLayout(new BoxLayout(instrumentsPanel,
+				BoxLayout.Y_AXIS));
 		instrumentsPanel.add(scale);
 		instrumentsPanel.add(scaleTail);
 
-	   	stationsComboBox.setMaximumSize(new Dimension(instrumentsPanel.getPreferredSize().width, 25));
-	   	stationsComboBox.setMinimumSize(new Dimension(instrumentsPanel.getPreferredSize().width, 25));
+		stationsComboBox.setMaximumSize(new Dimension(instrumentsPanel
+				.getPreferredSize().width, 25));
+		stationsComboBox.setMinimumSize(new Dimension(instrumentsPanel
+				.getPreferredSize().width, 25));
 
 		instrumentsPanel.add(stationsComboBox);
-		
+
 		instrumentsPanel.add(orign);
 		instrumentsPanel.add(taught);
 		orign.addActionListener(new RadioListener());
 		taught.addActionListener(new RadioListener());
 
-		//компановка главной панели
+		// компановка главной панели
 		mainpanel.setLayout(new BoxLayout(mainpanel, BoxLayout.X_AXIS));
 		mainpanel.add(scrollPane);
 		mainpanel.add(instrumentsPanel);
 
-        mainpanel.setDoubleBuffered(true);
+		mainpanel.setDoubleBuffered(true);
 		Container container = getContentPane();
-        container.add(mainpanel);
-        
-        object = new PosObject();
-    }
+		container.add(mainpanel);
+
+		object = new PosObject();
+	}
+	
+	
+	
+	
+	
 
 	/**
-	* Сообщает, открыт ли какой-нибудь файл.
-	*/
+	 * Создает меню.
+	 */
+	private void createMenu() {
+
+		Font font = new Font("Verdana", Font.PLAIN, 11);
+
+		menu = new JMenuBar();
+		JMenu fileMenu = new JMenu("File");
+		fileMenu.setFont(font);
+
+		JMenuItem openItem = new JMenuItem("Open");
+		openItem.setFont(font);
+		openItem.setActionCommand("open");
+		fileMenu.add(openItem);
+
+		JMenuItem closeItem = new JMenuItem("Close");
+		closeItem.setFont(font);
+		closeItem.setActionCommand("close");
+		fileMenu.add(closeItem);
+
+		fileMenu.insertSeparator(1);
+
+		menu.add(fileMenu);
+
+		setJMenuBar(menu);
+
+		ActionListener actionListener = new NewMenuListener();
+		openItem.addActionListener(actionListener);
+		closeItem.addActionListener(actionListener);
+	}
+
+	/**
+	 * Прослушиватель событий меню. При нажатии на кнопку "Open" вызывает диалог
+	 * выбора файла. При нажатии на кнопку "Close" закрывает файл.
+	 */
+	private class NewMenuListener implements ActionListener {
+		public void actionPerformed(ActionEvent e) {
+			String command = e.getActionCommand();
+			// if ("exit".equals(command)) {
+			// System.exit(0);
+			// }
+			if ("open".equals(command)) {
+				JFileChooser fileopen = new JFileChooser();
+				FileFilter filter = new ExtensionFileFilter("xml", "xml");
+				fileopen.setFileFilter(filter);
+				int ret = fileopen.showDialog(null, "Открыть файл");
+				if (ret == JFileChooser.APPROVE_OPTION) {
+					openedFile = fileopen.getSelectedFile();
+					plan = new Plan(openedFile);
+					plan.devide(tailSize);
+					panel.repaint();
+					stationsComboBox.removeAllItems();
+					for (int i = 0; i < plan.getStations().size(); i++)
+						stationsComboBox.addItem(plan.getStation(i).getName());
+				}
+			}
+			if ("close".equals(command)) {
+				openedFile = null;
+				plan = null;
+				panel.repaint();
+				stationsComboBox.removeAllItems();
+			}
+		}
+	}
+
+	/**
+	 * Прослушиватель событий слайдера масштаба.
+	 * 
+	 */
+	private class NewChangeListener implements ChangeListener {
+		public void stateChanged(ChangeEvent e) {
+			JSlider js = (JSlider) e.getSource();
+			panel.setM(js.getValue());
+			panel.repaint();
+			// scrollPane.revalidate();
+			scrollPane.getViewport().revalidate();
+		}
+	}
+
+	/**
+	 * Прослушиватель событий слайдера размера ячейки.
+	 */
+	private class NewTailChangeListener implements ChangeListener {
+		public void stateChanged(ChangeEvent e) {
+			JSlider js = (JSlider) e.getSource();
+			tailSize = js.getValue();
+			// System.out.println(tailSize);
+			plan.devide(tailSize);
+			panel.repaint();
+		}
+	}
+
+	/**
+	 * Прослушиватель событий выбора станции для отображения карты.
+	 */
+	private class StationsChooseListener implements ActionListener {
+		public void actionPerformed(ActionEvent e) {
+			JComboBox<String> c = (JComboBox<String>) e.getSource();
+			stationNumber = c.getSelectedIndex();
+			System.out.println(c.getSelectedIndex());
+			panel.repaint();
+		}
+	};
+
+	/**
+	 * Прослушиватель событий выбора типа карты для отбражения (смоделированная
+	 * или обученная).
+	 */
+	private class RadioListener implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if ((plan != null) && (object != null)) {
+				if (orign.isSelected())
+					displayTaught = false;
+				else {
+					plan.getStation(stationNumber).teach(object, plan, 1000);
+					displayTaught = true;
+				}
+				panel.repaint();
+			}
+		}
+	}
+
+	
+	
+	
+	
+	
+	/**
+	 * Прослушиватель перемещений мыши.
+	 */
+	private class NewMouseMotionListener implements MouseMotionListener {
+
+		/** Пустой обработчик. */
+		public void mouseDragged(MouseEvent e) {
+		}
+
+		/** Пустой обработчик. */
+		public void mouseMoved(MouseEvent e) {
+		}
+	}
+
+	/**
+	 * Прослушиватель событий мыши.
+	 */
+	private class NewMouseListener implements MouseListener {
+
+		/** Пустой обработчик. */
+		public void mouseReleased(MouseEvent e) {
+		}
+
+		/** Пустой обработчик. */
+		public void mouseEntered(MouseEvent e) {
+		}
+
+		/** Пустой обработчик. */
+		public void mouseExited(MouseEvent e) {
+		}
+
+		/** Пустой обработчик. */
+		public void mousePressed(MouseEvent e) {
+		}
+
+		/** Пустой обработчик. */
+		public void mouseClicked(MouseEvent e) {
+		}
+	}
+
+	/**
+	 * Получить номер выбранной станции.
+	 */
+	public int getStationNumber() {
+		return stationNumber;
+	}
+
+	/**
+	 * Сообщает, открыт ли какой-нибудь файл.
+	 */
 	public boolean hasOpenFile() {
 		if (openedFile != null)
 			return true;
@@ -157,166 +351,9 @@ public class Location extends JFrame {
 	}
 
 	/**
-	* Получить план.
-	*/
+	 * Получить план.
+	 */
 	public Plan getPlan() {
 		return plan;
 	}
-
-    	/** 
-    	* Создает меню.
-    	*/
-    	private void createMenu() {
-
-		Font font = new Font("Verdana", Font.PLAIN, 11);
-	
-		menu = new JMenuBar();
-		JMenu fileMenu = new JMenu("File");
-        	fileMenu.setFont(font);
-	
-		JMenuItem openItem = new JMenuItem("Open");
-        	openItem.setFont(font);
-		openItem.setActionCommand("open");
-        	fileMenu.add(openItem);
-        	 
-        	JMenuItem closeItem = new JMenuItem("Close");
-        	closeItem.setFont(font);
-		closeItem.setActionCommand("close");
-        	fileMenu.add(closeItem);
-	
-		fileMenu.insertSeparator(1);
-	
-		menu.add(fileMenu);
-	
-		setJMenuBar(menu);
-
-		ActionListener actionListener = new NewMenuListener();
-		openItem.addActionListener(actionListener);
-		closeItem.addActionListener(actionListener);
-    	}
-
-    	/** 
-    	* Прослушиватель событий меню.
-    	* При нажатии на кнопку "Open" вызывает диалог выбора файла.
-    	* При нажатии на кнопку "Close" закрывает файл.
-    	*/
-    	private class NewMenuListener implements ActionListener {
-		public void actionPerformed(ActionEvent e) {
-		    	String command = e.getActionCommand();
-		    	//if ("exit".equals(command)) {
-			//	System.exit(0);
-		    	//}
-		    	if ("open".equals(command)) {
-					JFileChooser fileopen = new JFileChooser();    
-					FileFilter filter = new ExtensionFileFilter("xml", "xml");
-	    				fileopen.setFileFilter(filter);        
-					int ret = fileopen.showDialog(null, "Открыть файл");
-					if (ret == JFileChooser.APPROVE_OPTION) {
-						openedFile = fileopen.getSelectedFile();
-						plan = new Plan(openedFile);
-						plan.devide(tailSize);
-						panel.repaint();
-						stationsComboBox.removeAllItems();
-						for (int i = 0; i < plan.getStations().size(); i++)
-							stationsComboBox.addItem(plan.getStation(i).getName());
-					}
-		    	}
-			if ("close".equals(command)) {
-				openedFile = null;
-				plan = null;
-				panel.repaint();
-				stationsComboBox.removeAllItems();
-		    }
-		}
-    }
-
-    	/** 
-    	* Прослушиватель событий слайдера масштаба.
-    	* 
-    	*/
-    	private class NewChangeListener implements ChangeListener {
-			public void stateChanged(ChangeEvent e) {
-				JSlider js = (JSlider) e.getSource();
-                panel.setM(js.getValue());
-                panel.repaint();
-                //scrollPane.revalidate();
-                scrollPane.getViewport().revalidate();
-			}
-    	}
-    	
-    	/** 
-    	* Прослушиватель событий слайдера размера ячейки.
-    	*/
-    	private class NewTailChangeListener implements ChangeListener {
-			public void stateChanged(ChangeEvent e) {
-				JSlider js = (JSlider) e.getSource();
-                tailSize = js.getValue();
-                //System.out.println(tailSize);
-                plan.devide(tailSize);
-                panel.repaint();
-			}
-    	}
-    	
-    	/** 
-    	* Прослушиватель событий выбора станции для отображения карты.
-    	*/
-    	private class  StationsChooseListener implements ActionListener  {
-    	    public void actionPerformed(ActionEvent e) {
-    	    	JComboBox<String> c = (JComboBox<String>) e.getSource();
-    	    	stationNumber = c.getSelectedIndex();
-    	    	System.out.println(c.getSelectedIndex());
-    	    	panel.repaint();
-    	    }
-    	};
-
-    	public int getStationNumber() {
-			return stationNumber;
-		}
-    	
-    	private class RadioListener implements ActionListener {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if ((plan != null) && (object != null)) {
-					if (orign.isSelected())
-						displayTaught = false;
-					else {
-						plan.getStation(stationNumber).teach(object, plan, 1000);
-						displayTaught = true;
-					}
-					panel.repaint();
-				}
-			}
-    		
-    	}
-
-		/** 
-    	* Прослушиватель перемещений мыши.
-    	*/
-    	private class NewMouseMotionListener implements MouseMotionListener {
-	
-		/** Пустой обработчик. */
-		public void mouseDragged(MouseEvent e) {}
-		/** Пустой обработчик. */
-		public void mouseMoved(MouseEvent e) {}
-    	}
-
-    	/** 
-    	* Прослушиватель событий мыши.
-    	*/
-    	private class NewMouseListener implements MouseListener {
-
-		/** Пустой обработчик. */
-		public void mouseReleased(MouseEvent e) {}
-		/** Пустой обработчик. */
-		public void mouseEntered(MouseEvent e) {}
-		/** Пустой обработчик. */
-		public void mouseExited(MouseEvent e) {}
-		/** Пустой обработчик. */
-		public void mousePressed(MouseEvent e) {}
-		/** Пустой обработчик. */
-		public void mouseClicked(MouseEvent e) {}
-    	}
-
-
 }

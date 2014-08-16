@@ -5,23 +5,28 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
 
-/** 
-* Представляет позиционируемый объект. 
-* @author Pokrovskaya Oksana
-*/
+/**
+ * Представляет позиционируемый объект.
+ * 
+ * @author Pokrovskaya Oksana
+ */
 public class PosObject extends Point2D.Double {
 
 	/** Определенная абсцисса */
 	private double probX;
 	/** Определенная ордината */
 	private double probY;
-	
+
 	/** Вектор сил сигнала */
 	private ArrayList<java.lang.Double> s;
-	
+
 	/** Ячейка, в которой находится объект */
 	private Tail t;
 
+	
+	
+	
+	
 	public PosObject() {
 		x = 0;
 		y = 0;
@@ -30,7 +35,12 @@ public class PosObject extends Point2D.Double {
 		probY = 0;
 		s = new ArrayList<java.lang.Double>();
 	}
-	
+
+	/** 
+	 * @param x абсцисса
+	 * @param y ордината
+	 * @param t ячейка расположения
+	 */
 	public PosObject(double x, double y, Tail t) {
 		super(x, y);
 		probX = 0;
@@ -38,7 +48,15 @@ public class PosObject extends Point2D.Double {
 		this.t = t;
 		s = new ArrayList<java.lang.Double>();
 	}
+
 	
+	
+	
+	
+	/** 
+	 * Объект позиционирования случайным образом перемещается в следующую ячейку
+	 * @param plan план здания
+	 */
 	public void nextStep(Plan plan) {
 		Random rand = new Random(new Date().getTime());
 		int p = rand.nextInt(plan.getTails().size());
@@ -47,7 +65,11 @@ public class PosObject extends Point2D.Double {
 		t = plan.getTails().get(p);
 		getVector(plan);
 	}
-	
+
+	/** 
+	 * Объект позиционирования регистрирует вектор сил сигналов от базовых станций
+	 * @param plan план здания
+	 */
 	public void getVector(Plan plan) {
 		s = new ArrayList<java.lang.Double>();
 		Random rand = new Random(new Date().getTime());

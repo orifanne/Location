@@ -4,10 +4,11 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
-/** 
-* Представляет стену. 
-* @author Pokrovskaya Oksana
-*/
+/**
+ * Представляет стену.
+ * 
+ * @author Pokrovskaya Oksana
+ */
 public class Wall extends Line2D.Double {
 
 	public Wall(double x1, double y1, double x2, double y2) {
@@ -17,7 +18,5 @@ public class Wall extends Line2D.Double {
 		this.x2 = x2;
 		this.y2 = y2;
 	}
-
-	
 
 }

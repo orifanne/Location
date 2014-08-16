@@ -1,9 +1,10 @@
 package location;
 
-/** 
-* Представляет ячейку. 
-* @author Pokrovskaya Oksana
-*/
+/**
+ * Представляет ячейку.
+ * 
+ * @author Pokrovskaya Oksana
+ */
 public class Tail extends AbstractTail {
 
 	/** Абсцисса левого верхнего угла */
@@ -15,12 +16,55 @@ public class Tail extends AbstractTail {
 	/** Ордината правого нижнего угла */
 	protected double y2;
 
+	
+	
+	
+	
 	public Tail() {
 		x1 = 0;
 		x2 = 0;
 		y1 = 0;
 		y2 = 0;
 	}
+	
+	/**
+	 * @param x11
+	 *            абсцисса левого верхнего угла (< x21)
+	 * @param y11
+	 *            ордината левого верхнего угла (> y21)
+	 * @param x21
+	 *            абсцисса правого нижнего угла
+	 * @param y21
+	 *            ордината правого нижнего угла
+	 */
+	public Tail(int x11, int y11, int x21, int y21) {
+		// если перепутаны углы
+		if ((x21 <= x11) || (y11 <= y21)) {
+			// add exeption
+		}
+		x1 = x11;
+		x2 = x21;
+		y1 = y11;
+		y2 = y21;
+
+		x = (x1 + x2) / 2;
+		y = (y1 + y2) / 2;
+	}
+
+	public Tail(double x11, double y11, double x21, double y21) {
+		// TODO Auto-generated constructor stub
+		x1 = x11;
+		x2 = x21;
+		y1 = y11;
+		y2 = y21;
+
+		x = (x1 + x2) / 2;
+		y = (y1 + y2) / 2;
+	}
+	
+	
+	
+	
 
 	@Override
 	public int hashCode() {
@@ -58,78 +102,46 @@ public class Tail extends AbstractTail {
 		return true;
 	}
 
-	/** 
-	* @param x11 абсцисса левого верхнего угла (< x21)
-	* @param y11 ордината левого верхнего угла (> y21)
-	* @param x21 абсцисса правого нижнего угла
-	* @param y21 ордината правого нижнего угла
-	*/
-	public Tail(int x11, int y11, int x21, int y21) {
-		//если перепутаны углы
-		if ((x21 <= x11) || (y11 <= y21))
-		{
-			//add exeption
-		}
-		x1 = x11;
-		x2 = x21;
-		y1 = y11;
-		y2 = y21;
-		
-		x = (x1 + x2) / 2;
-		y = (y1 + y2) / 2;
-	}
-
-	public Tail(double x11, double y11, double x21, double y21) {
-		// TODO Auto-generated constructor stub
-		x1 = x11;
-		x2 = x21;
-		y1 = y11;
-		y2 = y21;
-		
-		x = (x1 + x2) / 2;
-		y = (y1 + y2) / 2;
-	}
-
-	/** 
-	* Получить абсциссу левого верхнего угла.
-	*/
+	/**
+	 * Получить абсциссу левого верхнего угла.
+	 */
 	public double getX1() {
 		return x1;
 	}
 
-	/** 
-	* Получить абсциссу правого нижнего угла.
-	*/
+	/**
+	 * Получить абсциссу правого нижнего угла.
+	 */
 	public double getX2() {
 		return x2;
 	}
 
-	/** 
-	* Получить ординату левого верхнего угла.
-	*/
+	/**
+	 * Получить ординату левого верхнего угла.
+	 */
 	public double getY1() {
 		return y1;
 	}
 
-	/** 
-	* Получить ординату правого нижнего угла.
-	*/
+	/**
+	 * Получить ординату правого нижнего угла.
+	 */
 	public double getY2() {
 		return y2;
 	}
 
-	/** 
+	/**
 	 * Получить ординату центра.
 	 */
 	public double getY() {
-			return y;
+		return y;
 	}
-	
-	/** 
+
+	/**
 	 * Получить абсциссу центра.
 	 */
 	public double getX() {
-			return x;
+		return x;
 	}
 
 }

@@ -5,11 +5,16 @@ package location;
 * @author Pokrovskaya Oksana
 */
 public class Law {
+	
 	/** Математическое ожидание */
 	double a = 0;
 	/** Дисперсия */
 	private double q = 0;
 
+	
+	
+	
+	
 	public Law() {
 		a = 0;
 		q = 0;
@@ -33,30 +38,6 @@ public class Law {
 			a = a1;
 		if (q1 >= 0)
 			q = q1;
-	}
-
-	/** 
-	* Изменяет математическое ожидание.
-	* @param a1 математическое ожидание
-	*/
-	public void chA(int a1) {
-		a = a1;
-	}
-	
-	/** 
-	* Изменяет дисперсию.
-	* @param q1 дисперсия
-	*/
-	public void chQ(int q1) {
-		q = q1;
-	}
-
-	public double getA() {
-		return a;
-	}
-	
-	public double getQ() {
-		return q;
 	}
 
 	@Override
@@ -87,4 +68,27 @@ public class Law {
 		return true;
 	}
 
+	/** 
+	* Изменяет математическое ожидание.
+	* @param a1 математическое ожидание
+	*/
+	public void chA(int a1) {
+		a = a1;
+	}
+	
+	/** 
+	* Изменяет дисперсию.
+	* @param q1 дисперсия
+	*/
+	public void chQ(int q1) {
+		q = q1;
+	}
+
+	public double getA() {
+		return a;
+	}
+	
+	public double getQ() {
+		return q;
+	}
 }
