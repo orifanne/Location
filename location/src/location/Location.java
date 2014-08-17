@@ -43,9 +43,14 @@ public class Location extends JFrame {
 	/** Номер выбранной станции. */
 	private int stationNumber = 0;
 
+	/** Переключатели вида карты для отображения. */
 	private JRadioButton orign, taught;
 	private ButtonGroup bg;
+	/** Флаг того, что нужно показывать карту, полученную обучением. */
 	boolean displayTaught = false;
+	
+	/** Флаг того, что создается файл. */
+	boolean creating = false;
 
 	/**
 	 * Главный компоновщик, отвечает за взаимное расположение панели
@@ -180,18 +185,23 @@ public class Location extends JFrame {
 		Font font = new Font("Verdana", Font.PLAIN, 11);
 
 		menu = new JMenuBar();
-		JMenu fileMenu = new JMenu("File");
+		JMenu fileMenu = new JMenu("Файл");
 		fileMenu.setFont(font);
 
-		JMenuItem openItem = new JMenuItem("Open");
+		JMenuItem openItem = new JMenuItem("Открыть");
 		openItem.setFont(font);
 		openItem.setActionCommand("open");
 		fileMenu.add(openItem);
 
-		JMenuItem closeItem = new JMenuItem("Close");
+		JMenuItem closeItem = new JMenuItem("Закрыть");
 		closeItem.setFont(font);
 		closeItem.setActionCommand("close");
 		fileMenu.add(closeItem);
+		
+		JMenuItem createItem = new JMenuItem("Создать");
+		closeItem.setFont(font);
+		closeItem.setActionCommand("create");
+		fileMenu.add(createItem);
 
 		fileMenu.insertSeparator(1);
 
@@ -234,6 +244,13 @@ public class Location extends JFrame {
 				plan = null;
 				panel.repaint();
 				stationsComboBox.removeAllItems();
+			}
+			if ("create".equals(command)) {
+				openedFile = null;
+				plan = new Plan(null);
+				panel.repaint();
+				stationsComboBox.removeAllItems();
+				creating = true;
 			}
 		}
 	}
@@ -320,9 +337,24 @@ public class Location extends JFrame {
 	 * Прослушиватель событий мыши.
 	 */
 	private class NewMouseListener implements MouseListener {
+		
+		//флаг того, что происходит рисование стены
+		private boolean wallDrawing = false;
+		//координаты начала и конца стены
+		private int x1;
+		private int y1;
+		private int x2;
+		private int y2;
 
 		/** Пустой обработчик. */
 		public void mouseReleased(MouseEvent e) {
+			wallDrawing = false;
+			//запоминаем координаты конца, приводя к нужной кратности
+			x2 = e.getX();
+			x2 -= x2 % (panel.getM() * panel.getBar());
+			y2 = e.getY();
+			y2 -= y2 % (panel.getM() * panel.getBar());
+			//System.out.println(x2 + " " + y2);
 		}
 
 		/** Пустой обработчик. */
@@ -335,6 +367,13 @@ public class Location extends JFrame {
 
 		/** Пустой обработчик. */
 		public void mousePressed(MouseEvent e) {
+			wallDrawing = true;
+			//запоминаем координаты начала, приводя к нужной кратности
+			x1 = e.getX();
+			x1 -= x1 % (panel.getM() * panel.getBar());
+			y1 = e.getY();
+			y1 -= y1 % (panel.getM() * panel.getBar());
+			//System.out.println(x1 + " " + y1);
 		}
 
 		/** Пустой обработчик. */

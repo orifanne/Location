@@ -23,20 +23,20 @@ public class Plan {
 	private ArrayList<Double> hDotes = null;
 
 	// вспомогательные фреймы
-	private Frame[][] frames;
+	private Frame[][] frames = null;
 
 	// финальные фреймы
-	Frame[] finalFrames;
+	Frame[] finalFrames = null;
 	// количество финальных фрейймов
-	int finalFramesNum;
+	int finalFramesNum = 0;
 
 	/** Конечные ячейки. */
-	private ArrayList<Tail> tails;
+	private ArrayList<Tail> tails = null;
 	/** Количество конечных ячеек. */
-	private int tailsNum;
+	private int tailsNum = 0;
 
 	/** Базовые станции */
-	ArrayList<Station> stations;
+	ArrayList<Station> stations = null;
 
 	/** Массив стен. */
 	private Wall[] walls = null;

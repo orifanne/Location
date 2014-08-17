@@ -23,6 +23,7 @@ public class ImagePanel extends JPanel {
 	private int bar = 10;
 	/** Масштаб - сколько ячеек базовой сетки в одном метре */
 	private int m = 3;
+
 	/** Количество ячеек, умещающихся по горизонтали */
 	private int hBars;
 	/** Количество ячеек, умещающихся по вертикали */
@@ -355,5 +356,19 @@ public class ImagePanel extends JPanel {
 		vBars = height / bar;
 
 		System.out.println(width + " " + height);
+	}
+	
+	/**
+	 * @return Количество пикселов, отводимое для отрисовки базовой ячейки
+	 */
+	public int getBar() {
+		return bar;
+	}
+
+	/**
+	 * @param Количество пикселов, отводимое для отрисовки базовой ячейки
+	 */
+	public void setBar(int bar) {
+		this.bar = bar;
 	}
 }
