@@ -60,11 +60,6 @@ public class ImagePanel extends JPanel {
 
 	Plan plan;
 
-	
-	
-	
-	
-	
 	/**
 	 * @param width
 	 *            ширина пол€ дл€ рисовани€
@@ -97,11 +92,6 @@ public class ImagePanel extends JPanel {
 		}
 	}
 
-	
-	
-	
-	
-	
 	public void paintComponent(Graphics gr) {
 		super.paintComponent(gr);
 		Graphics2D g = (Graphics2D) gr;
@@ -109,23 +99,29 @@ public class ImagePanel extends JPanel {
 		// отрисоываваем базовую сетку
 		drawBaseLines(g);
 
-		drawMap(g);
+		if (location.getPlan() != null) {
+			
+			// отрисовываем карту сил сигналов
+			drawMap(g);
 
-		// отрисовываем стены
-		drawWalls(g);
+			// отрисовываем стены
+			drawWalls(g);
 
-		// отрисовываем внешний контур
-		drawBorder(g);
+			// отрисовываем внешний контур
+			drawBorder(g);
 
-		// отрисовываем конечные €чейки
-		drawTails(g);
+			// отрисовываем конечные €чейки
+			drawTails(g);
 
-		// отрисовываем базовые станции
-		drawStations(g);
+			// отрисовываем базовые станции
+			drawStations(g);
+
+		}
 	}
 
 	/**
-	 * ќтрисовывает внутренние €чейки (внутри области локаци), выдел€€ их цветом.
+	 * ќтрисовывает внутренние €чейки (внутри области локаци), выдел€€ их
+	 * цветом.
 	 */
 	public void drawInnerFrames(Graphics2D g) {
 		if (location.hasOpenFile()) {
@@ -146,24 +142,22 @@ public class ImagePanel extends JPanel {
 	 * ќтрисовывает катру сил сигналов.
 	 */
 	public void drawMap(Graphics2D g) {
-		if (location.hasOpenFile()) {
-			if (location.getPlan().getStations().size() > 0) {
-				ArrayList<Tail> t = location.getPlan().getTails();
-				Station s = location.getPlan().getStation(
-						location.getStationNumber());
-				for (int i = 0; i < location.getPlan().getTailsNum(); i++) {
-					if (location.displayTaught) {
-						if (s.getTMap().containsKey(t.get(i))) {
-							Law l = s.getTMap().get(t.get(i));
-							if (l != null)
-								drawMapTail(g, t.get(i), l.getA());
-						}
-					} else {
-						if (s.getMap().containsKey(t.get(i))) {
-							Law l = s.getMap().get(t.get(i));
-							if (l != null)
-								drawMapTail(g, t.get(i), l.getA());
-						}
+		if (location.getPlan().getStations().size() > 0) {
+			ArrayList<Tail> t = location.getPlan().getTails();
+			Station s = location.getPlan().getStation(
+					location.getStationNumber());
+			for (int i = 0; i < location.getPlan().getTailsNum(); i++) {
+				if (location.displayTaught) {
+					if (s.getTMap().containsKey(t.get(i))) {
+						Law l = s.getTMap().get(t.get(i));
+						if (l != null)
+							drawMapTail(g, t.get(i), l.getA());
+					}
+				} else {
+					if (s.getMap().containsKey(t.get(i))) {
+						Law l = s.getMap().get(t.get(i));
+						if (l != null)
+							drawMapTail(g, t.get(i), l.getA());
 					}
 				}
 			}
@@ -190,8 +184,8 @@ public class ImagePanel extends JPanel {
 	}
 
 	/**
-	 * ќтрисовывает линии, образованные всеми абсциссами 
-	 * и всеми ординатами концов стен (по которым потом стро€тс€ фреймы).
+	 * ќтрисовывает линии, образованные всеми абсциссами и всеми ординатами
+	 * концов стен (по которым потом стро€тс€ фреймы).
 	 */
 	public void drawBaseLines(Graphics2D g) {
 		BasicStroke b = new BasicStroke(bPen);
@@ -223,18 +217,18 @@ public class ImagePanel extends JPanel {
 		g.setColor(green);
 		BasicStroke brd = new BasicStroke(borderPen);
 		g.setStroke(brd);
-		if (location.hasOpenFile()) {
-			plan = location.getPlan();
-			Border border = plan.getBorder();
-			for (int i = 0; i < border.npoints - 1; i++) {
-				g.drawLine(border.xpoints[i] * m * bar, border.ypoints[i] * m
-						* bar, border.xpoints[i + 1] * m * bar,
-						border.ypoints[i + 1] * m * bar);
-			}
-			g.drawLine(border.xpoints[border.npoints - 1] * m * bar,
-					border.ypoints[border.npoints - 1] * m * bar,
-					border.xpoints[0] * m * bar, border.ypoints[0] * m * bar);
+
+		plan = location.getPlan();
+		Border border = plan.getBorder();
+		for (int i = 0; i < border.npoints - 1; i++) {
+			g.drawLine(border.xpoints[i] * m * bar,
+					border.ypoints[i] * m * bar, border.xpoints[i + 1] * m
+							* bar, border.ypoints[i + 1] * m * bar);
 		}
+		g.drawLine(border.xpoints[border.npoints - 1] * m * bar,
+				border.ypoints[border.npoints - 1] * m * bar, border.xpoints[0]
+						* m * bar, border.ypoints[0] * m * bar);
+
 	}
 
 	/**
@@ -242,17 +236,16 @@ public class ImagePanel extends JPanel {
 	 */
 	public void drawTails(Graphics2D g) {
 
-		if (location.hasOpenFile()) {
-			BasicStroke b = new BasicStroke(bPen);
-			g.setStroke(b);
-			g.setColor(Color.red);
-			ArrayList<Tail> t = location.getPlan().getTails();
-			for (int i = 0; i < location.getPlan().getTailsNum(); i++)
-				g.drawRect((int) t.get(i).getX1() * m * bar, (int) t.get(i)
-						.getY1() * m * bar, (int) (t.get(i).getX2() - t.get(i)
-						.getX1()) * m * bar, (int) (t.get(i).getY2() - t.get(i)
-						.getY1()) * m * bar);
-		}
+		BasicStroke b = new BasicStroke(bPen);
+		g.setStroke(b);
+		g.setColor(Color.red);
+		ArrayList<Tail> t = location.getPlan().getTails();
+		for (int i = 0; i < location.getPlan().getTailsNum(); i++)
+			g.drawRect((int) t.get(i).getX1() * m * bar, (int) t.get(i).getY1()
+					* m * bar, (int) (t.get(i).getX2() - t.get(i).getX1()) * m
+					* bar, (int) (t.get(i).getY2() - t.get(i).getY1()) * m
+					* bar);
+
 	}
 
 	/**
@@ -263,37 +256,34 @@ public class ImagePanel extends JPanel {
 		g.setColor(Color.BLACK);
 		BasicStroke w = new BasicStroke(wPen);
 		g.setStroke(w);
-		if (location.hasOpenFile()) {
-			plan = location.getPlan();
-			for (int i = 0; i < plan.getWalls().length; i++) {
-				g.drawLine((int) plan.getWall(i).getX1() * m * bar, (int) plan
-						.getWall(i).getY1() * m * bar, (int) plan.getWall(i)
-						.getX2() * m * bar, (int) plan.getWall(i).getY2() * m
-						* bar);
-			}
+
+		plan = location.getPlan();
+		for (int i = 0; i < plan.getWalls().size(); i++) {
+			g.drawLine((int) plan.getWall(i).getX1() * m * bar, (int) plan
+					.getWall(i).getY1() * m * bar, (int) plan.getWall(i)
+					.getX2() * m * bar, (int) plan.getWall(i).getY2() * m * bar);
 		}
+
 	}
 
 	/**
-	 * ќтрисовывает финальные фреймы (пр€моугольники, которые разбиваютс€ на конечные €чейки).
+	 * ќтрисовывает финальные фреймы (пр€моугольники, которые разбиваютс€ на
+	 * конечные €чейки).
 	 */
 	public void drawFinalFrames(Graphics2D g) {
 
-		if (location.hasOpenFile()) {
-			g.setColor(Color.BLUE);
-			BasicStroke b = new BasicStroke(bPen);
-			g.setStroke(b);
-			for (int i = 0; i < location.getPlan().finalFramesNum; i++)
-				g.drawRect(
-						(int) (location.getPlan().finalFrames[i].getX1() * m
-								* bar + 5),
-						(int) (location.getPlan().finalFrames[i].getY1() * m
-								* bar + 5),
-						(int) ((location.getPlan().finalFrames[i].getX2() - location
-								.getPlan().finalFrames[i].getX1()) * m * bar) - 10,
-						(int) ((location.getPlan().finalFrames[i].getY2() - location
-								.getPlan().finalFrames[i].getY1()) * m * bar) - 10);
-		}
+		g.setColor(Color.BLUE);
+		BasicStroke b = new BasicStroke(bPen);
+		g.setStroke(b);
+		for (int i = 0; i < location.getPlan().finalFramesNum; i++)
+			g.drawRect(
+					(int) (location.getPlan().finalFrames[i].getX1() * m * bar + 5),
+					(int) (location.getPlan().finalFrames[i].getY1() * m * bar + 5),
+					(int) ((location.getPlan().finalFrames[i].getX2() - location
+							.getPlan().finalFrames[i].getX1()) * m * bar) - 10,
+					(int) ((location.getPlan().finalFrames[i].getY2() - location
+							.getPlan().finalFrames[i].getY1()) * m * bar) - 10);
+
 	}
 
 	/**
@@ -301,26 +291,24 @@ public class ImagePanel extends JPanel {
 	 */
 	public void drawStations(Graphics2D g) {
 
-		if (location.hasOpenFile()) {
-			if (location.getPlan().getStations().size() > 0) {
-				BasicStroke b = new BasicStroke(borderPen);
-				g.setStroke(b);
-				g.setColor(Color.BLUE);
-				plan = location.getPlan();
-				for (int i = 0; i < plan.getStations().size(); i++)
-					g.drawOval((int) (plan.getStation(i).getX() * m * bar - rad
-							* bar),
-							(int) (plan.getStation(i).getY() * m * bar - rad
-									* bar), (int) (rad * bar * 2), (int) (rad
-									* bar * 2));
-				g.setColor(Color.red);
-				g.drawOval((int) (plan.getStation(location.getStationNumber())
-						.getX() * m * bar - rad * bar),
-						(int) (plan.getStation(location.getStationNumber())
-								.getY() * m * bar - rad * bar), (int) (rad
-								* bar * 2), (int) (rad * bar * 2));
-			}
+		if (location.getPlan().getStations().size() > 0) {
+			BasicStroke b = new BasicStroke(borderPen);
+			g.setStroke(b);
+			g.setColor(Color.BLUE);
+			plan = location.getPlan();
+			for (int i = 0; i < plan.getStations().size(); i++)
+				g.drawOval(
+						(int) (plan.getStation(i).getX() * m * bar - rad * bar),
+						(int) (plan.getStation(i).getY() * m * bar - rad * bar),
+						(int) (rad * bar * 2), (int) (rad * bar * 2));
+			g.setColor(Color.red);
+			g.drawOval((int) (plan.getStation(location.getStationNumber())
+					.getX() * m * bar - rad * bar),
+					(int) (plan.getStation(location.getStationNumber()).getY()
+							* m * bar - rad * bar), (int) (rad * bar * 2),
+					(int) (rad * bar * 2));
 		}
+
 	}
 
 	/**
@@ -332,7 +320,7 @@ public class ImagePanel extends JPanel {
 		g.setColor(c);
 		g.fillRect((int) d, (int) e, (int) (f - d), (int) (h - e));
 	}
-	
+
 	/**
 	 * @return масштаб
 	 */
@@ -357,7 +345,7 @@ public class ImagePanel extends JPanel {
 
 		System.out.println(width + " " + height);
 	}
-	
+
 	/**
 	 * @return  оличество пикселов, отводимое дл€ отрисовки базовой €чейки
 	 */
@@ -366,7 +354,8 @@ public class ImagePanel extends JPanel {
 	}
 
 	/**
-	 * @param  оличество пикселов, отводимое дл€ отрисовки базовой €чейки
+	 * @param  оличество
+	 *            пикселов, отводимое дл€ отрисовки базовой €чейки
 	 */
 	public void setBar(int bar) {
 		this.bar = bar;

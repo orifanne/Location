@@ -84,10 +84,9 @@ public class Station extends AbstractStation {
 
 	@Override
 	public void explode(Tail tail, Plan plan) {
-		Wall[] walls = plan.getWalls();
 		int count = 0;
-		for (int i = 0; i < walls.length; i++) {
-			if (walls[i].intersectsLine(x, y, tail.getX(), tail.getY()))
+		for (int i = 0; i < plan.getWalls().size(); i++) {
+			if (plan.getWalls().get(i).intersectsLine(x, y, tail.getX(), tail.getY()))
 				count++;
 		}
 		double d = Point2D.Double.distance(x, y, tail.getX(), tail.getY());

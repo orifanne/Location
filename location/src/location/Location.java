@@ -43,12 +43,15 @@ public class Location extends JFrame {
 	/** Номер выбранной станции. */
 	private int stationNumber = 0;
 
+	/** Номер выбранного инструмента для рисования. */
+	private int instrumentNumber = 0;
+
 	/** Переключатели вида карты для отображения. */
 	private JRadioButton orign, taught;
 	private ButtonGroup bg;
 	/** Флаг того, что нужно показывать карту, полученную обучением. */
 	boolean displayTaught = false;
-	
+
 	/** Флаг того, что создается файл. */
 	boolean creating = false;
 
@@ -86,10 +89,9 @@ public class Location extends JFrame {
 	/** Список с выбором для станций */
 	JComboBox<String> stationsComboBox;
 
-	
-	
-	
-	
+	/** Список с выбором для рисования */
+	JComboBox<String> paintComboBox;
+
 	public Location() {
 		// заголовок окна
 		super("Location");
@@ -111,6 +113,10 @@ public class Location extends JFrame {
 
 		stationsComboBox = new JComboBox<String>();
 		stationsComboBox.addActionListener(new StationsChooseListener());
+
+		paintComboBox = new JComboBox<String>();
+		paintComboBox.addActionListener(new PaintChooseListener());
+		paintComboBox.addItem("Стены");
 
 		// будем прослушивать события мыши
 		panel.addMouseListener(new NewMouseListener());
@@ -137,12 +143,12 @@ public class Location extends JFrame {
 		// компановка панели инструментов
 		instrumentsPanel.setLayout(new BoxLayout(instrumentsPanel,
 				BoxLayout.Y_AXIS));
-		
 		instrumentsPanel.setPreferredSize(new Dimension(width / 5, height));
 		instrumentsPanel.setMinimumSize(new Dimension(width / 5, height));
-		
+
 		instrumentsPanel.add(new JLabel("Масштаб:"));
 		instrumentsPanel.add(scale);
+
 		instrumentsPanel.add(new JLabel("Размер ячейки:"));
 		instrumentsPanel.add(scaleTail);
 
@@ -150,15 +156,25 @@ public class Location extends JFrame {
 				.getPreferredSize().width, 25));
 		stationsComboBox.setMinimumSize(new Dimension(instrumentsPanel
 				.getPreferredSize().width, 25));
-		
+
 		instrumentsPanel.add(new JLabel("Выбор базовой станции:"));
 		instrumentsPanel.add(stationsComboBox);
 
 		instrumentsPanel.add(new JLabel("Выбор карты уровней сигналов:"));
 		instrumentsPanel.add(orign);
 		instrumentsPanel.add(taught);
+
 		orign.addActionListener(new RadioListener());
 		taught.addActionListener(new RadioListener());
+
+		instrumentsPanel.add(new JLabel("Рисование:"));
+
+		paintComboBox.setMaximumSize(new Dimension(instrumentsPanel
+				.getPreferredSize().width, 25));
+		paintComboBox.setMinimumSize(new Dimension(instrumentsPanel
+				.getPreferredSize().width, 25));
+
+		instrumentsPanel.add(paintComboBox);
 
 		// компановка главной панели
 		mainpanel.setLayout(new BoxLayout(mainpanel, BoxLayout.X_AXIS));
@@ -171,11 +187,6 @@ public class Location extends JFrame {
 
 		object = new PosObject();
 	}
-	
-	
-	
-	
-	
 
 	/**
 	 * Создает меню.
@@ -197,7 +208,7 @@ public class Location extends JFrame {
 		closeItem.setFont(font);
 		closeItem.setActionCommand("close");
 		fileMenu.add(closeItem);
-		
+
 		JMenuItem createItem = new JMenuItem("Создать");
 		closeItem.setFont(font);
 		closeItem.setActionCommand("create");
@@ -247,7 +258,7 @@ public class Location extends JFrame {
 			}
 			if ("create".equals(command)) {
 				openedFile = null;
-				plan = new Plan(null);
+				plan = new Plan();
 				panel.repaint();
 				stationsComboBox.removeAllItems();
 				creating = true;
@@ -278,7 +289,7 @@ public class Location extends JFrame {
 			tailSize = js.getValue();
 			// System.out.println(tailSize);
 			if (plan != null)
-					plan.devide(tailSize);
+				plan.devide(tailSize);
 			panel.repaint();
 		}
 	}
@@ -290,8 +301,18 @@ public class Location extends JFrame {
 		public void actionPerformed(ActionEvent e) {
 			JComboBox<String> c = (JComboBox<String>) e.getSource();
 			stationNumber = c.getSelectedIndex();
-			System.out.println(c.getSelectedIndex());
+			// System.out.println(c.getSelectedIndex());
 			panel.repaint();
+		}
+	};
+
+	/**
+	 * Прослушиватель событий выбора инструментов для рисования.
+	 */
+	private class PaintChooseListener implements ActionListener {
+		public void actionPerformed(ActionEvent e) {
+			JComboBox<String> c = (JComboBox<String>) e.getSource();
+			instrumentNumber = c.getSelectedIndex();
 		}
 	};
 
@@ -314,11 +335,6 @@ public class Location extends JFrame {
 		}
 	}
 
-	
-	
-	
-	
-	
 	/**
 	 * Прослушиватель перемещений мыши.
 	 */
@@ -337,24 +353,40 @@ public class Location extends JFrame {
 	 * Прослушиватель событий мыши.
 	 */
 	private class NewMouseListener implements MouseListener {
-		
-		//флаг того, что происходит рисование стены
-		private boolean wallDrawing = false;
-		//координаты начала и конца стены
+
+		// флаг того, что происходит рисование
+		private boolean drawing = false;
+		// координаты начала и конца стены
 		private int x1;
 		private int y1;
 		private int x2;
 		private int y2;
 
-		/** Пустой обработчик. */
 		public void mouseReleased(MouseEvent e) {
-			wallDrawing = false;
+			drawing = false;
 			//запоминаем координаты конца, приводя к нужной кратности
 			x2 = e.getX();
 			x2 -= x2 % (panel.getM() * panel.getBar());
 			y2 = e.getY();
 			y2 -= y2 % (panel.getM() * panel.getBar());
-			//System.out.println(x2 + " " + y2);
+			
+			//проверяем, должна ли там появиться стена
+			switch (instrumentNumber) {
+				case 0: 
+					//если отрезок горизонтальный или вертикальный
+					if ((x1 == x2) || (y1 == y2))
+						//и при этом не точка
+						if (y1 != x1)
+						{
+							//добавить новую стену
+							plan.addWall(x1 / panel.getBar() / panel.getM(), 
+									y1 / panel.getBar() / panel.getM(), 
+									x2 / panel.getBar() / panel.getM(), 
+									y2 / panel.getBar() / panel.getM());
+							System.out.println(x1 + " " + y1 + " : " + x2 + " " + y2);
+							panel.repaint();
+						}
+			}
 		}
 
 		/** Пустой обработчик. */
@@ -365,15 +397,13 @@ public class Location extends JFrame {
 		public void mouseExited(MouseEvent e) {
 		}
 
-		/** Пустой обработчик. */
 		public void mousePressed(MouseEvent e) {
-			wallDrawing = true;
-			//запоминаем координаты начала, приводя к нужной кратности
+			drawing = true;
+			// запоминаем координаты начала, приводя к нужной кратности
 			x1 = e.getX();
 			x1 -= x1 % (panel.getM() * panel.getBar());
 			y1 = e.getY();
 			y1 -= y1 % (panel.getM() * panel.getBar());
-			//System.out.println(x1 + " " + y1);
 		}
 
 		/** Пустой обработчик. */

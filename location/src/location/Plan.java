@@ -39,7 +39,7 @@ public class Plan {
 	ArrayList<Station> stations = null;
 
 	/** Массив стен. */
-	private Wall[] walls = null;
+	private ArrayList<Wall> walls = null;
 
 	/** Внешний контур. */
 	private Border border = null;
@@ -93,14 +93,14 @@ public class Plan {
 		n = doc.getElementsByTagName("wall");
 		k = null;
 		double x1, x2, y1, y2;
-		walls = new Wall[n.getLength()];
+		walls = new ArrayList<Wall>();
 		for (int i = 0; i < n.getLength(); i++) {
 			k = n.item(i).getAttributes();
 			x1 = Double.parseDouble(k.getNamedItem("x1").getNodeValue());
 			x2 = Double.parseDouble(k.getNamedItem("x2").getNodeValue());
 			y1 = Double.parseDouble(k.getNamedItem("y1").getNodeValue());
 			y2 = Double.parseDouble(k.getNamedItem("y2").getNodeValue());
-			walls[i] = new Wall(x1, y1, x2, y2);
+			walls.add(new Wall(x1, y1, x2, y2));
 		}
 
 		n = doc.getElementsByTagName("station");
@@ -118,11 +118,16 @@ public class Plan {
 		}
 	}
 
-	
-	
-	
-	
-	
+	public Plan() {
+		walls = new ArrayList<Wall>();
+		stations = new ArrayList<Station>();
+	}
+
+
+
+
+
+
 	/**
 	 * Разбивает область локации на ячейки.
 	 * 
@@ -135,12 +140,12 @@ public class Plan {
 		vDotes = new ArrayList<Double>();
 		hDotes = new ArrayList<Double>();
 
-		for (int i = 0; i < walls.length; i++) {
+		for (int i = 0; i < walls.size(); i++) {
 
-			x1 = walls[i].getX1();
-			x2 = walls[i].getX2();
-			y1 = walls[i].getY1();
-			y2 = walls[i].getY2();
+			x1 = walls.get(i).getX1();
+			x2 = walls.get(i).getX2();
+			y1 = walls.get(i).getY1();
+			y2 = walls.get(i).getY2();
 
 			if (!vDotes.contains(y1))
 				vDotes.add(y1);
@@ -361,22 +366,22 @@ public class Plan {
 		boolean down = false;
 		boolean right = false;
 		boolean left = false;
-		for (int i = 0; i < walls.length; i++) {
+		for (int i = 0; i < walls.size(); i++) {
 			// System.out.println(i);
-			if (walls[i].intersectsLine((x1 + x2) / 2, y1, (x1 + x2) / 2, y2)) {
-				if (walls[i].getY1() == walls[i].getY2()) {
-					if (walls[i].getY1() == y1)
+			if (walls.get(i).intersectsLine((x1 + x2) / 2, y1, (x1 + x2) / 2, y2)) {
+				if (walls.get(i).getY1() == walls.get(i).getY2()) {
+					if (walls.get(i).getY1() == y1)
 						up = true;
-					if (walls[i].getY2() == y2)
+					if (walls.get(i).getY2() == y2)
 						down = true;
 					// continue;
 				}
 			}
-			if (walls[i].intersectsLine(x1, (y1 + y2) / 2, x2, (y1 + y2) / 2)) {
-				if (walls[i].getX1() == walls[i].getX2()) {
-					if (walls[i].getX1() == x1)
+			if (walls.get(i).intersectsLine(x1, (y1 + y2) / 2, x2, (y1 + y2) / 2)) {
+				if (walls.get(i).getX1() == walls.get(i).getX2()) {
+					if (walls.get(i).getX1() == x1)
 						left = true;
-					if (walls[i].getX2() == x2)
+					if (walls.get(i).getX2() == x2)
 						right = true;
 					// continue;
 				}
@@ -420,7 +425,7 @@ public class Plan {
 	 *            номер стены
 	 */
 	public Wall getWall(int i) {
-		return walls[i];
+		return walls.get(i);
 	}
 
 	/**
@@ -433,7 +438,7 @@ public class Plan {
 	/**
 	 * Получить массив стен.
 	 */
-	public Wall[] getWalls() {
+	public ArrayList<Wall> getWalls() {
 		return walls;
 	}
 
@@ -456,5 +461,16 @@ public class Plan {
 	 */
 	public int getTailsNum() {
 		return tailsNum;
+	}
+	
+	/**
+	 * Добавить стену.
+	 * @param x1 абсцисса начала
+	 * @param y1 ордината начала
+	 * @param x2 абсцисса конца
+	 * @param y2 ордината конца
+	 */
+	public void addWall(int x1, int y1, int x2, int y2) {
+		walls.add(new Wall(x1, y1, x2, y2));
 	}
 }
