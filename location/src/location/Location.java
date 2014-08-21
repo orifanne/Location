@@ -52,9 +52,6 @@ public class Location extends JFrame {
 	/** Флаг того, что нужно показывать карту, полученную обучением. */
 	boolean displayTaught = false;
 
-	/** Флаг того, что создается файл. */
-	boolean creating = false;
-
 	/**
 	 * Главный компоновщик, отвечает за взаимное расположение панели
 	 * инструментов и поля для рисования.
@@ -210,11 +207,18 @@ public class Location extends JFrame {
 		fileMenu.add(closeItem);
 
 		JMenuItem createItem = new JMenuItem("Создать");
-		closeItem.setFont(font);
-		closeItem.setActionCommand("create");
+		createItem.setFont(font);
+		createItem.setActionCommand("create");
 		fileMenu.add(createItem);
+		
+		JMenuItem saveItem = new JMenuItem("Сохранить");
+		saveItem.setFont(font);
+		saveItem.setActionCommand("save");
+		fileMenu.add(saveItem);
 
 		fileMenu.insertSeparator(1);
+		fileMenu.insertSeparator(3);
+		fileMenu.insertSeparator(5);
 
 		menu.add(fileMenu);
 
@@ -223,6 +227,8 @@ public class Location extends JFrame {
 		ActionListener actionListener = new NewMenuListener();
 		openItem.addActionListener(actionListener);
 		closeItem.addActionListener(actionListener);
+		createItem.addActionListener(actionListener);
+		saveItem.addActionListener(actionListener);
 	}
 
 	/**
@@ -261,7 +267,10 @@ public class Location extends JFrame {
 				plan = new Plan();
 				panel.repaint();
 				stationsComboBox.removeAllItems();
-				creating = true;
+			}
+			if ("save".equals(command)) {
+				if (plan != null)
+					plan.save();
 			}
 		}
 	}
@@ -275,7 +284,6 @@ public class Location extends JFrame {
 			JSlider js = (JSlider) e.getSource();
 			panel.setM(js.getValue());
 			panel.repaint();
-			// scrollPane.revalidate();
 			scrollPane.getViewport().revalidate();
 		}
 	}
@@ -287,7 +295,6 @@ public class Location extends JFrame {
 		public void stateChanged(ChangeEvent e) {
 			JSlider js = (JSlider) e.getSource();
 			tailSize = js.getValue();
-			// System.out.println(tailSize);
 			if (plan != null)
 				plan.devide(tailSize);
 			panel.repaint();
@@ -301,7 +308,6 @@ public class Location extends JFrame {
 		public void actionPerformed(ActionEvent e) {
 			JComboBox<String> c = (JComboBox<String>) e.getSource();
 			stationNumber = c.getSelectedIndex();
-			// System.out.println(c.getSelectedIndex());
 			panel.repaint();
 		}
 	};
@@ -363,29 +369,31 @@ public class Location extends JFrame {
 		private int y2;
 
 		public void mouseReleased(MouseEvent e) {
-			drawing = false;
-			//запоминаем координаты конца, приводя к нужной кратности
-			x2 = e.getX();
-			x2 -= x2 % (panel.getM() * panel.getBar());
-			y2 = e.getY();
-			y2 -= y2 % (panel.getM() * panel.getBar());
-			
-			//проверяем, должна ли там появиться стена
-			switch (instrumentNumber) {
-				case 0: 
-					//если отрезок горизонтальный или вертикальный
+			if (plan != null) {
+				drawing = false;
+				// запоминаем координаты конца, приводя к нужной кратности
+				x2 = e.getX();
+				x2 -= x2 % (panel.getM() * panel.getBar());
+				y2 = e.getY();
+				y2 -= y2 % (panel.getM() * panel.getBar());
+
+				// проверяем, должна ли там появиться стена
+				switch (instrumentNumber) {
+				case 0:
+					// если отрезок горизонтальный или вертикальный
 					if ((x1 == x2) || (y1 == y2))
-						//и при этом не точка
-						if (y1 != x1)
-						{
-							//добавить новую стену
-							plan.addWall(x1 / panel.getBar() / panel.getM(), 
-									y1 / panel.getBar() / panel.getM(), 
-									x2 / panel.getBar() / panel.getM(), 
-									y2 / panel.getBar() / panel.getM());
-							System.out.println(x1 + " " + y1 + " : " + x2 + " " + y2);
+						// и при этом не точка
+						if (!((x1 == x2) && (y1 == y2))) {
+							// добавить новую стену
+							plan.addWall(x1 / panel.getBar() / panel.getM(), y1
+									/ panel.getBar() / panel.getM(),
+									x2 / panel.getBar() / panel.getM(), y2
+											/ panel.getBar() / panel.getM());
+							System.out.println(x1 + " " + y1 + " : " + x2 + " "
+									+ y2);
 							panel.repaint();
 						}
+				}
 			}
 		}
 
@@ -398,12 +406,14 @@ public class Location extends JFrame {
 		}
 
 		public void mousePressed(MouseEvent e) {
-			drawing = true;
-			// запоминаем координаты начала, приводя к нужной кратности
-			x1 = e.getX();
-			x1 -= x1 % (panel.getM() * panel.getBar());
-			y1 = e.getY();
-			y1 -= y1 % (panel.getM() * panel.getBar());
+			if (plan != null) {
+				drawing = true;
+				// запоминаем координаты начала, приводя к нужной кратности
+				x1 = e.getX();
+				x1 -= x1 % (panel.getM() * panel.getBar());
+				y1 = e.getY();
+				y1 -= y1 % (panel.getM() * panel.getBar());
+			}
 		}
 
 		/** Пустой обработчик. */

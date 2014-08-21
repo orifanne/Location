@@ -24,11 +24,15 @@ public class Border extends Polygon {
 		super(x, y, x.length);
 	}
 
-	
-	
-	
-	
-	
+	public Border() {
+		super();
+	}
+
+
+
+
+
+
 	/**
 	 * Сообщает, лежит ли фрейм внутри контура.
 	 */

@@ -2,10 +2,24 @@ package location;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+
 import org.w3c.dom.*;
+
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
 import org.xml.sax.SAXException;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,6 +58,8 @@ public class Plan {
 	/** Внешний контур. */
 	private Border border = null;
 
+	/** Связанный xml-файл. */
+	private File file = null;
 	
 	
 	
@@ -56,6 +72,8 @@ public class Plan {
 	 *            xml-файл с описанием плана
 	 */
 	public Plan(File file) {
+		
+		this.file = file;
 
 		DocumentBuilderFactory f = null;
 		DocumentBuilder builder = null;
@@ -68,13 +86,16 @@ public class Plan {
 		}
 
 		catch (ParserConfigurationException e) {
+			e.printStackTrace();
 		} // заглушка
 
 		try {
 			doc = builder.parse(file);
 		} catch (SAXException e) {
+			e.printStackTrace();
 		} // заглушка
 		catch (IOException e) {
+			e.printStackTrace();
 		} // заглушка
 
 		// заполняем внешний контур
@@ -121,6 +142,7 @@ public class Plan {
 	public Plan() {
 		walls = new ArrayList<Wall>();
 		stations = new ArrayList<Station>();
+		border = new Border();
 	}
 
 
@@ -471,6 +493,75 @@ public class Plan {
 	 * @param y2 ордината конца
 	 */
 	public void addWall(int x1, int y1, int x2, int y2) {
-		walls.add(new Wall(x1, y1, x2, y2));
+		Wall w = new Wall(x1, y1, x2, y2);
+		if (!walls.contains(w))
+			walls.add(w);
+	}
+
+	public void save() {
+		DocumentBuilderFactory f = null;
+		DocumentBuilder builder = null;
+		Document doc = null;
+
+		try {
+			f = DocumentBuilderFactory.newInstance();
+			f.setValidating(false);
+			builder = f.newDocumentBuilder();
+		}
+
+		catch (ParserConfigurationException e) {
+			e.printStackTrace();
+		} // заглушка
+
+		doc = builder.newDocument();
+		
+		Element locEl = doc.createElement("location");
+		Element planEl = doc.createElement("plan");
+		
+		for (int i = 0; i < border.npoints; i++) {
+			Element doteEl = doc.createElement("dote");
+			doteEl.setAttribute("x", Integer.toString(border.xpoints[i], 10));
+			doteEl.setAttribute("y", Integer.toString(border.ypoints[i], 10));
+			planEl.appendChild(doteEl);
+		}
+		for (int i = 0; i < walls.size(); i++) {
+			Element wallEl = doc.createElement("wall");
+			wallEl.setAttribute("x1", Integer.toString((int) walls.get(i).getX1(), 10));
+			wallEl.setAttribute("y1", Integer.toString((int) walls.get(i).getY1(), 10));
+			wallEl.setAttribute("x2", Integer.toString((int) walls.get(i).getX2(), 10));
+			wallEl.setAttribute("y2", Integer.toString((int) walls.get(i).getY2(), 10));
+			planEl.appendChild(wallEl);
+		}
+		for (int i = 0; i < stations.size(); i++) {
+			Element stEl = doc.createElement("station");
+			stEl.setAttribute("x", Integer.toString((int) stations.get(i).getX(), 10));
+			stEl.setAttribute("y", Integer.toString((int) stations.get(i).getY(), 10));
+			stEl.setAttribute("name", stations.get(i).getName());
+			planEl.appendChild(stEl);
+		}
+		
+		locEl.appendChild(planEl);
+		doc.appendChild(locEl);
+		
+		String path = null;
+		if (file != null)
+			path = file.getAbsolutePath();
+		else
+		{//здесь надо добавить выбор имени для сохранения
+			
+		}
+		
+		Transformer t = null;
+		try {
+			t = TransformerFactory.newInstance().newTransformer();
+		} catch (TransformerConfigurationException
+				| TransformerFactoryConfigurationError e1) {
+			e1.printStackTrace(); // заглушка
+		}
+        try {
+			t.transform(new DOMSource(doc), new StreamResult(new FileOutputStream(path)));
+		} catch (FileNotFoundException | TransformerException e) {
+			e.printStackTrace(); // заглушка
+		}
 	}
 }

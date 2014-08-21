@@ -100,7 +100,7 @@ public class ImagePanel extends JPanel {
 		drawBaseLines(g);
 
 		if (location.getPlan() != null) {
-			
+
 			// отрисовываем карту сил сигналов
 			drawMap(g);
 
@@ -225,9 +225,10 @@ public class ImagePanel extends JPanel {
 					border.ypoints[i] * m * bar, border.xpoints[i + 1] * m
 							* bar, border.ypoints[i + 1] * m * bar);
 		}
-		g.drawLine(border.xpoints[border.npoints - 1] * m * bar,
-				border.ypoints[border.npoints - 1] * m * bar, border.xpoints[0]
-						* m * bar, border.ypoints[0] * m * bar);
+		if (border.npoints > 0)
+			g.drawLine(border.xpoints[border.npoints - 1] * m * bar,
+					border.ypoints[border.npoints - 1] * m * bar,
+					border.xpoints[0] * m * bar, border.ypoints[0] * m * bar);
 
 	}
 
