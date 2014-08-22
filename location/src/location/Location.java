@@ -32,6 +32,11 @@ import javax.swing.filechooser.FileFilter;
  * @author Pokrovskaya Oksana
  */
 public class Location extends JFrame {
+	
+	final int WALL = 0;
+	final int BORDER = 1;
+	final int STATION = 2;
+	final int DELETE = 3;
 
 	/** Панель меню. */
 	private JMenuBar menu = null;
@@ -44,7 +49,7 @@ public class Location extends JFrame {
 	private int stationNumber = 0;
 
 	/** Номер выбранного инструмента для рисования. */
-	private int instrumentNumber = 0;
+	private int instrumentNumber = WALL;
 
 	/** Переключатели вида карты для отображения. */
 	private JRadioButton orign, taught;
@@ -66,6 +71,9 @@ public class Location extends JFrame {
 
 	/** Слайдер для регулировки размера ячеек. */
 	private JSlider scaleTail;
+
+	/** Панель инструментов. */
+	private JToolBar toolBar;
 
 	/** Панель, отрисовывающая план здания. */
 	private ImagePanel panel = new ImagePanel(width * 5, height * 5, this);
@@ -111,9 +119,11 @@ public class Location extends JFrame {
 		stationsComboBox = new JComboBox<String>();
 		stationsComboBox.addActionListener(new StationsChooseListener());
 
-		paintComboBox = new JComboBox<String>();
-		paintComboBox.addActionListener(new PaintChooseListener());
-		paintComboBox.addItem("Стены");
+		/*
+		 * paintComboBox = new JComboBox<String>();
+		 * paintComboBox.addActionListener(new PaintChooseListener());
+		 * paintComboBox.addItem("Стены");
+		 */
 
 		// будем прослушивать события мыши
 		panel.addMouseListener(new NewMouseListener());
@@ -164,14 +174,33 @@ public class Location extends JFrame {
 		orign.addActionListener(new RadioListener());
 		taught.addActionListener(new RadioListener());
 
-		instrumentsPanel.add(new JLabel("Рисование:"));
+		// instrumentsPanel.add(new JLabel("Рисование:"));
 
-		paintComboBox.setMaximumSize(new Dimension(instrumentsPanel
-				.getPreferredSize().width, 25));
-		paintComboBox.setMinimumSize(new Dimension(instrumentsPanel
-				.getPreferredSize().width, 25));
+		/*
+		 * paintComboBox.setMaximumSize(new Dimension(instrumentsPanel
+		 * .getPreferredSize().width, 25)); paintComboBox.setMinimumSize(new
+		 * Dimension(instrumentsPanel .getPreferredSize().width, 25));
+		 * 
+		 * instrumentsPanel.add(paintComboBox);
+		 */
 
-		instrumentsPanel.add(paintComboBox);
+		toolBar = new JToolBar(JToolBar.VERTICAL);
+		toolBar.setFloatable(false);
+		DemoAction wallsAction = new DemoAction("Walls",
+				createImageIcon("wall.gif"), "Редактировать стены", 'W');
+		DemoAction borderAction = new DemoAction("Border",
+				createImageIcon("border.gif"),
+				"Редактировать границу области локации", 'B');
+		DemoAction stationsAction = new DemoAction("Stations",
+				createImageIcon("station.gif"),
+				"Редактировать базовые станции", 'S');
+		DemoAction deleteAction = new DemoAction("Delete",
+				createImageIcon("delete.gif"), "Удалить", 'D');
+		toolBar.add(wallsAction);
+		toolBar.add(borderAction);
+		toolBar.add(stationsAction);
+		toolBar.add(deleteAction);
+		instrumentsPanel.add(toolBar);
 
 		// компановка главной панели
 		mainpanel.setLayout(new BoxLayout(mainpanel, BoxLayout.X_AXIS));
@@ -183,6 +212,23 @@ public class Location extends JFrame {
 		container.add(mainpanel);
 
 		object = new PosObject();
+	}
+
+	/**
+	 * Создает иконку.
+	 * 
+	 * @param path
+	 *            путь к файлу
+	 * @return иконка, или null, если нельзя найти файл
+	 */
+	protected ImageIcon createImageIcon(String path) {
+		java.net.URL imgURL = getClass().getResource(path);
+		if (imgURL != null) {
+			return new ImageIcon(imgURL);
+		} else {
+			System.out.println("Couldn't find file: " + path);
+			return null;
+		}
 	}
 
 	/**
@@ -210,15 +256,21 @@ public class Location extends JFrame {
 		createItem.setFont(font);
 		createItem.setActionCommand("create");
 		fileMenu.add(createItem);
-		
+
 		JMenuItem saveItem = new JMenuItem("Сохранить");
 		saveItem.setFont(font);
 		saveItem.setActionCommand("save");
 		fileMenu.add(saveItem);
 
+		JMenuItem saveAsItem = new JMenuItem("Сохранить как");
+		saveAsItem.setFont(font);
+		saveAsItem.setActionCommand("saveas");
+		fileMenu.add(saveAsItem);
+
 		fileMenu.insertSeparator(1);
 		fileMenu.insertSeparator(3);
 		fileMenu.insertSeparator(5);
+		fileMenu.insertSeparator(7);
 
 		menu.add(fileMenu);
 
@@ -229,6 +281,7 @@ public class Location extends JFrame {
 		closeItem.addActionListener(actionListener);
 		createItem.addActionListener(actionListener);
 		saveItem.addActionListener(actionListener);
+		saveAsItem.addActionListener(actionListener);
 	}
 
 	/**
@@ -245,11 +298,12 @@ public class Location extends JFrame {
 				JFileChooser fileopen = new JFileChooser();
 				FileFilter filter = new ExtensionFileFilter("xml", "xml");
 				fileopen.setFileFilter(filter);
-				int ret = fileopen.showDialog(null, "Открыть файл");
+				int ret = fileopen.showOpenDialog(null);
 				if (ret == JFileChooser.APPROVE_OPTION) {
 					openedFile = fileopen.getSelectedFile();
 					plan = new Plan(openedFile);
-					plan.devide(tailSize);
+					if (plan.getWalls().size() > 0)
+						plan.devide(tailSize);
 					panel.repaint();
 					stationsComboBox.removeAllItems();
 					for (int i = 0; i < plan.getStations().size(); i++)
@@ -269,8 +323,35 @@ public class Location extends JFrame {
 				stationsComboBox.removeAllItems();
 			}
 			if ("save".equals(command)) {
-				if (plan != null)
-					plan.save();
+				if ((plan != null) && (openedFile != null))
+					plan.save(openedFile);
+			}
+			if ("saveas".equals(command)) {
+				if (plan != null) {
+					JFileChooser filesave = new JFileChooser();
+					FileFilter filter = new ExtensionFileFilter("xml", "xml");
+					filesave.setFileFilter(filter);
+					int ret = filesave.showSaveDialog(null);
+					if (ret == JFileChooser.APPROVE_OPTION) {
+						File f = filesave.getSelectedFile();
+						String s = f.getAbsolutePath();
+						System.out.println(s);
+						String s1 = null;
+						int dotPos = s.lastIndexOf(".");
+						if (dotPos > 0) {
+							s1 = s.substring(dotPos);
+							System.out.println(s1);
+							if (!s1.equals("xml")) {
+								s += ".xml";
+								f.renameTo(new File(s));
+							}
+						} else {
+							s += ".xml";
+							f.renameTo(new File(s));
+						}
+						plan.save(f);
+					}
+				}
 			}
 		}
 	}
@@ -379,7 +460,7 @@ public class Location extends JFrame {
 
 				// проверяем, должна ли там появиться стена
 				switch (instrumentNumber) {
-				case 0:
+				case WALL:
 					// если отрезок горизонтальный или вертикальный
 					if ((x1 == x2) || (y1 == y2))
 						// и при этом не точка
@@ -393,6 +474,10 @@ public class Location extends JFrame {
 									+ y2);
 							panel.repaint();
 						}
+					break;
+				case BORDER:
+				case STATION:
+				case DELETE:
 				}
 			}
 		}
@@ -443,5 +528,26 @@ public class Location extends JFrame {
 	 */
 	public Plan getPlan() {
 		return plan;
+	}
+
+	class DemoAction extends AbstractAction {
+
+		public DemoAction(String text, Icon icon, String description,
+				char accelerator) {
+			super(text, icon);
+			putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(accelerator,
+					Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+			putValue(SHORT_DESCRIPTION, description);
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			//System.out.println(getValue(NAME).toString());
+			switch (getValue(NAME).toString()) {
+				case "Walls": instrumentNumber = WALL; break;
+				case "Border": instrumentNumber = BORDER; break;
+				case "Stations": instrumentNumber = STATION; break;
+				case "Delete": instrumentNumber = DELETE; break;
+			}
+		}
 	}
 }

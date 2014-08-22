@@ -57,9 +57,6 @@ public class Plan {
 
 	/** Внешний контур. */
 	private Border border = null;
-
-	/** Связанный xml-файл. */
-	private File file = null;
 	
 	
 	
@@ -72,8 +69,6 @@ public class Plan {
 	 *            xml-файл с описанием плана
 	 */
 	public Plan(File file) {
-		
-		this.file = file;
 
 		DocumentBuilderFactory f = null;
 		DocumentBuilder builder = null;
@@ -498,7 +493,13 @@ public class Plan {
 			walls.add(w);
 	}
 
-	public void save() {
+	/**
+	 * Сохраняет план в указанный файл.
+	 * 
+	 * @param file
+	 *            файл для сохранения
+	 */
+	public void save(File file) {
 		DocumentBuilderFactory f = null;
 		DocumentBuilder builder = null;
 		Document doc = null;
