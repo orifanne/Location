@@ -2,7 +2,9 @@ package location;
 
 import java.awt.Polygon;
 import java.awt.geom.Line2D;
+import java.awt.geom.Line2D.Float;
 import java.awt.geom.PathIterator;
+import java.awt.geom.Point2D;
 
 /**
  * Представляет границу области локации.
@@ -27,11 +29,6 @@ public class Border extends Polygon {
 	public Border() {
 		super();
 	}
-
-
-
-
-
 
 	/**
 	 * Сообщает, лежит ли фрейм внутри контура.
@@ -139,4 +136,187 @@ public class Border extends Polygon {
 		return b;
 	}
 
+	/**
+	 * Сообщает,содержится ли данная точка в контуре
+	 * 
+	 * @param point
+	 *            точка, принадлежность которой к контуру нужно проверить
+	 * @return принадлежит ли точка контуру
+	 */
+	public boolean containsPoint(Point2D.Double point) {
+		PathIterator pi = this.getPathIterator(null);
+		boolean f = false;
+		float coords[] = new float[6];
+		float prev[] = new float[2];
+		float first[] = new float[2];
+		while (!pi.isDone()) {
+			switch (pi.currentSegment(coords)) {
+			case PathIterator.SEG_MOVETO:
+				prev[0] = coords[0];
+				prev[1] = coords[1];
+				first[0] = coords[0];
+				first[1] = coords[1];
+				break;
+			case PathIterator.SEG_LINETO:
+				Line2D.Float line = new Line2D.Float(prev[0], prev[1],
+						coords[0], coords[1]);
+				if (line.intersectsLine(new Line2D.Double(point, point))) {
+					f = true;
+				}
+				prev[0] = coords[0];
+				prev[1] = coords[1];
+				break;
+			case PathIterator.SEG_QUADTO:
+				// ignored
+				break;
+			case PathIterator.SEG_CUBICTO:
+				// ignored
+				break;
+			case PathIterator.SEG_CLOSE:
+				Line2D.Float line1 = new Line2D.Float(prev[0], prev[1],
+						first[0], first[1]);
+				if (line1.intersectsLine(new Line2D.Double(point, point))) {
+					f = true;
+				}
+				break;
+			}
+			pi.next();
+		}
+		return f;
+	}
+
+	/**
+	 * Сообщает,какой линии контура принадлежит точка
+	 * 
+	 * @param point
+	 *            точка, принадлежность которой к определенной линии нужно
+	 *            выяснить
+	 * @return линия, которой принадлежит данная точка, или null, если такой
+	 *         линии нет
+	 */
+	public Line2D.Float containingLine(Point2D.Double point) {
+		PathIterator pi = this.getPathIterator(null);
+		Line2D.Float l = null;
+		float coords[] = new float[6];
+		float prev[] = new float[2];
+		float first[] = new float[2];
+		while (!pi.isDone()) {
+			switch (pi.currentSegment(coords)) {
+			case PathIterator.SEG_MOVETO:
+				prev[0] = coords[0];
+				prev[1] = coords[1];
+				first[0] = coords[0];
+				first[1] = coords[1];
+				break;
+			case PathIterator.SEG_LINETO:
+				Line2D.Float line = new Line2D.Float(prev[0], prev[1],
+						coords[0], coords[1]);
+				if (line.intersectsLine(new Line2D.Double(point, point))) {
+					l = line;
+				}
+				prev[0] = coords[0];
+				prev[1] = coords[1];
+				break;
+			case PathIterator.SEG_QUADTO:
+				// ignored
+				break;
+			case PathIterator.SEG_CUBICTO:
+				// ignored
+				break;
+			case PathIterator.SEG_CLOSE:
+				Line2D.Float line1 = new Line2D.Float(prev[0], prev[1],
+						first[0], first[1]);
+				if (line1.intersectsLine(new Line2D.Double(point, point))) {
+					l = line1;
+				}
+				break;
+			}
+			pi.next();
+		}
+		return l;
+	}
+
+	/**
+	 * Добавляет в границу 2 точки, по порядку, между указанными двумя
+	 * 
+	 * @param point1
+	 *            первая точка для вставки
+	 * @param point2
+	 *            вторая точка для вставки
+	 * @param point2d
+	 *            первая точка, между которыми надо вставить
+	 * @param point2d2
+	 *            вторая точка, между которыми надо вставить
+	 */
+	public void addPoints(Point2D.Double point1, Point2D.Double point2,
+			Point2D point2d, Point2D point2d2) {
+		int[] newXpoints = new int[npoints + 2];
+		int[] newYpoints = new int[npoints + 2];
+		boolean f = false;
+		for (int i = 0; i < newXpoints.length; i++) {
+			if (f) {
+				newXpoints[i] = xpoints[i - 2];
+				newYpoints[i] = ypoints[i - 2];
+			} else {
+				if (i == (newXpoints.length - 2)) {
+					break;
+				} else if ((xpoints[i] == point2d.getX())
+						&& (ypoints[i] == point2d.getY())
+						&& (xpoints[i + 1] == point2d2.getX())
+						&& (ypoints[i + 1] == point2d2.getY())) {
+					newXpoints[i] = xpoints[i];
+					newYpoints[i] = ypoints[i];
+					i++;
+					newXpoints[i] = (int) point1.getX();
+					newYpoints[i] = (int) point1.getY();
+					i++;
+					newXpoints[i] = (int) point2.getX();
+					newYpoints[i] = (int) point2.getY();
+					f = true;
+				} else {
+					newXpoints[i] = xpoints[i];
+					newYpoints[i] = ypoints[i];
+				}
+			}
+		}
+		if (!f) {
+			int[] xp = new int[xpoints.length];
+			int[] yp = new int[ypoints.length];
+			for (int i = 0; i < xp.length; i++) {
+				xp[i] = xpoints[xpoints.length - i - 1];
+				yp[i] = ypoints[ypoints.length - i - 1];
+			}
+			xpoints = xp;
+			ypoints = yp;
+			for (int i = 0; i < newXpoints.length; i++) {
+				if (f) {
+					newXpoints[i] = xpoints[i - 2];
+					newYpoints[i] = ypoints[i - 2];
+				} else {
+					if (i == (newXpoints.length - 2)) {
+						return;
+					} else if ((xpoints[i] == point2d.getX())
+							&& (ypoints[i] == point2d.getY())
+							&& (xpoints[i + 1] == point2d2.getX())
+							&& (ypoints[i + 1] == point2d2.getY())) {
+						newXpoints[i] = xpoints[i];
+						newYpoints[i] = ypoints[i];
+						i++;
+						newXpoints[i] = (int) point1.getX();
+						newYpoints[i] = (int) point1.getY();
+						i++;
+						newXpoints[i] = (int) point2.getX();
+						newYpoints[i] = (int) point2.getY();
+						f = true;
+					} else {
+						newXpoints[i] = xpoints[i];
+						newYpoints[i] = ypoints[i];
+					}
+				}
+			}
+		}
+		xpoints = newXpoints;
+		ypoints = newYpoints;
+		npoints += 2;
+	}
 }

@@ -4,6 +4,9 @@ import javax.swing.*;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
+import java.awt.geom.Point2D.Double;
 import java.util.*;
 
 import javax.imageio.ImageIO;
@@ -32,7 +35,7 @@ import javax.swing.filechooser.FileFilter;
  * @author Pokrovskaya Oksana
  */
 public class Location extends JFrame {
-	
+
 	final int WALL = 0;
 	final int BORDER = 1;
 	final int STATION = 2;
@@ -53,6 +56,7 @@ public class Location extends JFrame {
 
 	/** Переключатели вида карты для отображения. */
 	private JRadioButton orign, taught;
+	/** Группа переключателей вида карты для отображения. */
 	private ButtonGroup bg;
 	/** Флаг того, что нужно показывать карту, полученную обучением. */
 	boolean displayTaught = false;
@@ -86,6 +90,10 @@ public class Location extends JFrame {
 	// объект для позиционирования
 	PosObject object;
 
+	/**
+	 * Прокручиваемое поле, котоорое вмещает панель для отображения плана
+	 * здания.
+	 */
 	JScrollPane scrollPane = new JScrollPane(panel);
 
 	/** Размер конечной ячейки. */
@@ -96,6 +104,31 @@ public class Location extends JFrame {
 
 	/** Список с выбором для рисования */
 	JComboBox<String> paintComboBox;
+
+	/** Флаг того, что происходит перетаскивание участка границы. */
+	boolean dragging = false;
+
+	/**
+	 * Координаты первой точки, зафиксированной на границе (для отметки участка
+	 * для перетаскивания)
+	 */
+	Point2D.Double firstCheckPoint = null;
+
+	/**
+	 * Координаты второй точки, зафиксированной на границе (для отметки участка
+	 * для перетаскивания)
+	 */
+	Point2D.Double secondCheckPoint = null;
+
+	/**
+	 * Координаты первой точки, зафиксированной на границе (для перетаскивания)
+	 */
+	Point2D.Double firstDraggingPoint = null;
+
+	/**
+	 * Координаты второй точки, зафиксированной на границе (для перетаскивания)
+	 */
+	Point2D.Double secondDraggingPoint = null;
 
 	public Location() {
 		// заголовок окна
@@ -284,6 +317,14 @@ public class Location extends JFrame {
 		saveAsItem.addActionListener(actionListener);
 	}
 
+	public Point2D.Double getFirstCheckPoint() {
+		return firstCheckPoint;
+	}
+
+	public Point2D.Double getSecondCheckPoint() {
+		return secondCheckPoint;
+	}
+
 	/**
 	 * Прослушиватель событий меню. При нажатии на кнопку "Open" вызывает диалог
 	 * выбора файла. При нажатии на кнопку "Close" закрывает файл.
@@ -426,9 +467,60 @@ public class Location extends JFrame {
 	 * Прослушиватель перемещений мыши.
 	 */
 	private class NewMouseMotionListener implements MouseMotionListener {
+		boolean changed = false;
 
-		/** Пустой обработчик. */
 		public void mouseDragged(MouseEvent e) {
+			if (instrumentNumber == BORDER) {
+
+				// приводим координаты перетаскивания к нужной кратности
+				int x = e.getX();
+				x -= x % (panel.getM() * panel.getBar());
+				int y = e.getY();
+				y -= y % (panel.getM() * panel.getBar());
+				// вертикальный отрезок
+				if (firstCheckPoint.getX() == secondCheckPoint.getX()) {
+					firstDraggingPoint
+							.setLocation(x, firstDraggingPoint.getY());
+					secondDraggingPoint.setLocation(x,
+							secondDraggingPoint.getY());
+					if (!changed) {
+						if (x != firstCheckPoint.getX()) {
+							Line2D.Float l = plan.getBorder().containingLine(
+									firstCheckPoint);
+							if (firstCheckPoint.getY() > secondCheckPoint
+									.getY()) {
+								if (l.getY1() > l.getY2())
+									plan.addBorderPoints(firstCheckPoint,
+											secondCheckPoint, l.getP1(),
+											l.getP2());
+								else
+									plan.addBorderPoints(firstCheckPoint,
+											secondCheckPoint, l.getP2(),
+											l.getP1());
+							} else {
+								if (l.getY1() > l.getY2())
+									plan.addBorderPoints(firstCheckPoint,
+											secondCheckPoint, l.getP2(),
+											l.getP1());
+								else
+									plan.addBorderPoints(firstCheckPoint,
+											secondCheckPoint, l.getP1(),
+											l.getP2());
+							}
+							plan.addBorderPoints(firstDraggingPoint, secondDraggingPoint, firstCheckPoint,
+									secondCheckPoint);
+						}
+					}
+					panel.repaint();
+				}
+				// горизонтальный отрезок
+				if (firstCheckPoint.getX() == secondCheckPoint.getX()) {
+					firstDraggingPoint
+							.setLocation(firstDraggingPoint.getX(), y);
+					secondDraggingPoint.setLocation(secondDraggingPoint.getX(),
+							y);
+				}
+			}
 		}
 
 		/** Пустой обработчик. */
@@ -441,8 +533,6 @@ public class Location extends JFrame {
 	 */
 	private class NewMouseListener implements MouseListener {
 
-		// флаг того, что происходит рисование
-		private boolean drawing = false;
 		// координаты начала и конца стены
 		private int x1;
 		private int y1;
@@ -451,15 +541,15 @@ public class Location extends JFrame {
 
 		public void mouseReleased(MouseEvent e) {
 			if (plan != null) {
-				drawing = false;
+				dragging = false;
 				// запоминаем координаты конца, приводя к нужной кратности
 				x2 = e.getX();
 				x2 -= x2 % (panel.getM() * panel.getBar());
 				y2 = e.getY();
 				y2 -= y2 % (panel.getM() * panel.getBar());
 
-				// проверяем, должна ли там появиться стена
 				switch (instrumentNumber) {
+				// проверяем, должна ли там появиться стена
 				case WALL:
 					// если отрезок горизонтальный или вертикальный
 					if ((x1 == x2) || (y1 == y2))
@@ -475,9 +565,16 @@ public class Location extends JFrame {
 							panel.repaint();
 						}
 					break;
+				// проверяем, должна ли быть перетащена граница
 				case BORDER:
+					// если это точка
+					if ((x1 == x2) && (y1 == y2))
+
+						break;
 				case STATION:
+					break;
 				case DELETE:
+					break;
 				}
 			}
 		}
@@ -492,17 +589,56 @@ public class Location extends JFrame {
 
 		public void mousePressed(MouseEvent e) {
 			if (plan != null) {
-				drawing = true;
 				// запоминаем координаты начала, приводя к нужной кратности
 				x1 = e.getX();
 				x1 -= x1 % (panel.getM() * panel.getBar());
 				y1 = e.getY();
 				y1 -= y1 % (panel.getM() * panel.getBar());
+				if ((instrumentNumber == BORDER) && (firstCheckPoint != null)
+						&& (secondCheckPoint != null)) {
+					Point2D.Double p = new Point2D.Double(x1 / panel.getBar()
+							/ panel.getM(), y1 / panel.getBar() / panel.getM());
+					Line2D.Float l = new Line2D.Float(firstCheckPoint,
+							secondCheckPoint);
+					if (l.intersectsLine(new Line2D.Float(p, p))) {
+						dragging = true;
+						firstDraggingPoint = firstCheckPoint;
+						secondDraggingPoint = secondCheckPoint;
+					}
+				}
 			}
 		}
 
-		/** Пустой обработчик. */
 		public void mouseClicked(MouseEvent e) {
+			if ((plan != null) && (instrumentNumber == BORDER)) {
+				// приводим координаты клика к нужной кратности
+				int x = e.getX();
+				x -= x % (panel.getM() * panel.getBar());
+				int y = e.getY();
+				y -= y % (panel.getM() * panel.getBar());
+				// System.out.println(x + " " + y);
+				Point2D.Double p = new Point2D.Double(x / panel.getBar()
+						/ panel.getM(), y / panel.getBar() / panel.getM());
+				Line2D.Float l = null;
+				if ((l = plan.getBorder().containingLine(p)) != null) {
+					if (firstCheckPoint == null)
+						firstCheckPoint = p;
+					else {
+						Line2D.Float l1 = plan.getBorder().containingLine(
+								firstCheckPoint);
+						if ((l.getX1() == l1.getX1())
+								&& (l.getY1() == l1.getY1())
+								&& (l.getX2() == l1.getX2())
+								&& (l.getY2() == l1.getY2()))
+							secondCheckPoint = p;
+					}
+					panel.repaint();
+				} else {
+					firstCheckPoint = null;
+					secondCheckPoint = null;
+					panel.repaint();
+				}
+			}
 		}
 	}
 
@@ -541,12 +677,20 @@ public class Location extends JFrame {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			//System.out.println(getValue(NAME).toString());
+			// System.out.println(getValue(NAME).toString());
 			switch (getValue(NAME).toString()) {
-				case "Walls": instrumentNumber = WALL; break;
-				case "Border": instrumentNumber = BORDER; break;
-				case "Stations": instrumentNumber = STATION; break;
-				case "Delete": instrumentNumber = DELETE; break;
+			case "Walls":
+				instrumentNumber = WALL;
+				break;
+			case "Border":
+				instrumentNumber = BORDER;
+				break;
+			case "Stations":
+				instrumentNumber = STATION;
+				break;
+			case "Delete":
+				instrumentNumber = DELETE;
+				break;
 			}
 		}
 	}

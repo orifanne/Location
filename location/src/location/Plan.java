@@ -3,6 +3,7 @@ package location;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -134,10 +135,15 @@ public class Plan {
 		}
 	}
 
+	/**
+	 * Создает пустой план помещения с областью локации прямоугольником (1,1) (10,10)
+	 */
 	public Plan() {
 		walls = new ArrayList<Wall>();
 		stations = new ArrayList<Station>();
-		border = new Border();
+		int[] x = {1, 10, 10, 1};
+		int[] y = {1, 1, 10, 10};
+		border = new Border(x, y);
 	}
 
 
@@ -564,5 +570,22 @@ public class Plan {
 		} catch (FileNotFoundException | TransformerException e) {
 			e.printStackTrace(); // заглушка
 		}
+	}
+	
+	/**
+	 * Добавляет в границу 2 точки, по порядку, между указанными двумя
+	 * 
+	 * @param point1
+	 *            первая точка для вставки
+	 * @param point2
+	 *            вторая точка для вставки
+	 * @param point2d
+	 *            первая точка, между которыми надо вставить
+	 * @param point2d2
+	 *            вторая точка, между которыми надо вставить
+	 */
+	public void addBorderPoints(Point2D.Double point1, Point2D.Double point2,
+			Point2D point2d, Point2D point2d2) {
+		border.addPoints(point1, point2, point2d, point2d2);
 	}
 }

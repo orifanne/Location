@@ -56,7 +56,13 @@ public class ImagePanel extends JPanel {
 	 * Радиус круга, которым отбражается базовая станция (в ячейках базовой
 	 * сетки)
 	 */
-	private double rad = 0.5;
+	private double radSt = 0.5;
+
+	/**
+	 * Радиус круга, которым отбражаются точки, ограничивающие отрезок
+	 * перетаскивания части границы (в ячейках базовой сетки)
+	 */
+	private double radCheckPont = 0.7;
 
 	Plan plan;
 
@@ -116,6 +122,9 @@ public class ImagePanel extends JPanel {
 			// отрисовываем базовые станции
 			drawStations(g);
 
+			// отрисовываем точки, ограничивающие отрезок перетаскивания части
+			// границы
+			drawCheckPonts(g);
 		}
 	}
 
@@ -299,17 +308,36 @@ public class ImagePanel extends JPanel {
 			plan = location.getPlan();
 			for (int i = 0; i < plan.getStations().size(); i++)
 				g.drawOval(
-						(int) (plan.getStation(i).getX() * m * bar - rad * bar),
-						(int) (plan.getStation(i).getY() * m * bar - rad * bar),
-						(int) (rad * bar * 2), (int) (rad * bar * 2));
+						(int) (plan.getStation(i).getX() * m * bar - radSt * bar),
+						(int) (plan.getStation(i).getY() * m * bar - radSt * bar),
+						(int) (radSt * bar * 2), (int) (radSt * bar * 2));
 			g.setColor(Color.red);
 			g.drawOval((int) (plan.getStation(location.getStationNumber())
-					.getX() * m * bar - rad * bar),
+					.getX() * m * bar - radSt * bar),
 					(int) (plan.getStation(location.getStationNumber()).getY()
-							* m * bar - rad * bar), (int) (rad * bar * 2),
-					(int) (rad * bar * 2));
+							* m * bar - radSt * bar), (int) (radSt * bar * 2),
+					(int) (radSt * bar * 2));
 		}
 
+	}
+
+	/**
+	 * Отрисовывает точки, ограничивающие отрезок перетаскивания границы.
+	 */
+	public void drawCheckPonts(Graphics2D g) {
+		g.setColor(Color.green);
+		if (location.getFirstCheckPoint() != null)
+			g.drawOval(
+					(int) (location.getFirstCheckPoint().getX() * m * bar - radCheckPont
+							* bar), (int) (location.getFirstCheckPoint().getY()
+							* m * bar - radCheckPont * bar), (int) (radCheckPont * bar * 2),
+					(int) (radCheckPont * bar * 2));
+		if (location.getSecondCheckPoint() != null)
+			g.drawOval(
+					(int) (location.getSecondCheckPoint().getX() * m * bar - radCheckPont
+							* bar), (int) (location.getSecondCheckPoint()
+							.getY() * m * bar - radCheckPont * bar),
+					(int) (radCheckPont * bar * 2), (int) (radCheckPont * bar * 2));
 	}
 
 	/**
