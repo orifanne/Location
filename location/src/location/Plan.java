@@ -141,8 +141,8 @@ public class Plan {
 	public Plan() {
 		walls = new ArrayList<Wall>();
 		stations = new ArrayList<Station>();
-		int[] x = {1, 10, 10, 1};
-		int[] y = {1, 1, 10, 10};
+		int[] x = {3, 13, 13, 3};
+		int[] y = {3, 3, 13, 13};
 		border = new Border(x, y);
 	}
 

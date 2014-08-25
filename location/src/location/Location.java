@@ -5,6 +5,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Line2D;
+import java.awt.geom.Line2D.Float;
 import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
 import java.util.*;
@@ -359,6 +360,10 @@ public class Location extends JFrame {
 			}
 			if ("create".equals(command)) {
 				openedFile = null;
+				firstCheckPoint = null;
+				secondCheckPoint = null;
+				firstDraggingPoint = null;
+				secondDraggingPoint = null;
 				plan = new Plan();
 				panel.repaint();
 				stationsComboBox.removeAllItems();
@@ -470,55 +475,79 @@ public class Location extends JFrame {
 		boolean changed = false;
 
 		public void mouseDragged(MouseEvent e) {
-			if (instrumentNumber == BORDER) {
-
+			if ((instrumentNumber == BORDER) && (dragging)) {
 				// приводим координаты перетаскивания к нужной кратности
 				int x = e.getX();
 				x -= x % (panel.getM() * panel.getBar());
 				int y = e.getY();
 				y -= y % (panel.getM() * panel.getBar());
-				// вертикальный отрезок
-				if (firstCheckPoint.getX() == secondCheckPoint.getX()) {
-					firstDraggingPoint
-							.setLocation(x, firstDraggingPoint.getY());
-					secondDraggingPoint.setLocation(x,
-							secondDraggingPoint.getY());
-					if (!changed) {
-						if (x != firstCheckPoint.getX()) {
-							Line2D.Float l = plan.getBorder().containingLine(
-									firstCheckPoint);
-							if (firstCheckPoint.getY() > secondCheckPoint
-									.getY()) {
-								if (l.getY1() > l.getY2())
-									plan.addBorderPoints(firstCheckPoint,
-											secondCheckPoint, l.getP1(),
-											l.getP2());
-								else
-									plan.addBorderPoints(firstCheckPoint,
-											secondCheckPoint, l.getP2(),
-											l.getP1());
-							} else {
-								if (l.getY1() > l.getY2())
-									plan.addBorderPoints(firstCheckPoint,
-											secondCheckPoint, l.getP2(),
-											l.getP1());
-								else
-									plan.addBorderPoints(firstCheckPoint,
-											secondCheckPoint, l.getP1(),
-											l.getP2());
+				if ((x >= 0) && (y >= 0)) {
+					// System.out.println(x / panel.getBar() / panel.getM() +
+					// " "
+					// + y / panel.getBar() / panel.getM());
+					// вертикальный отрезок
+					if (firstCheckPoint.getX() == secondCheckPoint.getX()) {
+						// System.out.println("vertical");
+						firstDraggingPoint.setLocation(x / panel.getBar()
+								/ panel.getM(), firstCheckPoint.getY());
+						secondDraggingPoint.setLocation(x / panel.getBar()
+								/ panel.getM(), secondCheckPoint.getY());
+						// System.out.println(firstDraggingPoint.getX() + " " +
+						// firstDraggingPoint.getY());
+						if (!changed) {
+							if ((x / panel.getBar() / panel.getM()) != firstCheckPoint
+									.getX()) {
+								System.out.println("changed");
+								Line2D.Float[] l = plan.getBorder()
+										.containingLine(firstCheckPoint);
+								Line2D.Float[] l1 = plan.getBorder()
+										.containingLine(secondCheckPoint);
+								Line2D.Float line = checkLine(firstCheckPoint,
+										secondCheckPoint, l, l1);
+
+								if (firstCheckPoint.getY() > secondCheckPoint
+										.getY()) {
+									if (line.getY1() > line.getY2()) {
+										plan.addBorderPoints(firstCheckPoint,
+												secondCheckPoint, line.getP1(),
+												line.getP2());
+										System.out.println("1");
+									} else {
+										plan.addBorderPoints(firstCheckPoint,
+												secondCheckPoint, line.getP2(),
+												line.getP1());
+										System.out.println("2");
+									}
+								} else {
+									if (line.getY1() > line.getY2()) {
+										plan.addBorderPoints(firstCheckPoint,
+												secondCheckPoint, line.getP2(),
+												line.getP1());
+										System.out.println("3");
+									} else {
+										plan.addBorderPoints(firstCheckPoint,
+												secondCheckPoint, line.getP1(),
+												line.getP2());
+										System.out.println("4");
+									}
+								}
+								plan.addBorderPoints(firstDraggingPoint,
+										secondDraggingPoint, firstCheckPoint,
+										secondCheckPoint);
+								changed = true;
 							}
-							plan.addBorderPoints(firstDraggingPoint, secondDraggingPoint, firstCheckPoint,
-									secondCheckPoint);
+						} else {
+
 						}
+						panel.repaint();
 					}
-					panel.repaint();
-				}
-				// горизонтальный отрезок
-				if (firstCheckPoint.getX() == secondCheckPoint.getX()) {
-					firstDraggingPoint
-							.setLocation(firstDraggingPoint.getX(), y);
-					secondDraggingPoint.setLocation(secondDraggingPoint.getX(),
-							y);
+					// горизонтальный отрезок
+					if (firstCheckPoint.getX() == secondCheckPoint.getX()) {
+						firstDraggingPoint.setLocation(
+								firstDraggingPoint.getX(), y);
+						secondDraggingPoint.setLocation(
+								secondDraggingPoint.getX(), y);
+					}
 				}
 			}
 		}
@@ -541,7 +570,14 @@ public class Location extends JFrame {
 
 		public void mouseReleased(MouseEvent e) {
 			if (plan != null) {
-				dragging = false;
+				if (dragging) {
+					firstCheckPoint = null;
+					secondCheckPoint = null;
+					firstDraggingPoint = null;
+					secondDraggingPoint = null;
+					panel.repaint();
+					dragging = false;
+				}
 				// запоминаем координаты конца, приводя к нужной кратности
 				x2 = e.getX();
 				x2 -= x2 % (panel.getM() * panel.getBar());
@@ -602,15 +638,15 @@ public class Location extends JFrame {
 							secondCheckPoint);
 					if (l.intersectsLine(new Line2D.Float(p, p))) {
 						dragging = true;
-						firstDraggingPoint = firstCheckPoint;
-						secondDraggingPoint = secondCheckPoint;
+						firstDraggingPoint = (Double) firstCheckPoint.clone();
+						secondDraggingPoint = (Double) secondCheckPoint.clone();
 					}
 				}
 			}
 		}
 
 		public void mouseClicked(MouseEvent e) {
-			if ((plan != null) && (instrumentNumber == BORDER)) {
+			if ((plan != null) && (instrumentNumber == BORDER) && (!dragging)) {
 				// приводим координаты клика к нужной кратности
 				int x = e.getX();
 				x -= x % (panel.getM() * panel.getBar());
@@ -619,17 +655,14 @@ public class Location extends JFrame {
 				// System.out.println(x + " " + y);
 				Point2D.Double p = new Point2D.Double(x / panel.getBar()
 						/ panel.getM(), y / panel.getBar() / panel.getM());
-				Line2D.Float l = null;
+				Line2D.Float l[] = null;
 				if ((l = plan.getBorder().containingLine(p)) != null) {
 					if (firstCheckPoint == null)
 						firstCheckPoint = p;
 					else {
-						Line2D.Float l1 = plan.getBorder().containingLine(
+						Line2D.Float l1[] = plan.getBorder().containingLine(
 								firstCheckPoint);
-						if ((l.getX1() == l1.getX1())
-								&& (l.getY1() == l1.getY1())
-								&& (l.getX2() == l1.getX2())
-								&& (l.getY2() == l1.getY2()))
+						if (checkLine(firstCheckPoint, p, l, l1) != null)
 							secondCheckPoint = p;
 					}
 					panel.repaint();
@@ -666,6 +699,41 @@ public class Location extends JFrame {
 		return plan;
 	}
 
+	/**
+	 * Получить линию, которой одновременно принадлежат обе точки.
+	 * 
+	 * @param p1
+	 *            первая точка
+	 * @param p2
+	 *            вторая точка
+	 * @param l1
+	 *            первая линия
+	 * @param l2
+	 *            вторая линия
+	 * @return линию, которой принадлежат обе точки, или null
+	 */
+	private Line2D.Float checkLine(Point2D.Double p1, Point2D.Double p2,
+			Line2D.Float[] l1, Line2D.Float[] l2) {
+		Line2D.Float l = null;
+		if (l1[0] != null)
+			if ((l1[0].intersectsLine(new Line2D.Float(p1, p1)))
+					&& (l1[0].intersectsLine(new Line2D.Float(p2, p2))))
+				l = l1[0];
+		if (l2[0] != null)
+			if ((l2[0].intersectsLine(new Line2D.Float(p1, p1)))
+					&& (l2[0].intersectsLine(new Line2D.Float(p2, p2))))
+				l = l2[0];
+		if (l2[1] != null)
+			if ((l2[1].intersectsLine(new Line2D.Float(p1, p1)))
+					&& (l2[1].intersectsLine(new Line2D.Float(p2, p2))))
+				l = l2[1];
+		if (l1[1] != null)
+			if ((l1[1].intersectsLine(new Line2D.Float(p1, p1)))
+					&& (l1[1].intersectsLine(new Line2D.Float(p2, p2))))
+				l = l1[1];
+		return l;
+	}
+
 	class DemoAction extends AbstractAction {
 
 		public DemoAction(String text, Icon icon, String description,
@@ -681,15 +749,30 @@ public class Location extends JFrame {
 			switch (getValue(NAME).toString()) {
 			case "Walls":
 				instrumentNumber = WALL;
+				firstCheckPoint = null;
+				secondCheckPoint = null;
+				firstDraggingPoint = null;
+				secondDraggingPoint = null;
+				panel.repaint();
 				break;
 			case "Border":
 				instrumentNumber = BORDER;
 				break;
 			case "Stations":
 				instrumentNumber = STATION;
+				firstCheckPoint = null;
+				secondCheckPoint = null;
+				firstDraggingPoint = null;
+				secondDraggingPoint = null;
+				panel.repaint();
 				break;
 			case "Delete":
 				instrumentNumber = DELETE;
+				firstCheckPoint = null;
+				secondCheckPoint = null;
+				firstDraggingPoint = null;
+				secondDraggingPoint = null;
+				panel.repaint();
 				break;
 			}
 		}

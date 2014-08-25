@@ -186,20 +186,21 @@ public class Border extends Polygon {
 	}
 
 	/**
-	 * Сообщает,какой линии контура принадлежит точка
+	 * Сообщает,каким линиям контура принадлежит точка
 	 * 
 	 * @param point
 	 *            точка, принадлежность которой к определенной линии нужно
 	 *            выяснить
-	 * @return линия, которой принадлежит данная точка, или null, если такой
-	 *         линии нет
+	 * @return линии, которым принадлежит данная точка, или null, если таких
+	 *         линий нет
 	 */
-	public Line2D.Float containingLine(Point2D.Double point) {
+	public Line2D.Float[] containingLine(Point2D.Double point) {
 		PathIterator pi = this.getPathIterator(null);
-		Line2D.Float l = null;
+		Line2D.Float[] l = new Line2D.Float[2];
 		float coords[] = new float[6];
 		float prev[] = new float[2];
 		float first[] = new float[2];
+		int i = 0;
 		while (!pi.isDone()) {
 			switch (pi.currentSegment(coords)) {
 			case PathIterator.SEG_MOVETO:
@@ -212,7 +213,8 @@ public class Border extends Polygon {
 				Line2D.Float line = new Line2D.Float(prev[0], prev[1],
 						coords[0], coords[1]);
 				if (line.intersectsLine(new Line2D.Double(point, point))) {
-					l = line;
+					l[i] = line;
+					i++;
 				}
 				prev[0] = coords[0];
 				prev[1] = coords[1];
@@ -227,13 +229,17 @@ public class Border extends Polygon {
 				Line2D.Float line1 = new Line2D.Float(prev[0], prev[1],
 						first[0], first[1]);
 				if (line1.intersectsLine(new Line2D.Double(point, point))) {
-					l = line1;
+					l[i] = line1;
+					i++;
 				}
 				break;
 			}
 			pi.next();
 		}
-		return l;
+		if (i > 0)
+			return l;
+		else
+			return null;
 	}
 
 	/**
@@ -258,7 +264,24 @@ public class Border extends Polygon {
 				newXpoints[i] = xpoints[i - 2];
 				newYpoints[i] = ypoints[i - 2];
 			} else {
-				if (i == (newXpoints.length - 2)) {
+				if (i == (xpoints.length - 1)) {
+					if ((xpoints[i] == point2d.getX())
+							&& (ypoints[i] == point2d.getY())
+							&& (xpoints[0] == point2d2.getX())
+							&& (ypoints[0] == point2d2.getY())) {
+						newXpoints[i] = xpoints[i];
+						newYpoints[i] = ypoints[i];
+						i++;
+						newXpoints[i] = (int) point1.getX();
+						newYpoints[i] = (int) point1.getY();
+						i++;
+						newXpoints[i] = (int) point2.getX();
+						newYpoints[i] = (int) point2.getY();
+						xpoints = newXpoints;
+						ypoints = newYpoints;
+						npoints += 2;
+						return;
+					}
 					break;
 				} else if ((xpoints[i] == point2d.getX())
 						&& (ypoints[i] == point2d.getY())
@@ -293,7 +316,24 @@ public class Border extends Polygon {
 					newXpoints[i] = xpoints[i - 2];
 					newYpoints[i] = ypoints[i - 2];
 				} else {
-					if (i == (newXpoints.length - 2)) {
+					if (i == (xpoints.length - 1)) {
+						if ((xpoints[i] == point2d.getX())
+								&& (ypoints[i] == point2d.getY())
+								&& (xpoints[0] == point2d2.getX())
+								&& (ypoints[0] == point2d2.getY())) {
+							newXpoints[i] = xpoints[i];
+							newYpoints[i] = ypoints[i];
+							i++;
+							newXpoints[i] = (int) point1.getX();
+							newYpoints[i] = (int) point1.getY();
+							i++;
+							newXpoints[i] = (int) point2.getX();
+							newYpoints[i] = (int) point2.getY();
+							xpoints = newXpoints;
+							ypoints = newYpoints;
+							npoints += 2;
+							return;
+						}
 						return;
 					} else if ((xpoints[i] == point2d.getX())
 							&& (ypoints[i] == point2d.getY())
