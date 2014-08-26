@@ -472,8 +472,6 @@ public class Location extends JFrame {
 	 * Прослушиватель перемещений мыши.
 	 */
 	private class NewMouseMotionListener implements MouseMotionListener {
-		boolean changed = false;
-
 		public void mouseDragged(MouseEvent e) {
 			if ((instrumentNumber == BORDER) && (dragging)) {
 				// приводим координаты перетаскивания к нужной кратности
@@ -482,64 +480,47 @@ public class Location extends JFrame {
 				int y = e.getY();
 				y -= y % (panel.getM() * panel.getBar());
 				if ((x >= 0) && (y >= 0)) {
-					// System.out.println(x / panel.getBar() / panel.getM() +
-					// " "
-					// + y / panel.getBar() / panel.getM());
 					// вертикальный отрезок
 					if (firstCheckPoint.getX() == secondCheckPoint.getX()) {
-						// System.out.println("vertical");
 						firstDraggingPoint.setLocation(x / panel.getBar()
 								/ panel.getM(), firstCheckPoint.getY());
 						secondDraggingPoint.setLocation(x / panel.getBar()
 								/ panel.getM(), secondCheckPoint.getY());
-						// System.out.println(firstDraggingPoint.getX() + " " +
-						// firstDraggingPoint.getY());
-						if (!changed) {
-							if ((x / panel.getBar() / panel.getM()) != firstCheckPoint
-									.getX()) {
-								System.out.println("changed");
-								Line2D.Float[] l = plan.getBorder()
-										.containingLine(firstCheckPoint);
-								Line2D.Float[] l1 = plan.getBorder()
-										.containingLine(secondCheckPoint);
-								Line2D.Float line = checkLine(firstCheckPoint,
-										secondCheckPoint, l, l1);
-
-								if (firstCheckPoint.getY() > secondCheckPoint
-										.getY()) {
-									if (line.getY1() > line.getY2()) {
-										plan.addBorderPoints(firstCheckPoint,
-												secondCheckPoint, line.getP1(),
-												line.getP2());
-										System.out.println("1");
-									} else {
-										plan.addBorderPoints(firstCheckPoint,
-												secondCheckPoint, line.getP2(),
-												line.getP1());
-										System.out.println("2");
-									}
+						if ((x / panel.getBar() / panel.getM()) != firstCheckPoint
+								.getX()) {
+							Line2D.Float line = plan.getBorder().checkLine(firstCheckPoint,
+									secondCheckPoint);
+							if (firstCheckPoint.getY() > secondCheckPoint
+									.getY()) {
+								if (line.getY1() > line.getY2()) {
+									plan.addBorderPoints(firstCheckPoint,
+											secondCheckPoint, line.getP1(),
+											line.getP2());
 								} else {
-									if (line.getY1() > line.getY2()) {
-										plan.addBorderPoints(firstCheckPoint,
-												secondCheckPoint, line.getP2(),
-												line.getP1());
-										System.out.println("3");
-									} else {
-										plan.addBorderPoints(firstCheckPoint,
-												secondCheckPoint, line.getP1(),
-												line.getP2());
-										System.out.println("4");
-									}
+									plan.addBorderPoints(firstCheckPoint,
+											secondCheckPoint, line.getP2(),
+											line.getP1());
 								}
-								plan.addBorderPoints(firstDraggingPoint,
-										secondDraggingPoint, firstCheckPoint,
-										secondCheckPoint);
-								changed = true;
+							} else {
+								if (line.getY1() > line.getY2()) {
+									plan.addBorderPoints(firstCheckPoint,
+											secondCheckPoint, line.getP2(),
+											line.getP1());
+								} else {
+									plan.addBorderPoints(firstCheckPoint,
+											secondCheckPoint, line.getP1(),
+											line.getP2());
+								}
 							}
-						} else {
-
+							plan.addBorderPoints(firstDraggingPoint,
+									secondDraggingPoint, firstCheckPoint,
+									secondCheckPoint);
+							firstCheckPoint = (Double) firstDraggingPoint
+									.clone();
+							secondCheckPoint = (Double) secondDraggingPoint
+									.clone();
 						}
-						panel.repaint();
+
 					}
 					// горизонтальный отрезок
 					if (firstCheckPoint.getX() == secondCheckPoint.getX()) {
@@ -548,6 +529,8 @@ public class Location extends JFrame {
 						secondDraggingPoint.setLocation(
 								secondDraggingPoint.getX(), y);
 					}
+					plan.deleteWrongBorderPoints();
+					panel.repaint();
 				}
 			}
 		}
@@ -577,6 +560,7 @@ public class Location extends JFrame {
 					secondDraggingPoint = null;
 					panel.repaint();
 					dragging = false;
+					plan.deleteWrongBorderPoints();
 				}
 				// запоминаем координаты конца, приводя к нужной кратности
 				x2 = e.getX();
@@ -596,8 +580,6 @@ public class Location extends JFrame {
 									/ panel.getBar() / panel.getM(),
 									x2 / panel.getBar() / panel.getM(), y2
 											/ panel.getBar() / panel.getM());
-							System.out.println(x1 + " " + y1 + " : " + x2 + " "
-									+ y2);
 							panel.repaint();
 						}
 					break;
@@ -652,17 +634,13 @@ public class Location extends JFrame {
 				x -= x % (panel.getM() * panel.getBar());
 				int y = e.getY();
 				y -= y % (panel.getM() * panel.getBar());
-				// System.out.println(x + " " + y);
 				Point2D.Double p = new Point2D.Double(x / panel.getBar()
 						/ panel.getM(), y / panel.getBar() / panel.getM());
-				Line2D.Float l[] = null;
-				if ((l = plan.getBorder().containingLine(p)) != null) {
+				if ((plan.getBorder().containingLine(p)) != null) {
 					if (firstCheckPoint == null)
 						firstCheckPoint = p;
 					else {
-						Line2D.Float l1[] = plan.getBorder().containingLine(
-								firstCheckPoint);
-						if (checkLine(firstCheckPoint, p, l, l1) != null)
+						if (plan.getBorder().checkLine(firstCheckPoint, p) != null)
 							secondCheckPoint = p;
 					}
 					panel.repaint();
@@ -699,41 +677,6 @@ public class Location extends JFrame {
 		return plan;
 	}
 
-	/**
-	 * Получить линию, которой одновременно принадлежат обе точки.
-	 * 
-	 * @param p1
-	 *            первая точка
-	 * @param p2
-	 *            вторая точка
-	 * @param l1
-	 *            первая линия
-	 * @param l2
-	 *            вторая линия
-	 * @return линию, которой принадлежат обе точки, или null
-	 */
-	private Line2D.Float checkLine(Point2D.Double p1, Point2D.Double p2,
-			Line2D.Float[] l1, Line2D.Float[] l2) {
-		Line2D.Float l = null;
-		if (l1[0] != null)
-			if ((l1[0].intersectsLine(new Line2D.Float(p1, p1)))
-					&& (l1[0].intersectsLine(new Line2D.Float(p2, p2))))
-				l = l1[0];
-		if (l2[0] != null)
-			if ((l2[0].intersectsLine(new Line2D.Float(p1, p1)))
-					&& (l2[0].intersectsLine(new Line2D.Float(p2, p2))))
-				l = l2[0];
-		if (l2[1] != null)
-			if ((l2[1].intersectsLine(new Line2D.Float(p1, p1)))
-					&& (l2[1].intersectsLine(new Line2D.Float(p2, p2))))
-				l = l2[1];
-		if (l1[1] != null)
-			if ((l1[1].intersectsLine(new Line2D.Float(p1, p1)))
-					&& (l1[1].intersectsLine(new Line2D.Float(p2, p2))))
-				l = l1[1];
-		return l;
-	}
-
 	class DemoAction extends AbstractAction {
 
 		public DemoAction(String text, Icon icon, String description,
@@ -745,7 +688,6 @@ public class Location extends JFrame {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			// System.out.println(getValue(NAME).toString());
 			switch (getValue(NAME).toString()) {
 			case "Walls":
 				instrumentNumber = WALL;

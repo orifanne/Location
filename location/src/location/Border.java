@@ -5,6 +5,8 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Line2D.Float;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
+import java.awt.geom.Point2D.Double;
+import java.util.ArrayList;
 
 /**
  * Представляет границу области локации.
@@ -71,8 +73,6 @@ public class Border extends Polygon {
 			case PathIterator.SEG_LINETO:
 				Line2D.Float line = new Line2D.Float(prev[0], prev[1],
 						coords[0], coords[1]);
-				// System.out.println(prev[0] + " " + prev[1] + " " +
-				// coords[0] + " " + coords[1]);
 				if (line.intersectsLine((x1 + x2) / 2, y1, (x1 + x2) / 2, y2)) {
 					if (line.getY1() == line.getY2()) {
 						if (line.getY1() == y1)
@@ -103,8 +103,6 @@ public class Border extends Polygon {
 			case PathIterator.SEG_CLOSE:
 				Line2D.Float line1 = new Line2D.Float(prev[0], prev[1],
 						first[0], first[1]);
-				// System.out.println("close " + prev[0] + " " + prev[1] + " " +
-				// first[0] + " " + first[1]);
 				if (line1.intersectsLine((x1 + x2) / 2, y1, (x1 + x2) / 2, y2)) {
 					if (line1.getY1() == line1.getY2()) {
 						if (line1.getY1() == y1)
@@ -243,7 +241,8 @@ public class Border extends Polygon {
 	}
 
 	/**
-	 * Добавляет в границу 2 точки, по порядку, между указанными двумя
+	 * Добавляет в границу 2 точки, по порядку, между указанными двумя (если
+	 * точка уже есть в контуре, то она не добавляется )
 	 * 
 	 * @param point1
 	 *            первая точка для вставки
@@ -256,6 +255,13 @@ public class Border extends Polygon {
 	 */
 	public void addPoints(Point2D.Double point1, Point2D.Double point2,
 			Point2D point2d, Point2D point2d2) {
+		System.out.println("check1");
+		if ((checkLine(point1, point2) != null)
+				&& (checkLine(point1, new Point2D.Double(point2d2.getX(),
+						point2d2.getY())) == null)) {
+			System.out.println("check2");
+			return;
+		}
 		int[] newXpoints = new int[npoints + 2];
 		int[] newYpoints = new int[npoints + 2];
 		boolean f = false;
@@ -348,6 +354,7 @@ public class Border extends Polygon {
 						newXpoints[i] = (int) point2.getX();
 						newYpoints[i] = (int) point2.getY();
 						f = true;
+
 					} else {
 						newXpoints[i] = xpoints[i];
 						newYpoints[i] = ypoints[i];
@@ -358,5 +365,140 @@ public class Border extends Polygon {
 		xpoints = newXpoints;
 		ypoints = newYpoints;
 		npoints += 2;
+	}
+
+	/**
+	 * Убирает ненужные точки (те, что лежат не в прямых углах контура)
+	 */
+	public void deleteWrongPoints() {
+		PathIterator pi = this.getPathIterator(null);
+		float coords[] = new float[6];
+		float prev[] = new float[2];
+		float first[] = new float[2];
+		ArrayList<Point2D.Double> p = new ArrayList<Point2D.Double>();
+		Line2D.Float prevLine = null;
+		Line2D.Float firstLine = null;
+		while (!pi.isDone()) {
+			switch (pi.currentSegment(coords)) {
+			case PathIterator.SEG_MOVETO:
+				prev[0] = coords[0];
+				prev[1] = coords[1];
+				first[0] = coords[0];
+				first[1] = coords[1];
+				break;
+			case PathIterator.SEG_LINETO:
+				Line2D.Float line = new Line2D.Float(prev[0], prev[1],
+						coords[0], coords[1]);
+				if (prevLine != null) {
+					if ((new Line2D.Float(prevLine.getP1(), line.getP2())
+							.intersectsLine(new Line2D.Float(prevLine.getP2(),
+									prevLine.getP2())))
+							|| (line.intersectsLine(new Line2D.Float(prevLine
+									.getP1(), prevLine.getP1())))
+							|| (prevLine.intersectsLine(new Line2D.Float(line
+									.getP2(), line.getP2()))))
+						p.add(new Point2D.Double(prevLine.getX2(), prevLine
+								.getY2()));
+				} else
+					firstLine = line;
+				prev[0] = coords[0];
+				prev[1] = coords[1];
+				prevLine = (Float) line.clone();
+				break;
+			case PathIterator.SEG_QUADTO:
+				// ignored
+				break;
+			case PathIterator.SEG_CUBICTO:
+				// ignored
+				break;
+			case PathIterator.SEG_CLOSE:
+				Line2D.Float line1 = new Line2D.Float(prev[0], prev[1],
+						first[0], first[1]);
+				if (prevLine != null) {
+					if ((new Line2D.Float(prevLine.getP1(), line1.getP2())
+							.intersectsLine(new Line2D.Float(prevLine.getP2(),
+									prevLine.getP2())))
+							|| (line1.intersectsLine(new Line2D.Float(prevLine
+									.getP1(), prevLine.getP1())))
+							|| (prevLine.intersectsLine(new Line2D.Float(line1
+									.getP2(), line1.getP2()))))
+						p.add(new Point2D.Double(prevLine.getX2(), prevLine
+								.getY2()));
+					prevLine = line1;
+				}
+				break;
+			}
+			pi.next();
+		}
+		if ((new Line2D.Float(prevLine.getP1(), firstLine.getP2())
+				.intersectsLine(new Line2D.Float(prevLine.getP2(), prevLine
+						.getP2())))
+				|| (firstLine.intersectsLine(new Line2D.Float(prevLine.getP1(),
+						prevLine.getP1())))
+				|| (prevLine.intersectsLine(new Line2D.Float(firstLine.getP2(),
+						firstLine.getP2()))))
+			p.add(new Point2D.Double(prevLine.getX2(), prevLine.getY2()));
+		for (int i = 0; i < p.size(); i++) {
+			deletePoint(p.get(i));
+		}
+	}
+
+	/**
+	 * Удаляет точку
+	 * 
+	 * @param p
+	 *            точка, которую нужно удалить
+	 */
+	public void deletePoint(Point2D.Double p) {
+		boolean f = false;
+		for (int i = 0; i < npoints - 1; i++) {
+			if (f) {
+				xpoints[i] = xpoints[i + 1];
+				ypoints[i] = ypoints[i + 1];
+			} else {
+				if ((xpoints[i] == p.getX()) && (ypoints[i] == p.getY())) {
+					f = true;
+					i--;
+				}
+			}
+		}
+		if ((f)
+				|| ((xpoints[npoints - 1] == p.getX()) && (ypoints[npoints - 1] == p
+						.getY())))
+			npoints--;
+	}
+
+	/**
+	 * Получить линию, которой одновременно принадлежат обе точки.
+	 * 
+	 * @param p1
+	 *            первая точка
+	 * @param p2
+	 *            вторая точка
+	 * @return линию, которой принадлежат обе точки, или null
+	 */
+	public Line2D.Float checkLine(Point2D.Double p1, Point2D.Double p2) {
+		Line2D.Float l = null;
+		Line2D.Float[] l1 = containingLine(p1);
+		Line2D.Float[] l2 = containingLine(p2);
+		if ((l1 == null) || (l2 == null))
+			return null;
+		if (l1[0] != null)
+			if ((l1[0].intersectsLine(new Line2D.Float(p1, p1)))
+					&& (l1[0].intersectsLine(new Line2D.Float(p2, p2))))
+				l = l1[0];
+		if (l2[0] != null)
+			if ((l2[0].intersectsLine(new Line2D.Float(p1, p1)))
+					&& (l2[0].intersectsLine(new Line2D.Float(p2, p2))))
+				l = l2[0];
+		if (l2[1] != null)
+			if ((l2[1].intersectsLine(new Line2D.Float(p1, p1)))
+					&& (l2[1].intersectsLine(new Line2D.Float(p2, p2))))
+				l = l2[1];
+		if (l1[1] != null)
+			if ((l1[1].intersectsLine(new Line2D.Float(p1, p1)))
+					&& (l1[1].intersectsLine(new Line2D.Float(p2, p2))))
+				l = l1[1];
+		return l;
 	}
 }

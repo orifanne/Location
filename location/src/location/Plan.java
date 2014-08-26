@@ -588,4 +588,8 @@ public class Plan {
 			Point2D point2d, Point2D point2d2) {
 		border.addPoints(point1, point2, point2d, point2d2);
 	}
+
+	public void deleteWrongBorderPoints() {
+		border.deleteWrongPoints();
+	}
 }
