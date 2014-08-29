@@ -17,6 +17,8 @@ public class ImagePanel extends JPanel {
 	private int wPen = 5;
 	// толщина линии для отрисовки базовой сетки
 	private int bPen = 1;
+	// толщина линии для отрисовки сетки, размечающей метры
+	private int oneMeterPen = 2;
 	// толщина линии для отрисовки внешнего контура
 	private int borderPen = 8;
 	/** Количество пикселов, отводимое для отрисовки базовой ячейки */
@@ -193,17 +195,26 @@ public class ImagePanel extends JPanel {
 	}
 
 	/**
-	 * Отрисовывает линии, образованные всеми абсциссами и всеми ординатами
-	 * концов стен (по которым потом строятся фреймы).
+	 * Отрисовывает базовую сетку.
 	 */
 	public void drawBaseLines(Graphics2D g) {
 		BasicStroke b = new BasicStroke(bPen);
-		g.setStroke(b);
+		BasicStroke b1 = new BasicStroke(oneMeterPen);
 		g.setColor(Color.GRAY);
-		for (int i = 0; i < vBars; i++)
+		for (int i = 0; i < vBars; i++) {
+			if (i % m == 0) 
+				g.setStroke(b1);
+			else 
+				g.setStroke(b);
 			g.drawLine(0, bar * i, width, bar * i);
-		for (int i = 0; i < hBars; i++)
+		}
+		for (int i = 0; i < hBars; i++) {
+			if (i % m == 0) 
+				g.setStroke(b1);
+			else 
+				g.setStroke(b);
 			g.drawLine(bar * i, 0, bar * i, height);
+		}
 	}
 
 	/*

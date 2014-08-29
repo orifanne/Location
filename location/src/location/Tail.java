@@ -52,7 +52,6 @@ public class Tail extends AbstractTail {
 	}
 
 	public Tail(double x11, double y11, double x21, double y21) {
-		// TODO Auto-generated constructor stub
 		x1 = x11;
 		x2 = x21;
 		y1 = y11;

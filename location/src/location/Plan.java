@@ -583,13 +583,19 @@ public class Plan {
 	 *            первая точка, между которыми надо вставить
 	 * @param point2d2
 	 *            вторая точка, между которыми надо вставить
+	 * @return 
 	 */
-	public void addBorderPoints(Point2D.Double point1, Point2D.Double point2,
+	public boolean addBorderPoints(Point2D.Double point1, Point2D.Double point2,
 			Point2D point2d, Point2D point2d2) {
-		border.addPoints(point1, point2, point2d, point2d2);
+		return border.addPoints(point1, point2, point2d, point2d2);
 	}
 
 	public void deleteWrongBorderPoints() {
 		border.deleteWrongPoints();
 	}
+	
+	public void deleteBorderPoint(Point2D.Double point) {
+		border.deletePoint(point);
+	}
+
 }

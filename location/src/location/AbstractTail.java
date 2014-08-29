@@ -8,7 +8,6 @@ public class AbstractTail {
 	protected double y;
 
 	public AbstractTail() {
-		// TODO Auto-generated constructor stub
 	}
 
 	/**
