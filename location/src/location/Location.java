@@ -695,20 +695,14 @@ public class Location extends JFrame {
 				y2 -= y2 % (panel.getM() * panel.getBar());
 
 				switch (instrumentNumber) {
-				// проверяем, должна ли там появиться стена
 				case WALL:
-					// если отрезок горизонтальный или вертикальный
-					if ((x1 == x2) || (y1 == y2))
-						// и при этом не точка
-						if (!((x1 == x2) && (y1 == y2))) {
-							// добавить новую стену
-							plan.addWall(x1 / panel.getBar() / panel.getM(), y1
-									/ panel.getBar() / panel.getM(),
-									x2 / panel.getBar() / panel.getM(), y2
-											/ panel.getBar() / panel.getM());
-							plan.devide(tailSize);
-							panel.repaint();
-						}
+					// добавить новую стену
+					plan.addWall(x1 / panel.getBar() / panel.getM(),
+							y1 / panel.getBar() / panel.getM(),
+							x2 / panel.getBar() / panel.getM(),
+							y2 / panel.getBar() / panel.getM());
+					plan.devide(tailSize);
+					panel.repaint();
 					break;
 				// проверяем, должна ли быть перетащена граница
 				case BORDER:

@@ -58,11 +58,7 @@ public class Plan {
 
 	/** Внешний контур. */
 	private Border border = null;
-	
-	
-	
-	
-	
+
 	/**
 	 * Строит план помещения по xml-файлу.
 	 * 
@@ -136,20 +132,16 @@ public class Plan {
 	}
 
 	/**
-	 * Создает пустой план помещения с областью локации прямоугольником (1,1) (10,10)
+	 * Создает пустой план помещения с областью локации прямоугольником (1,1)
+	 * (10,10)
 	 */
 	public Plan() {
 		walls = new ArrayList<Wall>();
 		stations = new ArrayList<Station>();
-		int[] x = {3, 13, 13, 3};
-		int[] y = {3, 3, 13, 13};
+		int[] x = { 3, 13, 13, 3 };
+		int[] y = { 3, 3, 13, 13 };
 		border = new Border(x, y);
 	}
-
-
-
-
-
 
 	/**
 	 * Разбивает область локации на ячейки.
@@ -391,7 +383,8 @@ public class Plan {
 		boolean left = false;
 		for (int i = 0; i < walls.size(); i++) {
 			// System.out.println(i);
-			if (walls.get(i).intersectsLine((x1 + x2) / 2, y1, (x1 + x2) / 2, y2)) {
+			if (walls.get(i).intersectsLine((x1 + x2) / 2, y1, (x1 + x2) / 2,
+					y2)) {
 				if (walls.get(i).getY1() == walls.get(i).getY2()) {
 					if (walls.get(i).getY1() == y1)
 						up = true;
@@ -400,7 +393,8 @@ public class Plan {
 					// continue;
 				}
 			}
-			if (walls.get(i).intersectsLine(x1, (y1 + y2) / 2, x2, (y1 + y2) / 2)) {
+			if (walls.get(i).intersectsLine(x1, (y1 + y2) / 2, x2,
+					(y1 + y2) / 2)) {
 				if (walls.get(i).getX1() == walls.get(i).getX2()) {
 					if (walls.get(i).getX1() == x1)
 						left = true;
@@ -422,11 +416,6 @@ public class Plan {
 		return b;
 	}
 
-	
-	
-	
-	
-	
 	/**
 	 * Получить список базовых станций.
 	 */
@@ -485,18 +474,101 @@ public class Plan {
 	public int getTailsNum() {
 		return tailsNum;
 	}
-	
+
 	/**
-	 * Добавить стену.
-	 * @param x1 абсцисса начала
-	 * @param y1 ордината начала
-	 * @param x2 абсцисса конца
-	 * @param y2 ордината конца
+	 * Добавить стену. Если стена не является горизонтальной или вертикальной,
+	 * то она не будет добавлена. Если в результате добавления какие-то отрезки
+	 * стен станут дублироваться, то такие стены будут слиты в одну.
+	 * Если стена явяется точкой, то она не будет добавлена.
+	 * 
+	 * @param x1
+	 *            абсцисса начала
+	 * @param y1
+	 *            ордината начала
+	 * @param x2
+	 *            абсцисса конца
+	 * @param y2
+	 *            ордината конца
 	 */
 	public void addWall(int x1, int y1, int x2, int y2) {
+		// точки не добавляем
+		if ((x1 == x2) && (y1 == y2))
+			return;
 		Wall w = new Wall(x1, y1, x2, y2);
-		if (!walls.contains(w))
-			walls.add(w);
+		ArrayList<Wall> s = new ArrayList<Wall>();
+		s.add(w);
+		// вертикальная стена
+		if (x1 == x2) {
+			// перебираем все стены
+			for (int i = 0; i < walls.size(); i++) {
+				// если очередная стена не вертикальная, пропускаем ее
+				if (walls.get(i).getX1() != walls.get(i).getX2())
+					continue;
+				// иначе проверяем на пересечение с нашей новой стеной
+				if (walls.get(i).intersectsLine(w))
+					// если пересекается, запоминаем ее
+					s.add(walls.get(i));
+			}
+			// находим максимум и минимум по y
+			int maxY = 0;
+			int minY = Integer.MAX_VALUE;
+			for (int i = 0; i < s.size(); i++) {
+				if (s.get(i).getY1() > maxY)
+					maxY = (int) s.get(i).getY1();
+				if (s.get(i).getY2() > maxY)
+					maxY = (int) s.get(i).getY2();
+				if (s.get(i).getY1() < minY)
+					minY = (int) s.get(i).getY1();
+				if (s.get(i).getY2() < minY)
+					minY = (int) s.get(i).getY2();
+			}
+			// удаляем все лишние стены
+			for (int i = 0; i < s.size(); i++)
+				deleteWall(s.get(i));
+			// добавляем одну итоговую
+			walls.add(new Wall(x1, minY, x1, maxY));
+		}
+		// горизонтальная стена
+		if (y1 == y2) {
+			// перебираем все стены
+			for (int i = 0; i < walls.size(); i++) {
+				// если очередная стена не горизонтальная, пропускаем ее
+				if (walls.get(i).getY1() != walls.get(i).getY2())
+					continue;
+				// иначе проверяем на пересечение с нашей новой стеной
+				if (walls.get(i).intersectsLine(w))
+					// если пересекается, запоминаем ее
+					s.add(walls.get(i));
+			}
+			// находим максимум и минимум по x
+			int maxX = 0;
+			int minX = Integer.MAX_VALUE;
+			for (int i = 0; i < s.size(); i++) {
+				if (s.get(i).getX1() > maxX)
+					maxX = (int) s.get(i).getX1();
+				if (s.get(i).getX2() > maxX)
+					maxX = (int) s.get(i).getX2();
+				if (s.get(i).getX1() < minX)
+					minX = (int) s.get(i).getX1();
+				if (s.get(i).getX2() < minX)
+					minX = (int) s.get(i).getX2();
+			}
+			// удаляем все лишние стены
+			for (int i = 0; i < s.size(); i++)
+				deleteWall(s.get(i));
+			// добавляем одну итоговую
+			walls.add(new Wall(minX, y1, maxX, y1));
+		}
+	}
+
+	/**
+	 * Удалить стену.
+	 * 
+	 * @param w
+	 *            стена, которую нужно удалить
+	 */
+	public void deleteWall(Wall w) {
+		walls.remove(w);
 	}
 
 	/**
@@ -521,10 +593,10 @@ public class Plan {
 		} // заглушка
 
 		doc = builder.newDocument();
-		
+
 		Element locEl = doc.createElement("location");
 		Element planEl = doc.createElement("plan");
-		
+
 		for (int i = 0; i < border.npoints; i++) {
 			Element doteEl = doc.createElement("dote");
 			doteEl.setAttribute("x", Integer.toString(border.xpoints[i], 10));
@@ -533,31 +605,36 @@ public class Plan {
 		}
 		for (int i = 0; i < walls.size(); i++) {
 			Element wallEl = doc.createElement("wall");
-			wallEl.setAttribute("x1", Integer.toString((int) walls.get(i).getX1(), 10));
-			wallEl.setAttribute("y1", Integer.toString((int) walls.get(i).getY1(), 10));
-			wallEl.setAttribute("x2", Integer.toString((int) walls.get(i).getX2(), 10));
-			wallEl.setAttribute("y2", Integer.toString((int) walls.get(i).getY2(), 10));
+			wallEl.setAttribute("x1",
+					Integer.toString((int) walls.get(i).getX1(), 10));
+			wallEl.setAttribute("y1",
+					Integer.toString((int) walls.get(i).getY1(), 10));
+			wallEl.setAttribute("x2",
+					Integer.toString((int) walls.get(i).getX2(), 10));
+			wallEl.setAttribute("y2",
+					Integer.toString((int) walls.get(i).getY2(), 10));
 			planEl.appendChild(wallEl);
 		}
 		for (int i = 0; i < stations.size(); i++) {
 			Element stEl = doc.createElement("station");
-			stEl.setAttribute("x", Integer.toString((int) stations.get(i).getX(), 10));
-			stEl.setAttribute("y", Integer.toString((int) stations.get(i).getY(), 10));
+			stEl.setAttribute("x",
+					Integer.toString((int) stations.get(i).getX(), 10));
+			stEl.setAttribute("y",
+					Integer.toString((int) stations.get(i).getY(), 10));
 			stEl.setAttribute("name", stations.get(i).getName());
 			planEl.appendChild(stEl);
 		}
-		
+
 		locEl.appendChild(planEl);
 		doc.appendChild(locEl);
-		
+
 		String path = null;
 		if (file != null)
 			path = file.getAbsolutePath();
-		else
-		{//здесь надо добавить выбор имени для сохранения
-			
+		else {// здесь надо добавить выбор имени для сохранения
+
 		}
-		
+
 		Transformer t = null;
 		try {
 			t = TransformerFactory.newInstance().newTransformer();
@@ -565,13 +642,14 @@ public class Plan {
 				| TransformerFactoryConfigurationError e1) {
 			e1.printStackTrace(); // заглушка
 		}
-        try {
-			t.transform(new DOMSource(doc), new StreamResult(new FileOutputStream(path)));
+		try {
+			t.transform(new DOMSource(doc), new StreamResult(
+					new FileOutputStream(path)));
 		} catch (FileNotFoundException | TransformerException e) {
 			e.printStackTrace(); // заглушка
 		}
 	}
-	
+
 	/**
 	 * Добавляет в границу 2 точки, по порядку, между указанными двумя
 	 * 
@@ -583,17 +661,17 @@ public class Plan {
 	 *            первая точка, между которыми надо вставить
 	 * @param point2d2
 	 *            вторая точка, между которыми надо вставить
-	 * @return 
+	 * @return
 	 */
-	public boolean addBorderPoints(Point2D.Double point1, Point2D.Double point2,
-			Point2D point2d, Point2D point2d2) {
+	public boolean addBorderPoints(Point2D.Double point1,
+			Point2D.Double point2, Point2D point2d, Point2D point2d2) {
 		return border.addPoints(point1, point2, point2d, point2d2);
 	}
 
 	public void deleteWrongBorderPoints() {
 		border.deleteWrongPoints();
 	}
-	
+
 	public void deleteBorderPoint(Point2D.Double point) {
 		border.deletePoint(point);
 	}
