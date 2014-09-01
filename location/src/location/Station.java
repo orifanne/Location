@@ -12,10 +12,6 @@ public class Station extends AbstractStation {
 	/** Карта уровней сигнала, полученная обучением станции */
 	private HashMap<Tail, Law> tMap;
 
-	
-	
-	
-	
 	public Station() {
 		super();
 		map = new HashMap<Tail, Law>();
@@ -62,11 +58,22 @@ public class Station extends AbstractStation {
 		tMap = new HashMap<Tail, Law>();
 	}
 
-	
-	
-	
-	
-	
+	/**
+	 * @param x
+	 *            абсцисса
+	 * @param y
+	 *            ордината
+	 * @param name
+	 *            имя станции
+	 * @param s
+	 *            базовый уровень сигнала
+	 */
+	public Station(int x, int y, String name, double s) {
+		super(x, y, name, s);
+		map = new HashMap<Tail, Law>();
+		tMap = new HashMap<Tail, Law>();
+	}
+
 	@Override
 	public void explode(Tail tail) {
 		double d = Point2D.Double.distance(x, y, tail.getX(), tail.getY());
@@ -86,7 +93,8 @@ public class Station extends AbstractStation {
 	public void explode(Tail tail, Plan plan) {
 		int count = 0;
 		for (int i = 0; i < plan.getWalls().size(); i++) {
-			if (plan.getWalls().get(i).intersectsLine(x, y, tail.getX(), tail.getY()))
+			if (plan.getWalls().get(i)
+					.intersectsLine(x, y, tail.getX(), tail.getY()))
 				count++;
 		}
 		double d = Point2D.Double.distance(x, y, tail.getX(), tail.getY());
@@ -186,11 +194,8 @@ public class Station extends AbstractStation {
 		return 7 * d;
 	}
 
-	
-	
-	
-	
-	
+	// TODO comments
+
 	public HashMap<Tail, Law> getMap() {
 		return map;
 	}

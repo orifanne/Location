@@ -31,10 +31,6 @@ public abstract class AbstractStation {
 		y = 0;
 	}
 
-	
-	
-	
-	
 	/**
 	 * @param x1
 	 *            абсцисса
@@ -74,10 +70,23 @@ public abstract class AbstractStation {
 		name = name2;
 	}
 
-	
-	
-	
-	
+	/**
+	 * @param x
+	 *            абсцисса
+	 * @param y
+	 *            ордината
+	 * @param name
+	 *            имя станции
+	 * @param s
+	 *            базовый уровень сигнала
+	 */
+	public AbstractStation(int x2, int y2, String name2, double s2) {
+		x = x2;
+		y = y2;
+		name = name2;
+		s = s2;
+	}
+
 	/**
 	 * Рассчитывает уровень сигнала.
 	 * 
@@ -126,11 +135,6 @@ public abstract class AbstractStation {
 	 */
 	public abstract void teach(PosObject object, Plan plan, int num);
 
-	
-	
-	
-	
-	
 	public double getX() {
 		return x;
 	}
@@ -138,6 +142,8 @@ public abstract class AbstractStation {
 	public double getY() {
 		return y;
 	}
+
+	// TODO comments
 
 	/** Узнать, обучена ли станция */
 	public boolean isTaught() {
@@ -162,6 +168,14 @@ public abstract class AbstractStation {
 	/** Получить имя */
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public double getS() {
+		return s;
+	}
+
+	public void setS(double s) {
+		this.s = s;
 	}
 
 }

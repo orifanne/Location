@@ -150,6 +150,8 @@ public class Plan {
 	 *            желаемый размер €чейки
 	 */
 	public void devide(int tailSize) {
+		
+		System.out.println("devide");
 
 		double x1, y1, x2, y2;
 		vDotes = new ArrayList<Double>();
@@ -668,12 +670,40 @@ public class Plan {
 		return border.addPoints(point1, point2, point2d, point2d2);
 	}
 
+	// TODO comment
 	public void deleteWrongBorderPoints() {
 		border.deleteWrongPoints();
 	}
 
+	// TODO comment
 	public void deleteBorderPoint(Point2D.Double point) {
 		border.deletePoint(point);
+	}
+
+	// TODO comment
+	public int findStation(int x, int y) {
+		for (int i = 0; i < stations.size(); i++)
+			if ((stations.get(i).getX() == x) && (stations.get(i).getY() == y))
+				return i;
+		return -1;
+	}
+
+	// TODO comment
+	public void setStationName(int i, String text) {
+		stations.get(i).setName(text);
+	}
+
+	// TODO comment
+	public void setStationS(int i, double s) {
+		stations.get(i).setS(s);
+		stations.get(i).explode(tails, this);
+	}
+
+	// TODO comment
+	public void addStation(int x, int y, String text, double s) {
+		Station s1 = new Station(x, y, text, s);
+		stations.add(s1);
+		stations.get(stations.indexOf(s1)).explode(tails, this);
 	}
 
 }

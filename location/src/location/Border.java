@@ -387,13 +387,26 @@ public class Border extends Polygon {
 						coords[0], coords[1]);
 				if (!isDote(line)) {
 					Line2D.Float l = new Line2D.Float(point2d, point2d2);
-					if (!l.intersectsLine(new Line2D.Float(point1, point2)))
-						if (line.intersectsLine(new Line2D.Float(point1, point1)) && line.intersectsLine(new Line2D.Float(point2, point2))) {
-							i++;
-							if (!line.intersectsLine(new Line2D.Float(point2d,
-									point2d2)))
+					if (!l.intersectsLine(new Line2D.Float(point1, point2))) {
+						if (line.intersectsLine(new Line2D.Float(point1, point1))
+								&& line.intersectsLine(new Line2D.Float(point2,
+										point2)))
+							return false;
+						if (point1.getX() == point2.getX())
+							if (line.intersectsLine(new Line2D.Float(point1,
+									point2))
+									&& (line.getY1() == line.getY2())
+									&& (line.getY1() != point1.getY())
+									&& (line.getY1() != point2.getY()))
 								return false;
-						}
+						if (point1.getY() == point2.getY())
+							if (line.intersectsLine(new Line2D.Float(point1,
+									point2))
+									&& (line.getX1() == line.getX2())
+									&& (line.getX1() != point1.getX())
+									&& (line.getX1() != point2.getX()))
+								return false;
+					}
 				}
 				prev[0] = coords[0];
 				prev[1] = coords[1];
@@ -409,21 +422,30 @@ public class Border extends Polygon {
 						first[0], first[1]);
 				if (!isDote(line1)) {
 					Line2D.Float l = new Line2D.Float(point2d, point2d2);
-					if (!l.intersectsLine(new Line2D.Float(point1, point2)))
+					if (!l.intersectsLine(new Line2D.Float(point1, point2))) {
 						if (line1.intersectsLine(new Line2D.Float(point1,
-								point2))) {
-							i++;
-							if (!line1.intersectsLine(new Line2D.Float(point2d,
-									point2d2)))
+								point2)))
+							return false;
+						if (point1.getX() == point2.getX())
+							if (line1.intersectsLine(new Line2D.Float(point1,
+									point2))
+									&& (line1.getY1() == line1.getY2())
+									&& (line1.getY1() != point1.getY())
+									&& (line1.getY1() != point2.getY()))
 								return false;
-						}
+						if (point1.getY() == point2.getY())
+							if (line1.intersectsLine(new Line2D.Float(point1,
+									point2))
+									&& (line1.getX1() == line1.getX2())
+									&& (line1.getX1() != point1.getX())
+									&& (line1.getX1() != point2.getX()))
+								return false;
+					}
 				}
 				break;
 			}
 			pi.next();
 		}
-		// if (i > 1)
-		// return false;
 		return true;
 	}
 
@@ -432,10 +454,29 @@ public class Border extends Polygon {
 	 */
 	public void deleteWrongPoints() {
 		ArrayList<Point2D.Double> p = new ArrayList<Point2D.Double>();
-		/*for (int i = 0; i < xpoints.length - 1; i++) {
-			if ((xpoints[i] == xpoints[i + 1]) && (ypoints[i] == ypoints[i + 1]))
-				p.add(new Point2D.Double(xpoints[i], ypoints[i]));
-		}*/
+		int k = 1;
+		for (int i = 0; i < xpoints.length - k; i++) {
+			if ((xpoints[i] == xpoints[i + 1])
+					&& (ypoints[i] == ypoints[i + 1])) {
+				for (int j = i + 1; j < xpoints.length - 1; j++) {
+					xpoints[j] = xpoints[j + 1];
+					ypoints[j] = ypoints[j + 1];
+				}
+				k++;
+			}
+		}
+		if ((xpoints[xpoints.length - k] == xpoints[0])
+				&& (ypoints[xpoints.length - k] == ypoints[0]))
+			k++;
+		int[] x = new int[xpoints.length - k + 1];
+		int[] y = new int[xpoints.length - k + 1];
+		for (int i = 0; i < x.length; i++) {
+			x[i] = xpoints[i];
+			y[i] = ypoints[i];
+		}
+		xpoints = x;
+		ypoints = y;
+		npoints = xpoints.length;
 		PathIterator pi = this.getPathIterator(null);
 		float coords[] = new float[6];
 		float prev[] = new float[2];
@@ -502,8 +543,13 @@ public class Border extends Polygon {
 				|| (prevLine.intersectsLine(new Line2D.Float(firstLine.getP2(),
 						firstLine.getP2()))))
 			p.add(new Point2D.Double(prevLine.getX2(), prevLine.getY2()));
-		for (int i = 0; i < p.size(); i++) {
-			deletePoint(p.get(i));
+		if (p.size() == 0)
+			return;
+		else {
+			for (int i = 0; i < p.size(); i++) {
+				deletePoint(p.get(i));
+			}
+			deleteWrongPoints();
 		}
 	}
 
@@ -526,8 +572,8 @@ public class Border extends Polygon {
 				}
 			}
 		}
-		if ((xpoints[npoints - 1] == p.getX()) && (ypoints[npoints - 1] == p
-						.getY()))
+		if ((xpoints[npoints - 1] == p.getX())
+				&& (ypoints[npoints - 1] == p.getY()))
 			f = true;
 		if (f) {
 			int[] x = new int[npoints - 1];
