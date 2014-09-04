@@ -3,7 +3,9 @@ package location;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.Point2D.Double;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -23,6 +25,7 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 
 /**
@@ -33,9 +36,9 @@ import java.util.Collections;
 public class Plan {
 
 	// массив точек по горизонтали
-	private ArrayList<Double> vDotes = null;
+	private ArrayList<java.lang.Double> vDotes = null;
 	// массив точек по вертикали
-	private ArrayList<Double> hDotes = null;
+	private ArrayList<java.lang.Double> hDotes = null;
 
 	// вспомогательные фреймы
 	private Frame[][] frames = null;
@@ -109,10 +112,14 @@ public class Plan {
 		walls = new ArrayList<Wall>();
 		for (int i = 0; i < n.getLength(); i++) {
 			k = n.item(i).getAttributes();
-			x1 = Double.parseDouble(k.getNamedItem("x1").getNodeValue());
-			x2 = Double.parseDouble(k.getNamedItem("x2").getNodeValue());
-			y1 = Double.parseDouble(k.getNamedItem("y1").getNodeValue());
-			y2 = Double.parseDouble(k.getNamedItem("y2").getNodeValue());
+			x1 = java.lang.Double.parseDouble(k.getNamedItem("x1")
+					.getNodeValue());
+			x2 = java.lang.Double.parseDouble(k.getNamedItem("x2")
+					.getNodeValue());
+			y1 = java.lang.Double.parseDouble(k.getNamedItem("y1")
+					.getNodeValue());
+			y2 = java.lang.Double.parseDouble(k.getNamedItem("y2")
+					.getNodeValue());
 			walls.add(new Wall(x1, y1, x2, y2));
 		}
 
@@ -123,8 +130,10 @@ public class Plan {
 		stations = new ArrayList<Station>();
 		for (int i = 0; i < n.getLength(); i++) {
 			k = n.item(i).getAttributes();
-			x = Double.parseDouble(k.getNamedItem("x").getNodeValue());
-			y = Double.parseDouble(k.getNamedItem("y").getNodeValue());
+			x = java.lang.Double
+					.parseDouble(k.getNamedItem("x").getNodeValue());
+			y = java.lang.Double
+					.parseDouble(k.getNamedItem("y").getNodeValue());
 			name = k.getNamedItem("name").getNodeValue();
 			// System.out.println(x + " " + y);
 			stations.add(new Station(x, y, name));
@@ -150,12 +159,12 @@ public class Plan {
 	 *            желаемый размер ячейки
 	 */
 	public void devide(int tailSize) {
-		
-		System.out.println("devide");
+
+		// System.out.println("devide");
 
 		double x1, y1, x2, y2;
-		vDotes = new ArrayList<Double>();
-		hDotes = new ArrayList<Double>();
+		vDotes = new ArrayList<java.lang.Double>();
+		hDotes = new ArrayList<java.lang.Double>();
 
 		for (int i = 0; i < walls.size(); i++) {
 
@@ -480,8 +489,8 @@ public class Plan {
 	/**
 	 * Добавить стену. Если стена не является горизонтальной или вертикальной,
 	 * то она не будет добавлена. Если в результате добавления какие-то отрезки
-	 * стен станут дублироваться, то такие стены будут слиты в одну.
-	 * Если стена явяется точкой, то она не будет добавлена.
+	 * стен станут дублироваться, то такие стены будут слиты в одну. Если стена
+	 * явяется точкой, то она не будет добавлена.
 	 * 
 	 * @param x1
 	 *            абсцисса начала
@@ -704,6 +713,53 @@ public class Plan {
 		Station s1 = new Station(x, y, text, s);
 		stations.add(s1);
 		stations.get(stations.indexOf(s1)).explode(tails, this);
+	}
+
+	// TODO comment
+	public void deleteStation(int i) {
+		stations.remove(i);
+	}
+
+	// TODO comment
+	public ArrayList<Wall> findWallsForPoint(Point2D.Double p) {
+		ArrayList<Wall> w = new ArrayList<Wall>();
+		for (int i = 0; i < walls.size(); i++)
+			if (walls.get(i).intersectsLine(new Line2D.Double(p, p)))
+				w.add(walls.get(i));
+		return w;
+	}
+
+	// TODO comment
+	public void deleteWallPart(Point2D.Double p1, Point2D.Double p2, Wall w) {
+		deleteWall(w);
+		// точки не удаляем
+		if ((p1.getX() == p2.getX()) && (p1.getY() == p2.getY()))
+			return;
+		double[] s = new double[4];
+		// вертикальная стена
+		if (p1.getX() == p2.getX()) {
+			s[0] = p1.getY();
+			s[1] = p2.getY();
+			s[2] = w.getY1();
+			s[3] = w.getY2();
+			Arrays.sort(s);
+			if (s[0] != s[1])
+				walls.add(new Wall(p1.getX(), s[0], p1.getX(), s[1]));
+			if (s[2] != s[3])
+				walls.add(new Wall(p1.getX(), s[2], p1.getX(), s[3]));
+		}
+		// горизонтальная стена
+		if (p1.getY() == p2.getY()) {
+			s[0] = p1.getX();
+			s[1] = p2.getX();
+			s[2] = w.getX1();
+			s[3] = w.getX2();
+			Arrays.sort(s);
+			if (s[0] != s[1])
+				walls.add(new Wall(s[0], p1.getY(), s[1], p1.getY()));
+			if (s[2] != s[3])
+				walls.add(new Wall(s[2], p1.getY(), s[3], p1.getY()));
+		}
 	}
 
 }

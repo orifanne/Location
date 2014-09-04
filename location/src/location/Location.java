@@ -109,6 +109,14 @@ public class Location extends JFrame {
 	/** Флаг того, что происходит перетаскивание участка границы. */
 	boolean dragging = false;
 
+	/** Флаг того, что происходит удаление участка стены. */
+	boolean deleting = false;
+
+	/**
+	 * Координаты точки, начиная с которой удаляется часть стены.
+	 */
+	Point2D.Double deletePoint = null;
+
 	/**
 	 * Координаты первой точки, зафиксированной на границе (для отметки участка
 	 * для перетаскивания)
@@ -496,150 +504,189 @@ public class Location extends JFrame {
 	 */
 	private class NewMouseMotionListener implements MouseMotionListener {
 		public void mouseDragged(MouseEvent e) {
-			if ((instrumentNumber == BORDER) && (dragging)) {
-				// приводим координаты перетаскивания к нужной кратности
-				int x = e.getX();
-				x -= x % (panel.getM() * panel.getBar());
-				int y = e.getY();
-				y -= y % (panel.getM() * panel.getBar());
-				boolean f = false;
-				if ((x >= 0) && (y >= 0)) {
-					// вертикальный отрезок
-					if (firstCheckPoint.getX() == secondCheckPoint.getX()) {
-						firstDraggingPoint.setLocation(x / panel.getBar()
-								/ panel.getM(), firstCheckPoint.getY());
-						secondDraggingPoint.setLocation(x / panel.getBar()
-								/ panel.getM(), secondCheckPoint.getY());
-						if ((x / panel.getBar() / panel.getM()) != firstCheckPoint
-								.getX()) {
-							Line2D.Float line = plan.getBorder().checkLine(
-									firstCheckPoint, secondCheckPoint);
-							if (firstCheckPoint.getY() > secondCheckPoint
-									.getY()) {
-								if (line.getY1() > line.getY2()) {
-									f = plan.addBorderPoints(firstCheckPoint,
-											secondCheckPoint, line.getP1(),
-											line.getP2());
-								} else {
-									f = plan.addBorderPoints(firstCheckPoint,
-											secondCheckPoint, line.getP2(),
-											line.getP1());
-								}
-							} else {
-								if (line.getY1() > line.getY2()) {
-									f = plan.addBorderPoints(firstCheckPoint,
-											secondCheckPoint, line.getP2(),
-											line.getP1());
-								} else {
-									f = plan.addBorderPoints(firstCheckPoint,
-											secondCheckPoint, line.getP1(),
-											line.getP2());
-								}
-							}
-							if (f)
-								f = plan.addBorderPoints(firstDraggingPoint,
-										secondDraggingPoint, firstCheckPoint,
-										secondCheckPoint);
-							else {
-								dragging = false;
-								plan.devide(tailSize);
-								firstCheckPoint = null;
-								secondCheckPoint = null;
-								firstDraggingPoint = null;
-								secondDraggingPoint = null;
-								panel.repaint();
-								return;
-							}
-							if (f) {
-								firstCheckPoint = (Point2D.Double) firstDraggingPoint
-										.clone();
-								secondCheckPoint = (Point2D.Double) secondDraggingPoint
-										.clone();
-							} else {
-								dragging = false;
-								plan.devide(tailSize);
-								plan.deleteBorderPoint(firstCheckPoint);
-								plan.deleteBorderPoint(secondCheckPoint);
-								firstCheckPoint = null;
-								secondCheckPoint = null;
-								firstDraggingPoint = null;
-								secondDraggingPoint = null;
-								panel.repaint();
-								return;
-							}
-						}
-					}
-					// горизонтальный отрезок
-					if (firstCheckPoint.getY() == secondCheckPoint.getY()) {
-						firstDraggingPoint.setLocation(firstCheckPoint.getX(),
-								y / panel.getBar() / panel.getM());
-						secondDraggingPoint.setLocation(
-								secondCheckPoint.getX(), y / panel.getBar()
-										/ panel.getM());
-						if ((y / panel.getBar() / panel.getM()) != firstCheckPoint
-								.getY()) {
-							Line2D.Float line = plan.getBorder().checkLine(
-									firstCheckPoint, secondCheckPoint);
-							if (firstCheckPoint.getX() > secondCheckPoint
+			// приводим координаты перетаскивания к нужной кратности
+			int x = e.getX();
+			x -= x % (panel.getM() * panel.getBar());
+			int y = e.getY();
+			y -= y % (panel.getM() * panel.getBar());
+			switch (instrumentNumber) {
+			case BORDER:
+				if (dragging) {
+					boolean f = false;
+					if ((x >= 0) && (y >= 0)) {
+						// вертикальный отрезок
+						if (firstCheckPoint.getX() == secondCheckPoint.getX()) {
+							firstDraggingPoint.setLocation(x / panel.getBar()
+									/ panel.getM(), firstCheckPoint.getY());
+							secondDraggingPoint.setLocation(x / panel.getBar()
+									/ panel.getM(), secondCheckPoint.getY());
+							if ((x / panel.getBar() / panel.getM()) != firstCheckPoint
 									.getX()) {
-								if (line.getX1() > line.getX2()) {
-									f = plan.addBorderPoints(firstCheckPoint,
-											secondCheckPoint, line.getP1(),
-											line.getP2());
+								Line2D.Float line = plan.getBorder().checkLine(
+										firstCheckPoint, secondCheckPoint);
+								if (firstCheckPoint.getY() > secondCheckPoint
+										.getY()) {
+									if (line.getY1() > line.getY2()) {
+										f = plan.addBorderPoints(
+												firstCheckPoint,
+												secondCheckPoint, line.getP1(),
+												line.getP2());
+									} else {
+										f = plan.addBorderPoints(
+												firstCheckPoint,
+												secondCheckPoint, line.getP2(),
+												line.getP1());
+									}
 								} else {
-									f = plan.addBorderPoints(firstCheckPoint,
-											secondCheckPoint, line.getP2(),
-											line.getP1());
+									if (line.getY1() > line.getY2()) {
+										f = plan.addBorderPoints(
+												firstCheckPoint,
+												secondCheckPoint, line.getP2(),
+												line.getP1());
+									} else {
+										f = plan.addBorderPoints(
+												firstCheckPoint,
+												secondCheckPoint, line.getP1(),
+												line.getP2());
+									}
 								}
-							} else {
-								if (line.getX1() > line.getX2()) {
-									f = plan.addBorderPoints(firstCheckPoint,
-											secondCheckPoint, line.getP2(),
-											line.getP1());
+								if (f)
+									f = plan.addBorderPoints(
+											firstDraggingPoint,
+											secondDraggingPoint,
+											firstCheckPoint, secondCheckPoint);
+								else {
+									dragging = false;
+									plan.devide(tailSize);
+									firstCheckPoint = null;
+									secondCheckPoint = null;
+									firstDraggingPoint = null;
+									secondDraggingPoint = null;
+									panel.repaint();
+									return;
+								}
+								if (f) {
+									firstCheckPoint = (Point2D.Double) firstDraggingPoint
+											.clone();
+									secondCheckPoint = (Point2D.Double) secondDraggingPoint
+											.clone();
 								} else {
-									f = plan.addBorderPoints(firstCheckPoint,
-											secondCheckPoint, line.getP1(),
-											line.getP2());
+									dragging = false;
+									plan.devide(tailSize);
+									plan.deleteBorderPoint(firstCheckPoint);
+									plan.deleteBorderPoint(secondCheckPoint);
+									firstCheckPoint = null;
+									secondCheckPoint = null;
+									firstDraggingPoint = null;
+									secondDraggingPoint = null;
+									panel.repaint();
+									return;
 								}
-							}
-							if (f)
-								f = plan.addBorderPoints(firstDraggingPoint,
-										secondDraggingPoint, firstCheckPoint,
-										secondCheckPoint);
-							else {
-								dragging = false;
-								plan.devide(tailSize);
-								firstCheckPoint = null;
-								secondCheckPoint = null;
-								firstDraggingPoint = null;
-								secondDraggingPoint = null;
-								panel.repaint();
-								return;
-							}
-							if (f) {
-								firstCheckPoint = (Point2D.Double) firstDraggingPoint
-										.clone();
-								secondCheckPoint = (Point2D.Double) secondDraggingPoint
-										.clone();
-							} else {
-								dragging = false;
-								plan.devide(tailSize);
-								plan.deleteBorderPoint(firstCheckPoint);
-								plan.deleteBorderPoint(secondCheckPoint);
-								firstCheckPoint = null;
-								secondCheckPoint = null;
-								firstDraggingPoint = null;
-								secondDraggingPoint = null;
-								panel.repaint();
-								return;
 							}
 						}
+						// горизонтальный отрезок
+						if (firstCheckPoint.getY() == secondCheckPoint.getY()) {
+							firstDraggingPoint.setLocation(
+									firstCheckPoint.getX(), y / panel.getBar()
+											/ panel.getM());
+							secondDraggingPoint.setLocation(
+									secondCheckPoint.getX(), y / panel.getBar()
+											/ panel.getM());
+							if ((y / panel.getBar() / panel.getM()) != firstCheckPoint
+									.getY()) {
+								Line2D.Float line = plan.getBorder().checkLine(
+										firstCheckPoint, secondCheckPoint);
+								if (firstCheckPoint.getX() > secondCheckPoint
+										.getX()) {
+									if (line.getX1() > line.getX2()) {
+										f = plan.addBorderPoints(
+												firstCheckPoint,
+												secondCheckPoint, line.getP1(),
+												line.getP2());
+									} else {
+										f = plan.addBorderPoints(
+												firstCheckPoint,
+												secondCheckPoint, line.getP2(),
+												line.getP1());
+									}
+								} else {
+									if (line.getX1() > line.getX2()) {
+										f = plan.addBorderPoints(
+												firstCheckPoint,
+												secondCheckPoint, line.getP2(),
+												line.getP1());
+									} else {
+										f = plan.addBorderPoints(
+												firstCheckPoint,
+												secondCheckPoint, line.getP1(),
+												line.getP2());
+									}
+								}
+								if (f)
+									f = plan.addBorderPoints(
+											firstDraggingPoint,
+											secondDraggingPoint,
+											firstCheckPoint, secondCheckPoint);
+								else {
+									dragging = false;
+									plan.devide(tailSize);
+									firstCheckPoint = null;
+									secondCheckPoint = null;
+									firstDraggingPoint = null;
+									secondDraggingPoint = null;
+									panel.repaint();
+									return;
+								}
+								if (f) {
+									firstCheckPoint = (Point2D.Double) firstDraggingPoint
+											.clone();
+									secondCheckPoint = (Point2D.Double) secondDraggingPoint
+											.clone();
+								} else {
+									dragging = false;
+									plan.devide(tailSize);
+									plan.deleteBorderPoint(firstCheckPoint);
+									plan.deleteBorderPoint(secondCheckPoint);
+									firstCheckPoint = null;
+									secondCheckPoint = null;
+									firstDraggingPoint = null;
+									secondDraggingPoint = null;
+									panel.repaint();
+									return;
+								}
+							}
+						}
+						if (f)
+							plan.deleteWrongBorderPoints();
+						panel.repaint();
 					}
-					if (f)
-						plan.deleteWrongBorderPoints();
-					panel.repaint();
 				}
+				break;
+			case DELETE:
+				if (deleting) {
+					Point2D.Double p = new Point2D.Double(x / panel.getBar()
+							/ panel.getM(), y / panel.getBar() / panel.getM());
+					if (((deletePoint.getX() != p.getX()) && (deletePoint
+							.getY() != p.getY()))
+							|| ((deletePoint.getX() == p.getX()) && (deletePoint
+									.getY() == p.getY())))
+						return;
+
+					ArrayList<Wall> w1 = plan.findWallsForPoint(deletePoint);
+					ArrayList<Wall> w2 = plan.findWallsForPoint(p);
+					Wall del = null;
+					for (int i = 0; i < w1.size(); i++)
+						if (w2.contains(w1.get(i)))
+							del = w1.get(i);
+					if (del != null) {
+						plan.deleteWallPart(deletePoint, p, del);
+						deletePoint = (Point2D.Double) p.clone();
+						panel.repaint();
+					}
+				}
+				break;
 			}
+
 		}
 
 		/** Пустой обработчик. */
@@ -690,6 +737,10 @@ public class Location extends JFrame {
 				case STATION:
 					break;
 				case DELETE:
+					if (deleting) {
+						deleting = false;
+						plan.devide(tailSize);
+					}
 					break;
 				}
 			}
@@ -710,19 +761,31 @@ public class Location extends JFrame {
 				x1 -= x1 % (panel.getM() * panel.getBar());
 				y1 = e.getY();
 				y1 -= y1 % (panel.getM() * panel.getBar());
-				if ((instrumentNumber == BORDER) && (firstCheckPoint != null)
-						&& (secondCheckPoint != null)) {
+				switch (instrumentNumber) {
+				case BORDER:
+					if ((firstCheckPoint != null) && (secondCheckPoint != null)) {
+						Point2D.Double p = new Point2D.Double(x1
+								/ panel.getBar() / panel.getM(), y1
+								/ panel.getBar() / panel.getM());
+						Line2D.Float l = new Line2D.Float(firstCheckPoint,
+								secondCheckPoint);
+						if (l.intersectsLine(new Line2D.Float(p, p))) {
+							dragging = true;
+							firstDraggingPoint = (Point2D.Double) firstCheckPoint
+									.clone();
+							secondDraggingPoint = (Point2D.Double) secondCheckPoint
+									.clone();
+						}
+					}
+					break;
+				case DELETE:
 					Point2D.Double p = new Point2D.Double(x1 / panel.getBar()
 							/ panel.getM(), y1 / panel.getBar() / panel.getM());
-					Line2D.Float l = new Line2D.Float(firstCheckPoint,
-							secondCheckPoint);
-					if (l.intersectsLine(new Line2D.Float(p, p))) {
-						dragging = true;
-						firstDraggingPoint = (Point2D.Double) firstCheckPoint
-								.clone();
-						secondDraggingPoint = (Point2D.Double) secondCheckPoint
-								.clone();
+					if (plan.findWallsForPoint(p).size() != 0) {
+						deletePoint = p;
+						deleting = true;
 					}
+					break;
 				}
 			}
 		}
@@ -805,6 +868,16 @@ public class Location extends JFrame {
 					}
 					break;
 				case DELETE:
+					if ((i = plan.findStation(
+							x / panel.getBar() / panel.getM(),
+							y / panel.getBar() / panel.getM())) != -1) {
+						plan.deleteStation(i);
+						stationsComboBox.removeAllItems();
+						for (int j = 0; j < plan.getStations().size(); j++)
+							stationsComboBox.addItem(plan.getStation(j)
+									.getName());
+						panel.repaint();
+					}
 					break;
 				}
 
