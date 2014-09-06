@@ -18,14 +18,46 @@ public class Border extends Polygon {
 	/**
 	 * @param d
 	 *            массив точек в пор€дке их соединени€
+	 * @throws Exception 
 	 */
-	public Border(int[] x, int[] y) {
-		// если есть не горизонтальные или не вертикальные отрезки
-		// if (...) {
-		// add exeption
-		// }
-
+	public Border(int[] x, int[] y) throws Exception {
 		super(x, y, x.length);
+		
+		PathIterator pi = this.getPathIterator(null);
+		float coords[] = new float[6];
+		float prev[] = new float[2];
+		float first[] = new float[2];
+		while (!pi.isDone()) {
+			switch (pi.currentSegment(coords)) {
+			case PathIterator.SEG_MOVETO:
+				prev[0] = coords[0];
+				prev[1] = coords[1];
+				first[0] = coords[0];
+				first[1] = coords[1];
+				break;
+			case PathIterator.SEG_LINETO:
+				Line2D.Float line = new Line2D.Float(prev[0], prev[1],
+						coords[0], coords[1]);
+				if ((!((line.getX1() == line.getX2()) || (line.getY1() == line.getY2()))) || (isDote(line)))
+					throw new Exception("Incorrect border dotes");
+				prev[0] = coords[0];
+				prev[1] = coords[1];
+				break;
+			case PathIterator.SEG_QUADTO:
+				// ignored
+				break;
+			case PathIterator.SEG_CUBICTO:
+				// ignored
+				break;
+			case PathIterator.SEG_CLOSE:
+				Line2D.Float line1 = new Line2D.Float(prev[0], prev[1],
+						first[0], first[1]);
+				if ((!((line1.getX1() == line1.getX2()) || (line1.getY1() == line1.getY2()))) || (isDote(line1)))
+					throw new Exception("Incorrect border dotes");
+				break;
+			}
+			pi.next();
+		}
 	}
 
 	public Border() {
@@ -36,17 +68,51 @@ public class Border extends Polygon {
 	 * —ообщает, лежит ли фрейм внутри контура.
 	 */
 	public boolean isInternal(Frame f) {
-		return super.contains(f.getX(), f.getY());
-	}
-
-	/**
-	 * —ообщает, лежит ли €чейка, определ€ема€ координатами x1 y1 x2 y2, внутри
-	 * контура.
-	 */
-	public boolean isInternal(double x1, double y1, double x2, double y2) {
-		double x = (x1 + x2) / 2;
-		double y = (y1 + y2) / 2;
-		return super.contains(x, y);
+		PathIterator pi = this.getPathIterator(null);
+		int i = 0;
+		float coords[] = new float[6];
+		float prev[] = new float[2];
+		float first[] = new float[2];
+		Line2D.Float l = new Line2D.Float((float) f.getX(), (float)f.getY(), java.lang.Float.MAX_VALUE, (float)f.getY());
+		while (!pi.isDone()) {
+			switch (pi.currentSegment(coords)) {
+			case PathIterator.SEG_MOVETO:
+				prev[0] = coords[0];
+				prev[1] = coords[1];
+				first[0] = coords[0];
+				first[1] = coords[1];
+				break;
+			case PathIterator.SEG_LINETO:
+				Line2D.Float line = new Line2D.Float(prev[0], prev[1],
+						coords[0], coords[1]);
+				if (!isDote(line))
+					if (line.intersectsLine(l)) {
+						i++;
+					}
+				prev[0] = coords[0];
+				prev[1] = coords[1];
+				break;
+			case PathIterator.SEG_QUADTO:
+				// ignored
+				break;
+			case PathIterator.SEG_CUBICTO:
+				// ignored
+				break;
+			case PathIterator.SEG_CLOSE:
+				Line2D.Float line1 = new Line2D.Float(prev[0], prev[1],
+						first[0], first[1]);
+				if (!isDote(line1))
+					if (line1.intersectsLine(l)) {
+						i++;
+					}
+				break;
+			}
+			pi.next();
+		}
+		if (i % 2 == 0)
+			return false;
+		else
+			return true;
 	}
 
 	/**
@@ -366,7 +432,20 @@ public class Border extends Polygon {
 		return true;
 	}
 
-	// TODO comment
+	/**
+	 * ѕровер€ет, €в€етс€ ли корректным добавление в грницу двух точек, между
+	 * указанными двум€.
+	 * 
+	 * @param point1
+	 *            перва€ точка дл€ вставки
+	 * @param point2
+	 *            втора€ точка дл€ вставки
+	 * @param point2d
+	 *            перва€ точка, между которыми надо вставить
+	 * @param point2d2
+	 *            втора€ точка, между которыми надо вставить
+	 * @return false - некорректно, true - корректно
+	 */
 	private boolean check(Point2D.Double point1, Point2D.Double point2,
 			Point2D point2d, Point2D point2d2) {
 		PathIterator pi = this.getPathIterator(null);
@@ -450,7 +529,7 @@ public class Border extends Polygon {
 	}
 
 	/**
-	 * ”бирает ненужные точки (те, что лежат не в пр€мых углах контура)
+	 * ”бирает ненужные точки (те, что лежат не в пр€мых углах границы)
 	 */
 	public void deleteWrongPoints() {
 		ArrayList<Point2D.Double> p = new ArrayList<Point2D.Double>();
@@ -554,7 +633,7 @@ public class Border extends Polygon {
 	}
 
 	/**
-	 * ”дал€ет точку
+	 * ”дал€ет точку границы
 	 * 
 	 * @param p
 	 *            точка, которую нужно удалить

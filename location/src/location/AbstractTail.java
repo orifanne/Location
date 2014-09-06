@@ -1,32 +1,15 @@
 package location;
 
-public class AbstractTail {
+import java.awt.geom.Point2D;
 
-	/** Абсцисса центра */
-	protected double x;
-	/** Ордината центра */
-	protected double y;
+/**
+ * Представляет абстрактную ячейку. Не несет функциональности, введен для
+ * ясности модели классов. (Скореевсего, внесение функциональности в этот класс
+ * может потребоваться в будущем)
+ * 
+ * @author Pokrovskaya Oksana
+ */
 
-	public AbstractTail() {
-	}
-
-	/**
-	 * @param x1
-	 *            абсцисса
-	 * @param y1
-	 *            ордината
-	 */
-	public AbstractTail(double x, double y) {
-		this.x = x;
-		this.y = y;
-	}
-
-	public double getX() {
-		return x;
-	}
-
-	public double getY() {
-		return y;
-	}
+public class AbstractTail extends Point2D.Double {
 
 }

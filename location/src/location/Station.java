@@ -194,12 +194,18 @@ public class Station extends AbstractStation {
 		return 7 * d;
 	}
 
-	// TODO comments
-
+	/**
+	 * Получить карту сил сигналов, полученную моделированием.
+	 * @return
+	 */
 	public HashMap<Tail, Law> getMap() {
 		return map;
 	}
 
+	/**
+	 * Получить карту сил сигналов, полученную обучением.
+	 * @return
+	 */
 	public HashMap<Tail, Law> getTMap() {
 		return tMap;
 	}

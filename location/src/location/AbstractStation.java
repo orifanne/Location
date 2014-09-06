@@ -1,5 +1,6 @@
 package location;
 
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -8,12 +9,7 @@ import java.util.HashMap;
  * 
  * @author Pokrovskaya Oksana
  */
-public abstract class AbstractStation {
-
-	/** Абсцисса */
-	protected double x;
-	/** Ордината */
-	protected double y;
+public abstract class AbstractStation extends Point2D.Double {
 
 	/** Базовая сила сигнала */
 	protected double s = 150;
@@ -26,11 +22,6 @@ public abstract class AbstractStation {
 	 */
 	protected boolean taught = false;
 
-	public AbstractStation() {
-		x = 0;
-		y = 0;
-	}
-
 	/**
 	 * @param x1
 	 *            абсцисса
@@ -40,20 +31,8 @@ public abstract class AbstractStation {
 	 *            базовая сила сигнала
 	 */
 	public AbstractStation(double x1, double y1, double s1) {
-		x = x1;
-		y = y1;
+		super(x1, y1);
 		s = s1;
-	}
-
-	/**
-	 * @param x1
-	 *            абсцисса
-	 * @param y1
-	 *            ордината
-	 */
-	public AbstractStation(double x1, double y1) {
-		x = x1;
-		y = y1;
 	}
 
 	/**
@@ -65,9 +44,28 @@ public abstract class AbstractStation {
 	 *            имя станции
 	 */
 	public AbstractStation(double x2, double y2, String name2) {
-		x = x2;
-		y = y2;
+		super(x2, y2);
 		name = name2;
+	}
+
+	/**
+	 * @param x2
+	 *            абсцисса
+	 * @param y2
+	 *            ордината
+	 * @param name2
+	 *            имя станции
+	 * @param s2
+	 *            базовый уровень сигнала
+	 */
+	public AbstractStation(int x2, int y2, String name2, double s2) {
+		super(x2, y2);
+		name = name2;
+		s = s2;
+	}
+
+	public AbstractStation() {
+		super(0, 0);
 	}
 
 	/**
@@ -75,16 +73,9 @@ public abstract class AbstractStation {
 	 *            абсцисса
 	 * @param y
 	 *            ордината
-	 * @param name
-	 *            имя станции
-	 * @param s
-	 *            базовый уровень сигнала
 	 */
-	public AbstractStation(int x2, int y2, String name2, double s2) {
-		x = x2;
-		y = y2;
-		name = name2;
-		s = s2;
+	public AbstractStation(double x, double y) {
+		super(x, y);
 	}
 
 	/**
@@ -135,45 +126,59 @@ public abstract class AbstractStation {
 	 */
 	public abstract void teach(PosObject object, Plan plan, int num);
 
-	public double getX() {
-		return x;
-	}
-
-	public double getY() {
-		return y;
-	}
-
-	// TODO comments
-
-	/** Узнать, обучена ли станция */
+	/**
+	 * Узнать, обучена ли станция
+	 * 
+	 * @return true - станция обучена, false - не обучена
+	 */
 	public boolean isTaught() {
 		return taught;
 	}
 
-	/** Установить флаг обучения */
+	/**
+	 * Установить флаг обучения
+	 * 
+	 * @param taught
+	 *            значение флага
+	 */
 	public void setTaught(boolean taught) {
 		this.taught = taught;
 	}
 
-	@Override
-	public String toString() {
-		return name;
-	}
-
-	/** Установить имя */
+	/**
+	 * Получить имя
+	 * 
+	 * @return имя
+	 */
 	public String getName() {
 		return name;
 	}
 
-	/** Получить имя */
+	/**
+	 * Установить имя
+	 * 
+	 * @param name
+	 *            имя
+	 */
 	public void setName(String name) {
 		this.name = name;
 	}
 
+	/**
+	 * Получить базовый уровень сигнала
+	 * 
+	 * @return базовый уровень сигнала
+	 */
 	public double getS() {
 		return s;
 	}
 
+	/**
+	 * Установить базовый уровень сигнала
+	 * 
+	 * @param name
+	 *            базовый уровень сигнала
+	 */
 	public void setS(double s) {
 		this.s = s;
 	}

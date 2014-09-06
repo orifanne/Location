@@ -112,6 +112,9 @@ public class Location extends JFrame {
 	/** Флаг того, что происходит удаление участка стены. */
 	boolean deleting = false;
 
+	/** Флаг того, что в файл были внесены изменения. */
+	boolean canged = false;
+
 	/**
 	 * Координаты точки, начиная с которой удаляется часть стены.
 	 */
@@ -151,8 +154,8 @@ public class Location extends JFrame {
 		// завершить программу при закрытии окна
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		taught = new JRadioButton("обученная");
-		orign = new JRadioButton("смоделированная");
+		taught = new JRadioButton("taught");
+		orign = new JRadioButton("modeled");
 		bg = new ButtonGroup();
 
 		bg.add(orign);
@@ -161,17 +164,10 @@ public class Location extends JFrame {
 		stationsComboBox = new JComboBox<String>();
 		stationsComboBox.addActionListener(new StationsChooseListener());
 
-		/*
-		 * paintComboBox = new JComboBox<String>();
-		 * paintComboBox.addActionListener(new PaintChooseListener());
-		 * paintComboBox.addItem("Стены");
-		 */
-
 		// будем прослушивать события мыши
 		panel.addMouseListener(new NewMouseListener());
 		panel.addMouseMotionListener(new NewMouseMotionListener());
 		panel.setDoubleBuffered(true);
-		// panel.setOpaque(true);
 
 		panel.setPreferredSize(new Dimension(width * 5, height * 5));
 		panel.setMinimumSize(new Dimension(width * 5, height * 5));
@@ -195,13 +191,13 @@ public class Location extends JFrame {
 		instrumentsPanel.setPreferredSize(new Dimension(width / 5, height));
 		instrumentsPanel.setMinimumSize(new Dimension(width / 5, height));
 
-		instrumentsPanel.add(new JLabel("Масштаб:"));
+		instrumentsPanel.add(new JLabel("Scale:"));
 		instrumentsPanel.add(Box.createVerticalStrut(10));
 		instrumentsPanel.add(scale);
 		instrumentsPanel.add(Box.createVerticalStrut(10));
 		scale.setAlignmentX(JComponent.LEFT_ALIGNMENT);
 
-		instrumentsPanel.add(new JLabel("Размер ячейки:"));
+		instrumentsPanel.add(new JLabel("Tail size:"));
 		instrumentsPanel.add(Box.createVerticalStrut(10));
 		instrumentsPanel.add(scaleTail);
 		instrumentsPanel.add(Box.createVerticalStrut(10));
@@ -212,15 +208,13 @@ public class Location extends JFrame {
 		stationsComboBox.setMinimumSize(new Dimension(instrumentsPanel
 				.getPreferredSize().width, 25));
 
-		// instrumentsPanel.add(new JTextArea("Выбор базовой станции:"));
-		instrumentsPanel.add(new JLabel("Выбор базовой станции:"));
+		instrumentsPanel.add(new JLabel("Base station:"));
 		instrumentsPanel.add(Box.createVerticalStrut(10));
 		instrumentsPanel.add(stationsComboBox);
 		instrumentsPanel.add(Box.createVerticalStrut(10));
 		stationsComboBox.setAlignmentX(JComponent.LEFT_ALIGNMENT);
 
-		// instrumentsPanel.add(new JTextArea("Выбор карты уровней сигналов:"));
-		instrumentsPanel.add(new JLabel("Вид карты:"));
+		instrumentsPanel.add(new JLabel("Map type:"));
 		instrumentsPanel.add(Box.createVerticalStrut(10));
 		instrumentsPanel.add(orign);
 		orign.setAlignmentX(JComponent.LEFT_ALIGNMENT);
@@ -231,30 +225,20 @@ public class Location extends JFrame {
 		orign.addActionListener(new RadioListener());
 		taught.addActionListener(new RadioListener());
 
-		// instrumentsPanel.add(new JLabel("Рисование:"));
-
-		/*
-		 * paintComboBox.setMaximumSize(new Dimension(instrumentsPanel
-		 * .getPreferredSize().width, 25)); paintComboBox.setMinimumSize(new
-		 * Dimension(instrumentsPanel .getPreferredSize().width, 25));
-		 * 
-		 * instrumentsPanel.add(paintComboBox);
-		 */
-
-		instrumentsPanel.add(new JLabel("Рисование:"));
+		instrumentsPanel.add(new JLabel("Edit:"));
 		instrumentsPanel.add(Box.createVerticalStrut(10));
 		toolBar = new JToolBar(JToolBar.VERTICAL);
 		toolBar.setFloatable(false);
 		DemoAction wallsAction = new DemoAction("Walls",
-				createImageIcon("wall.gif"), "Редактировать стены", 'W');
+				createImageIcon("wall.gif"), "Edit walls", 'W');
 		DemoAction borderAction = new DemoAction("Border",
 				createImageIcon("border.gif"),
-				"Редактировать границу области локации", 'B');
+				"Edit border", 'B');
 		DemoAction stationsAction = new DemoAction("Stations",
 				createImageIcon("station.gif"),
-				"Редактировать базовые станции", 'S');
+				"Edit base stations", 'S');
 		DemoAction deleteAction = new DemoAction("Delete",
-				createImageIcon("delete.gif"), "Удалить", 'D');
+				createImageIcon("delete.gif"), "Delete", 'D');
 		toolBar.add(wallsAction);
 		toolBar.add(borderAction);
 		toolBar.add(stationsAction);
@@ -299,30 +283,30 @@ public class Location extends JFrame {
 		Font font = new Font("Verdana", Font.PLAIN, 11);
 
 		menu = new JMenuBar();
-		JMenu fileMenu = new JMenu("Файл");
+		JMenu fileMenu = new JMenu("File");
 		fileMenu.setFont(font);
 
-		JMenuItem openItem = new JMenuItem("Открыть");
+		JMenuItem openItem = new JMenuItem("Open");
 		openItem.setFont(font);
 		openItem.setActionCommand("open");
 		fileMenu.add(openItem);
 
-		JMenuItem closeItem = new JMenuItem("Закрыть");
+		JMenuItem closeItem = new JMenuItem("Close");
 		closeItem.setFont(font);
 		closeItem.setActionCommand("close");
 		fileMenu.add(closeItem);
 
-		JMenuItem createItem = new JMenuItem("Создать");
+		JMenuItem createItem = new JMenuItem("Create");
 		createItem.setFont(font);
 		createItem.setActionCommand("create");
 		fileMenu.add(createItem);
 
-		JMenuItem saveItem = new JMenuItem("Сохранить");
+		JMenuItem saveItem = new JMenuItem("Save");
 		saveItem.setFont(font);
 		saveItem.setActionCommand("save");
 		fileMenu.add(saveItem);
 
-		JMenuItem saveAsItem = new JMenuItem("Сохранить как");
+		JMenuItem saveAsItem = new JMenuItem("Save as");
 		saveAsItem.setFont(font);
 		saveAsItem.setActionCommand("saveas");
 		fileMenu.add(saveAsItem);
@@ -359,10 +343,11 @@ public class Location extends JFrame {
 	private class NewMenuListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			String command = e.getActionCommand();
-			// if ("exit".equals(command)) {
-			// System.exit(0);
-			// }
 			if ("open".equals(command)) {
+				if (canged) {
+					if (!saveChanged())
+						return;
+				}
 				JFileChooser fileopen = new JFileChooser();
 				FileFilter filter = new ExtensionFileFilter("xml", "xml");
 				fileopen.setFileFilter(filter);
@@ -371,14 +356,25 @@ public class Location extends JFrame {
 					openedFile = fileopen.getSelectedFile();
 					plan = new Plan(openedFile);
 					if (plan.getWalls().size() > 0)
-						plan.devide(tailSize);
+						try {
+							plan.devide(tailSize);
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
 					panel.repaint();
 					stationsComboBox.removeAllItems();
 					for (int i = 0; i < plan.getStations().size(); i++)
 						stationsComboBox.addItem(plan.getStation(i).getName());
+					canged = false;
 				}
 			}
 			if ("close".equals(command)) {
+				if (canged) {
+					if (!saveChanged())
+						return;
+				}
+				canged = false;
 				openedFile = null;
 				plan = null;
 				firstCheckPoint = null;
@@ -389,19 +385,60 @@ public class Location extends JFrame {
 				panel.repaint();
 			}
 			if ("create".equals(command)) {
+
+				if (canged) {
+					if (!saveChanged())
+						return;
+				}
+
 				openedFile = null;
 				firstCheckPoint = null;
 				secondCheckPoint = null;
 				firstDraggingPoint = null;
 				secondDraggingPoint = null;
 				plan = new Plan();
-				plan.devide(tailSize);
+				try {
+					plan.devide(tailSize);
+				} catch (Exception e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				stationsComboBox.removeAllItems();
 				panel.repaint();
+				canged = false;
 			}
 			if ("save".equals(command)) {
-				if ((plan != null) && (openedFile != null))
-					plan.save(openedFile);
+				if (plan != null) {
+					if (openedFile != null) {
+						plan.save(openedFile);
+						canged = false;
+					} else {
+						JFileChooser filesave = new JFileChooser();
+						FileFilter filter = new ExtensionFileFilter("xml",
+								"xml");
+						filesave.setFileFilter(filter);
+						int ret = filesave.showSaveDialog(null);
+						if (ret == JFileChooser.APPROVE_OPTION) {
+							File f = filesave.getSelectedFile();
+							String s = f.getAbsolutePath();
+							String s1 = null;
+							int dotPos = s.lastIndexOf(".");
+							if (dotPos > 0) {
+								s1 = s.substring(dotPos);
+								System.out.println(s1);
+								if (!s1.equals("xml")) {
+									s += ".xml";
+									f.renameTo(new File(s));
+								}
+							} else {
+								s += ".xml";
+								f.renameTo(new File(s));
+							}
+							plan.save(f);
+							canged = false;
+						}
+					}
+				}
 			}
 			if ("saveas".equals(command)) {
 				if (plan != null) {
@@ -412,7 +449,6 @@ public class Location extends JFrame {
 					if (ret == JFileChooser.APPROVE_OPTION) {
 						File f = filesave.getSelectedFile();
 						String s = f.getAbsolutePath();
-						System.out.println(s);
 						String s1 = null;
 						int dotPos = s.lastIndexOf(".");
 						if (dotPos > 0) {
@@ -427,10 +463,60 @@ public class Location extends JFrame {
 							f.renameTo(new File(s));
 						}
 						plan.save(f);
+						canged = false;
 					}
 				}
 			}
 		}
+	}
+	
+	private boolean saveChanged() {
+		Object[] options = { "Yes", "No", "Cancel" };
+		int n = JOptionPane.showOptionDialog(null,
+				"Do you want to save this file?", "Save",
+				JOptionPane.YES_NO_CANCEL_OPTION,
+				JOptionPane.QUESTION_MESSAGE, null, options,
+				options[2]);
+		switch (n) {
+		case 0:
+			if (plan != null) {
+				if (openedFile != null) {
+					plan.save(openedFile);
+					canged = false;
+				} else {
+					JFileChooser filesave = new JFileChooser();
+					FileFilter filter = new ExtensionFileFilter(
+							"xml", "xml");
+					filesave.setFileFilter(filter);
+					int ret = filesave.showSaveDialog(null);
+					if (ret == JFileChooser.APPROVE_OPTION) {
+						File f = filesave.getSelectedFile();
+						String s = f.getAbsolutePath();
+						String s1 = null;
+						int dotPos = s.lastIndexOf(".");
+						if (dotPos > 0) {
+							s1 = s.substring(dotPos);
+							System.out.println(s1);
+							if (!s1.equals("xml")) {
+								s += ".xml";
+								f.renameTo(new File(s));
+							}
+						} else {
+							s += ".xml";
+							f.renameTo(new File(s));
+						}
+						plan.save(f);
+						canged = false;
+					}
+				}
+			}
+			break;
+		case 1:
+			break;
+		case 2:
+			return false;
+		}
+		return true;
 	}
 
 	/**
@@ -454,7 +540,12 @@ public class Location extends JFrame {
 			JSlider js = (JSlider) e.getSource();
 			tailSize = js.getValue();
 			if (plan != null)
-				plan.devide(tailSize);
+				try {
+					plan.devide(tailSize);
+				} catch (Exception e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 			panel.repaint();
 		}
 	}
@@ -557,7 +648,12 @@ public class Location extends JFrame {
 											firstCheckPoint, secondCheckPoint);
 								else {
 									dragging = false;
-									plan.devide(tailSize);
+									try {
+										plan.devide(tailSize);
+									} catch (Exception e1) {
+										// TODO Auto-generated catch block
+										e1.printStackTrace();
+									}
 									firstCheckPoint = null;
 									secondCheckPoint = null;
 									firstDraggingPoint = null;
@@ -572,7 +668,12 @@ public class Location extends JFrame {
 											.clone();
 								} else {
 									dragging = false;
-									plan.devide(tailSize);
+									try {
+										plan.devide(tailSize);
+									} catch (Exception e1) {
+										// TODO Auto-generated catch block
+										e1.printStackTrace();
+									}
 									plan.deleteBorderPoint(firstCheckPoint);
 									plan.deleteBorderPoint(secondCheckPoint);
 									firstCheckPoint = null;
@@ -629,7 +730,12 @@ public class Location extends JFrame {
 											firstCheckPoint, secondCheckPoint);
 								else {
 									dragging = false;
-									plan.devide(tailSize);
+									try {
+										plan.devide(tailSize);
+									} catch (Exception e1) {
+										// TODO Auto-generated catch block
+										e1.printStackTrace();
+									}
 									firstCheckPoint = null;
 									secondCheckPoint = null;
 									firstDraggingPoint = null;
@@ -644,7 +750,12 @@ public class Location extends JFrame {
 											.clone();
 								} else {
 									dragging = false;
-									plan.devide(tailSize);
+									try {
+										plan.devide(tailSize);
+									} catch (Exception e1) {
+										// TODO Auto-generated catch block
+										e1.printStackTrace();
+									}
 									plan.deleteBorderPoint(firstCheckPoint);
 									plan.deleteBorderPoint(secondCheckPoint);
 									firstCheckPoint = null;
@@ -661,6 +772,7 @@ public class Location extends JFrame {
 						panel.repaint();
 					}
 				}
+				canged = true;
 				break;
 			case DELETE:
 				if (deleting) {
@@ -684,6 +796,7 @@ public class Location extends JFrame {
 						panel.repaint();
 					}
 				}
+				canged = true;
 				break;
 			}
 
@@ -719,7 +832,12 @@ public class Location extends JFrame {
 							y1 / panel.getBar() / panel.getM(),
 							x2 / panel.getBar() / panel.getM(),
 							y2 / panel.getBar() / panel.getM());
-					plan.devide(tailSize);
+					try {
+						plan.devide(tailSize);
+					} catch (Exception e2) {
+						// TODO Auto-generated catch block
+						e2.printStackTrace();
+					}
 					panel.repaint();
 					break;
 				case BORDER:
@@ -730,7 +848,12 @@ public class Location extends JFrame {
 						secondDraggingPoint = null;
 						dragging = false;
 						plan.deleteWrongBorderPoints();
-						plan.devide(tailSize);
+						try {
+							plan.devide(tailSize);
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
 						panel.repaint();
 					}
 					break;
@@ -739,7 +862,12 @@ public class Location extends JFrame {
 				case DELETE:
 					if (deleting) {
 						deleting = false;
-						plan.devide(tailSize);
+						try {
+							plan.devide(tailSize);
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
 					}
 					break;
 				}
@@ -866,6 +994,7 @@ public class Location extends JFrame {
 							// заглушка, здесь ничего не надо делать
 						}
 					}
+					canged = true;
 					break;
 				case DELETE:
 					if ((i = plan.findStation(
@@ -878,6 +1007,7 @@ public class Location extends JFrame {
 									.getName());
 						panel.repaint();
 					}
+					canged = true;
 					break;
 				}
 

@@ -41,8 +41,9 @@ public class Frame extends Tail {
 	 *            абсцисса правого нижнего угла
 	 * @param y21
 	 *            ордината правого нижнего угла
+	 * @throws Exception 
 	 */
-	public Frame(int x11, int y11, int x21, int y21) {
+	public Frame(int x11, int y11, int x21, int y21) throws Exception {
 		super(x11, y11, x21, y21);
 		used = false;
 	}
@@ -56,8 +57,9 @@ public class Frame extends Tail {
 	 *            абсцисса правого нижнего угла
 	 * @param y21
 	 *            ордината правого нижнего угла
+	 * @throws Exception 
 	 */
-	public Frame(double x11, double y11, double x21, double y21) {
+	public Frame(double x11, double y11, double x21, double y21) throws Exception {
 		super(x11, y11, x21, y21);
 		used = false;
 	}

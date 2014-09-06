@@ -103,7 +103,12 @@ public class Plan {
 			xDotes[i] = Integer.parseInt(k.getNamedItem("x").getNodeValue());
 			yDotes[i] = Integer.parseInt(k.getNamedItem("y").getNodeValue());
 		}
-		border = new Border(xDotes, yDotes);
+		try {
+			border = new Border(xDotes, yDotes);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		// заполняем массив стен
 		n = doc.getElementsByTagName("wall");
@@ -149,7 +154,12 @@ public class Plan {
 		stations = new ArrayList<Station>();
 		int[] x = { 3, 13, 13, 3 };
 		int[] y = { 3, 3, 13, 13 };
-		border = new Border(x, y);
+		try {
+			border = new Border(x, y);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -157,8 +167,9 @@ public class Plan {
 	 * 
 	 * @param tailSize
 	 *            желаемый размер ячейки
+	 * @throws Exception 
 	 */
-	public void devide(int tailSize) {
+	public void devide(int tailSize) throws Exception {
 
 		// System.out.println("devide");
 
@@ -241,8 +252,9 @@ public class Plan {
 	 * 
 	 * @param tailSize
 	 *            желаемый размер ячейки
+	 * @throws Exception 
 	 */
-	private void doTails(int tailSize) {
+	private void doTails(int tailSize) throws Exception {
 		tailsNum = 0;
 		tails = new ArrayList<Tail>();
 		for (int i = 0; i < finalFramesNum; i++) {
@@ -320,8 +332,9 @@ public class Plan {
 	/**
 	 * Составляет финальные фреймы. В будущем лучше заменить на разбиение по
 	 * принципу запрета на пересечение со стенами и границей.
+	 * @throws Exception 
 	 */
-	private void finalFrames() {
+	private void finalFrames() throws Exception {
 		finalFrames = new Frame[(vDotes.size() - 1) * (hDotes.size() - 1)];
 		finalFramesNum = 0;
 		for (int i = 0; i < vDotes.size() - 1; i++) {
@@ -679,17 +692,34 @@ public class Plan {
 		return border.addPoints(point1, point2, point2d, point2d2);
 	}
 
-	// TODO comment
+	/**
+	 * Убирает ненужные точки границы (те, что лежат не в прямых углах границы)
+	 */
 	public void deleteWrongBorderPoints() {
 		border.deleteWrongPoints();
 	}
 
-	// TODO comment
+	/**
+	 * Удаляет точку границы
+	 * 
+	 * @param p
+	 *            точка, которую нужно удалить
+	 */
 	public void deleteBorderPoint(Point2D.Double point) {
 		border.deletePoint(point);
 	}
 
-	// TODO comment
+	/**
+	 * Находит станцию с заданными координатами
+	 * 
+	 * @param x
+	 *            абсцисса
+	 * @param y
+	 *            ордината
+	 * 
+	 * @return номер найденной станции, или -1, если станции с такими
+	 *         координатами не существует
+	 */
 	public int findStation(int x, int y) {
 		for (int i = 0; i < stations.size(); i++)
 			if ((stations.get(i).getX() == x) && (stations.get(i).getY() == y))
@@ -697,30 +727,68 @@ public class Plan {
 		return -1;
 	}
 
-	// TODO comment
+	/**
+	 * Получить имя базовой станции
+	 * 
+	 * @return имя
+	 */
 	public void setStationName(int i, String text) {
 		stations.get(i).setName(text);
 	}
 
-	// TODO comment
+	/**
+	 * Установить базовый уровень сигнала станции
+	 * 
+	 * @param name
+	 *            базовый уровень сигнала станции
+	 */
 	public void setStationS(int i, double s) {
 		stations.get(i).setS(s);
 		stations.get(i).explode(tails, this);
 	}
 
-	// TODO comment
+	/**
+	 * Добавить базовую станцию.
+	 * 
+	 * @param x
+	 *            абсцисса
+	 * @param y
+	 *            ордината
+	 * @param text
+	 *            имя
+	 * @param s
+	 *            базовый уровень сигнала станции
+	 */
 	public void addStation(int x, int y, String text, double s) {
 		Station s1 = new Station(x, y, text, s);
 		stations.add(s1);
 		stations.get(stations.indexOf(s1)).explode(tails, this);
 	}
 
-	// TODO comment
+	/**
+	 * Удалить базовую станцию с указанным номером. Если станции с таким номером
+	 * нет, то никакая станция не будет удалена.
+	 * 
+	 * @param i
+	 *            номер станции для удаления
+	 */
 	public void deleteStation(int i) {
-		stations.remove(i);
+		try {
+			stations.remove(i);
+		} catch (IndexOutOfBoundsException e) {
+			// ignore
+		}
 	}
 
-	// TODO comment
+	/**
+	 * Находит стены, содержащие заданную точку.
+	 * 
+	 * @param p
+	 *            точка
+	 * 
+	 * @return список стен (если нет ни одной стены, содержащей данную точку, то
+	 *         список будет пуст)
+	 */
 	public ArrayList<Wall> findWallsForPoint(Point2D.Double p) {
 		ArrayList<Wall> w = new ArrayList<Wall>();
 		for (int i = 0; i < walls.size(); i++)
@@ -729,11 +797,23 @@ public class Plan {
 		return w;
 	}
 
-	// TODO comment
+	/**
+	 * Удаляет часть стены, заданную точками. Если какая-либо из точек не лежит
+	 * на стене, то ничего не удаляется.
+	 * 
+	 * @param p1
+	 *            первая точка на стене
+	 * @param p2
+	 *            вторая точка на стене
+	 * @param w
+	 *            стена
+	 */
 	public void deleteWallPart(Point2D.Double p1, Point2D.Double p2, Wall w) {
 		deleteWall(w);
 		// точки не удаляем
-		if ((p1.getX() == p2.getX()) && (p1.getY() == p2.getY()))
+		if (((p1.getX() == p2.getX()) && (p1.getY() == p2.getY()))
+				|| (!w.intersectsLine(new Line2D.Double(p1, p1)))
+				|| (!w.intersectsLine(new Line2D.Double(p2, p2))))
 			return;
 		double[] s = new double[4];
 		// вертикальная стена

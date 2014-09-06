@@ -120,6 +120,8 @@ public class ImagePanel extends JPanel {
 
 			// отрисовываем конечные ячейки
 			drawTails(g);
+			
+			//drawFinalFrames(g);
 
 			// отрисовываем базовые станции
 			drawStations(g);
@@ -336,6 +338,8 @@ public class ImagePanel extends JPanel {
 	 * Отрисовывает точки, ограничивающие отрезок перетаскивания границы.
 	 */
 	public void drawCheckPonts(Graphics2D g) {
+		BasicStroke b = new BasicStroke(bPen);
+		g.setStroke(b);
 		g.setColor(Color.green);
 		if (location.getFirstCheckPoint() != null)
 			g.drawOval(
