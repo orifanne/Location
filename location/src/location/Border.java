@@ -18,46 +18,9 @@ public class Border extends Polygon {
 	/**
 	 * @param d
 	 *            массив точек в пор€дке их соединени€
-	 * @throws Exception 
 	 */
-	public Border(int[] x, int[] y) throws Exception {
+	public Border(int[] x, int[] y) {
 		super(x, y, x.length);
-		
-		PathIterator pi = this.getPathIterator(null);
-		float coords[] = new float[6];
-		float prev[] = new float[2];
-		float first[] = new float[2];
-		while (!pi.isDone()) {
-			switch (pi.currentSegment(coords)) {
-			case PathIterator.SEG_MOVETO:
-				prev[0] = coords[0];
-				prev[1] = coords[1];
-				first[0] = coords[0];
-				first[1] = coords[1];
-				break;
-			case PathIterator.SEG_LINETO:
-				Line2D.Float line = new Line2D.Float(prev[0], prev[1],
-						coords[0], coords[1]);
-				if ((!((line.getX1() == line.getX2()) || (line.getY1() == line.getY2()))) || (isDote(line)))
-					throw new Exception("Incorrect border dotes");
-				prev[0] = coords[0];
-				prev[1] = coords[1];
-				break;
-			case PathIterator.SEG_QUADTO:
-				// ignored
-				break;
-			case PathIterator.SEG_CUBICTO:
-				// ignored
-				break;
-			case PathIterator.SEG_CLOSE:
-				Line2D.Float line1 = new Line2D.Float(prev[0], prev[1],
-						first[0], first[1]);
-				if ((!((line1.getX1() == line1.getX2()) || (line1.getY1() == line1.getY2()))) || (isDote(line1)))
-					throw new Exception("Incorrect border dotes");
-				break;
-			}
-			pi.next();
-		}
 	}
 
 	public Border() {
@@ -65,7 +28,11 @@ public class Border extends Polygon {
 	}
 
 	/**
-	 * —ообщает, лежит ли фрейм внутри контура.
+	 * —ообщает, лежит ли фрейм внутри границы.
+	 * 
+	 * @param f
+	 *            фрейм, принадлежность которого границе надо проверить
+	 * @return true - фрейм лежит внутри границы, false иначе
 	 */
 	public boolean isInternal(Frame f) {
 		PathIterator pi = this.getPathIterator(null);
@@ -73,7 +40,8 @@ public class Border extends Polygon {
 		float coords[] = new float[6];
 		float prev[] = new float[2];
 		float first[] = new float[2];
-		Line2D.Float l = new Line2D.Float((float) f.getX(), (float)f.getY(), java.lang.Float.MAX_VALUE, (float)f.getY());
+		Line2D.Float l = new Line2D.Float((float) f.getX(), (float) f.getY(),
+				java.lang.Float.MAX_VALUE, (float) f.getY());
 		while (!pi.isDone()) {
 			switch (pi.currentSegment(coords)) {
 			case PathIterator.SEG_MOVETO:
@@ -117,7 +85,18 @@ public class Border extends Polygon {
 
 	/**
 	 * —ообщает, каким образом ограничена €чейка, определ€ема€ координатами x1
-	 * x2 y1 y2. [0] - сверху; [1] - снизу; [2] - справа; [3] - слева.
+	 * x2 y1 y2
+	 * 
+	 * @param x1
+	 *            абсцисса левого верхнего угла €чейки
+	 * @param y1
+	 *            ордината левого верхнего угла €чейки
+	 * @param x2
+	 *            абсцисса правого нижнего угла €чейки
+	 * @param y2
+	 *            ордината правого нижнего угла €чейки
+	 * @return каким образом ограничена €чейка ([0] - сверху; [1] - снизу; [2] -
+	 *         справа; [3] - слева)
 	 */
 	public boolean[] isBordered(double x1, double y1, double x2, double y2) {
 		PathIterator pi = this.getPathIterator(null);
@@ -205,7 +184,7 @@ public class Border extends Polygon {
 	 * 
 	 * @param point
 	 *            точка, принадлежность которой к контуру нужно проверить
-	 * @return принадлежит ли точка контуру
+	 * @return true точка принадлежит контуру, false иначе
 	 */
 	public boolean containsPoint(Point2D.Double point) {
 		PathIterator pi = this.getPathIterator(null);
@@ -319,7 +298,7 @@ public class Border extends Polygon {
 	 *            перва€ точка, между которыми надо вставить
 	 * @param point2d2
 	 *            втора€ точка, между которыми надо вставить
-	 * @return были ли вставлены точки
+	 * @return true, если точки были вставлены, false иначе
 	 */
 	public boolean addPoints(Point2D.Double point1, Point2D.Double point2,
 			Point2D point2d, Point2D point2d2) {
@@ -674,7 +653,7 @@ public class Border extends Polygon {
 	 *            перва€ точка
 	 * @param p2
 	 *            втора€ точка
-	 * @return линию, которой принадлежат обе точки, или null
+	 * @return лини€, которой принадлежат обе точки, или null
 	 */
 	public Line2D.Float checkLine(Point2D.Double p1, Point2D.Double p2) {
 		Line2D.Float l = null;

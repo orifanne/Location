@@ -4,6 +4,12 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * ѕредставл€ет базовую станцию.
+ * 
+ * @author Pokrovskaya Oksana
+ */
+
 public class Station extends AbstractStation {
 
 	/**  арта уровней сигнала, полученна€ моделированием сигнала */
@@ -80,7 +86,6 @@ public class Station extends AbstractStation {
 		Law l = new Law(s - countFSL(d), 5);
 		map.put(tail, l);
 		tMap.put(tail, new Law(0, 5));
-		// System.out.println(countFSL(d) + " " + s);
 	}
 
 	@Override
@@ -154,8 +159,18 @@ public class Station extends AbstractStation {
 	}
 
 	/**
-	 * ѕодсчет веро€тности того, что k-а€ компонента вектора равна num в
-	 * площадке t
+	 * ѕодсчет веро€тности того, что k-а€ компонента вектора равна num в €чейке
+	 * t
+	 * 
+	 * @param k
+	 *            номер компоненты
+	 * @param num
+	 *            веро€тное значение компоненты
+	 * @param t
+	 *            €чейка
+	 * @param plan
+	 *            план здани€
+	 * @return
 	 */
 	double fp(int k, double num, Tail t, Plan plan) {
 		double a;
@@ -196,7 +211,8 @@ public class Station extends AbstractStation {
 
 	/**
 	 * ѕолучить карту сил сигналов, полученную моделированием.
-	 * @return
+	 * 
+	 * @return карта сил сигналов, полученна€ моделированием
 	 */
 	public HashMap<Tail, Law> getMap() {
 		return map;
@@ -204,7 +220,8 @@ public class Station extends AbstractStation {
 
 	/**
 	 * ѕолучить карту сил сигналов, полученную обучением.
-	 * @return
+	 * 
+	 * @return карта сил сигналов, полученна€ обучением
 	 */
 	public HashMap<Tail, Law> getTMap() {
 		return tMap;

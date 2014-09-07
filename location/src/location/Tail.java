@@ -57,14 +57,8 @@ public class Tail extends AbstractTail {
 	 *            абсцисса правого нижнего угла
 	 * @param y21
 	 *            ордината правого нижнего угла
-	 * @throws Exception
 	 */
-	public Tail(double x11, double y11, double x21, double y21)
-			throws Exception {
-		// если перепутаны углы
-		if ((x21 <= x11) || (y11 <= y21)) {
-			throw new Exception("Wrong points order");
-		}
+	public Tail(double x11, double y11, double x21, double y21) {
 		x1 = x11;
 		x2 = x21;
 		y1 = y11;

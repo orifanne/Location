@@ -43,10 +43,8 @@ public class Plan {
 	// вспомогательные фреймы
 	private Frame[][] frames = null;
 
-	// финальные фреймы
-	Frame[] finalFrames = null;
-	// количество финальных фрейймов
-	int finalFramesNum = 0;
+	/** финальные фреймы */
+	private ArrayList<Frame> finalFrames = null;
 
 	/** Конечные ячейки. */
 	private ArrayList<Tail> tails = null;
@@ -103,12 +101,7 @@ public class Plan {
 			xDotes[i] = Integer.parseInt(k.getNamedItem("x").getNodeValue());
 			yDotes[i] = Integer.parseInt(k.getNamedItem("y").getNodeValue());
 		}
-		try {
-			border = new Border(xDotes, yDotes);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		border = new Border(xDotes, yDotes);
 
 		// заполняем массив стен
 		n = doc.getElementsByTagName("wall");
@@ -140,7 +133,6 @@ public class Plan {
 			y = java.lang.Double
 					.parseDouble(k.getNamedItem("y").getNodeValue());
 			name = k.getNamedItem("name").getNodeValue();
-			// System.out.println(x + " " + y);
 			stations.add(new Station(x, y, name));
 		}
 	}
@@ -154,12 +146,7 @@ public class Plan {
 		stations = new ArrayList<Station>();
 		int[] x = { 3, 13, 13, 3 };
 		int[] y = { 3, 3, 13, 13 };
-		try {
-			border = new Border(x, y);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		border = new Border(x, y);
 	}
 
 	/**
@@ -167,11 +154,8 @@ public class Plan {
 	 * 
 	 * @param tailSize
 	 *            желаемый размер ячейки
-	 * @throws Exception 
 	 */
-	public void devide(int tailSize) throws Exception {
-
-		// System.out.println("devide");
+	public void devide(int tailSize) {
 
 		double x1, y1, x2, y2;
 		vDotes = new ArrayList<java.lang.Double>();
@@ -207,8 +191,6 @@ public class Plan {
 
 		Collections.sort(hDotes);
 		Collections.sort(vDotes);
-
-		// System.out.println(vDotesNum + " " + hDotesNum);
 
 		// составляем фреймы по массивам точек
 		frames = new Frame[vDotes.size() - 1][hDotes.size() - 1];
@@ -252,14 +234,13 @@ public class Plan {
 	 * 
 	 * @param tailSize
 	 *            желаемый размер ячейки
-	 * @throws Exception 
 	 */
-	private void doTails(int tailSize) throws Exception {
+	private void doTails(int tailSize) {
 		tailsNum = 0;
 		tails = new ArrayList<Tail>();
-		for (int i = 0; i < finalFramesNum; i++) {
-			double a = finalFrames[i].getX2() - finalFrames[i].getX1();
-			double b = finalFrames[i].getY2() - finalFrames[i].getY1();
+		for (int i = 0; i < finalFrames.size(); i++) {
+			double a = finalFrames.get(i).getX2() - finalFrames.get(i).getX1();
+			double b = finalFrames.get(i).getY2() - finalFrames.get(i).getY1();
 
 			int finalSizeA = tailSize;
 			if (a >= tailSize) {
@@ -282,10 +263,10 @@ public class Plan {
 			}
 
 			if ((a >= tailSize) && (b >= tailSize)) {
-				for (double u = finalFrames[i].getX1(); u < finalFrames[i]
-						.getX2(); u += finalSizeA)
-					for (double v = finalFrames[i].getY1(); v < finalFrames[i]
-							.getY2(); v += finalSizeB) {
+				for (double u = finalFrames.get(i).getX1(); u < finalFrames
+						.get(i).getX2(); u += finalSizeA)
+					for (double v = finalFrames.get(i).getY1(); v < finalFrames
+							.get(i).getY2(); v += finalSizeB) {
 						tails.add(new Tail(u, v, u + finalSizeA, v + finalSizeB));
 						tailsNum++;
 					}
@@ -293,27 +274,28 @@ public class Plan {
 			}
 
 			if (a >= tailSize) {
-				for (double u = finalFrames[i].getX1(); u < finalFrames[i]
-						.getX2(); u += finalSizeA) {
-					tails.add(new Tail(u, finalFrames[i].getY1(), u
-							+ finalSizeA, finalFrames[i].getY2()));
+				for (double u = finalFrames.get(i).getX1(); u < finalFrames
+						.get(i).getX2(); u += finalSizeA) {
+					tails.add(new Tail(u, finalFrames.get(i).getY1(), u
+							+ finalSizeA, finalFrames.get(i).getY2()));
 					tailsNum++;
 				}
 				continue;
 			}
 
 			if (b >= tailSize) {
-				for (double v = finalFrames[i].getY1(); v < finalFrames[i]
-						.getY2(); v += finalSizeB) {
-					tails.add(new Tail(finalFrames[i].getX1(), v,
-							finalFrames[i].getX2(), v + finalSizeB));
+				for (double v = finalFrames.get(i).getY1(); v < finalFrames
+						.get(i).getY2(); v += finalSizeB) {
+					tails.add(new Tail(finalFrames.get(i).getX1(), v,
+							finalFrames.get(i).getX2(), v + finalSizeB));
 					tailsNum++;
 				}
 				continue;
 			}
 
-			tails.add(new Tail(finalFrames[i].getX1(), finalFrames[i].getY1(),
-					finalFrames[i].getX2(), finalFrames[i].getY2()));
+			tails.add(new Tail(finalFrames.get(i).getX1(), finalFrames.get(i)
+					.getY1(), finalFrames.get(i).getX2(), finalFrames.get(i)
+					.getY2()));
 			tailsNum++;
 		}
 	}
@@ -332,11 +314,9 @@ public class Plan {
 	/**
 	 * Составляет финальные фреймы. В будущем лучше заменить на разбиение по
 	 * принципу запрета на пересечение со стенами и границей.
-	 * @throws Exception 
 	 */
-	private void finalFrames() throws Exception {
-		finalFrames = new Frame[(vDotes.size() - 1) * (hDotes.size() - 1)];
-		finalFramesNum = 0;
+	private void finalFrames() {
+		finalFrames = new ArrayList<Frame>();
 		for (int i = 0; i < vDotes.size() - 1; i++) {
 			for (int j = 0; j < hDotes.size() - 1; j++) {
 				if (!frames[i][j].isUsed()) {
@@ -360,18 +340,12 @@ public class Plan {
 							}
 							if ((t - j) < minW) {
 								minW = (t - j);
-								// f = true;
 							}
 						}
-						// System.out.println(t);
 					}
-					// System.out.println(i + " " + j + "     " + k + " " + (j +
-					// minW));
-					finalFrames[finalFramesNum] = new Frame(
-							frames[i][j].getX1(), frames[i][j].getY1(),
-							frames[k][j + minW].getX2(),
-							frames[k][j + minW].getY2());
-					finalFramesNum++;
+					finalFrames.add(new Frame(frames[i][j].getX1(),
+							frames[i][j].getY1(), frames[k][j + minW].getX2(),
+							frames[k][j + minW].getY2()));
 					for (int u = i; u <= k; u++)
 						for (int v = j; v <= j + minW; v++) {
 							frames[u][v].used(true);
@@ -390,7 +364,12 @@ public class Plan {
 	}
 
 	/**
-	 * Сообщает, ограничен ли фрейм.
+	 * Сообщает, каким образом ограничен фрейм.
+	 * 
+	 * @param f
+	 *            фрейм
+	 * @return каким образом ограничен фрейм ([0] - сверху; [1] - снизу; [2] -
+	 *         справа; [3] - слева)
 	 */
 	public boolean[] isBordered(Frame f) {
 		return isBordered(f.getX1(), f.getY1(), f.getX2(), f.getY2());
@@ -398,7 +377,18 @@ public class Plan {
 
 	/**
 	 * Сообщает, каким образом ограничена ячейка, определяемая координатами x1
-	 * x2 y1 y2. [0] - сверху; [1] - снизу; [2] - справа; [3] - слева.
+	 * x2 y1 y2.
+	 * 
+	 * @param x1
+	 *            абсцисса левого верхнего угла ячейки
+	 * @param y1
+	 *            ордината левого верхнего угла ячейки
+	 * @param x2
+	 *            абсцисса правого нижнего угла ячейки
+	 * @param y2
+	 *            ордината правого нижнего угла ячейки
+	 * @return каким образом ограничена ячейка ([0] - сверху; [1] - снизу; [2] -
+	 *         справа; [3] - слева)
 	 */
 	public boolean[] isBordered(double x1, double y1, double x2, double y2) {
 		boolean up = false;
@@ -442,13 +432,19 @@ public class Plan {
 
 	/**
 	 * Получить список базовых станций.
+	 * 
+	 * @return список базовых станций
 	 */
 	public ArrayList<Station> getStations() {
 		return stations;
 	}
 
 	/**
-	 * Получить базовую станцию.
+	 * Получить базовую станцию с номером i.
+	 * 
+	 * @param номер
+	 *            базовой станции
+	 * @return базовая станция с номером i
 	 */
 	public Station getStation(int i) {
 		return stations.get(i);
@@ -459,13 +455,16 @@ public class Plan {
 	 * 
 	 * @param i
 	 *            номер стены
+	 * @return стена с номером i
 	 */
 	public Wall getWall(int i) {
 		return walls.get(i);
 	}
 
 	/**
-	 * Получить внешний контур.
+	 * Получить границу.
+	 * 
+	 * @return граница
 	 */
 	public Border getBorder() {
 		return border;
@@ -473,6 +472,8 @@ public class Plan {
 
 	/**
 	 * Получить массив стен.
+	 * 
+	 * @return массив стен
 	 */
 	public ArrayList<Wall> getWalls() {
 		return walls;
@@ -480,6 +481,8 @@ public class Plan {
 
 	/**
 	 * Получить конечные ячейки.
+	 * 
+	 * @return конечные ячейки
 	 */
 	public ArrayList<Tail> getTails() {
 		return tails;
@@ -487,16 +490,11 @@ public class Plan {
 
 	/**
 	 * Получить начальные фреймы.
+	 * 
+	 * @return начальные фреймы
 	 */
 	public Frame[][] getStartFrames() {
 		return frames;
-	}
-
-	/**
-	 * Получить конечные ячейки.
-	 */
-	public int getTailsNum() {
-		return tailsNum;
 	}
 
 	/**
@@ -685,7 +683,7 @@ public class Plan {
 	 *            первая точка, между которыми надо вставить
 	 * @param point2d2
 	 *            вторая точка, между которыми надо вставить
-	 * @return
+	 * @return true, если точки были добавлены, false иначе
 	 */
 	public boolean addBorderPoints(Point2D.Double point1,
 			Point2D.Double point2, Point2D point2d, Point2D point2d2) {
@@ -728,9 +726,12 @@ public class Plan {
 	}
 
 	/**
-	 * Получить имя базовой станции
+	 * Установить имя базовой станции
 	 * 
-	 * @return имя
+	 * @param i
+	 *            номер базовой станции
+	 * @param text
+	 *            имя
 	 */
 	public void setStationName(int i, String text) {
 		stations.get(i).setName(text);
@@ -739,7 +740,9 @@ public class Plan {
 	/**
 	 * Установить базовый уровень сигнала станции
 	 * 
-	 * @param name
+	 * @param i
+	 *            номер базовой станции
+	 * @param s
 	 *            базовый уровень сигнала станции
 	 */
 	public void setStationS(int i, double s) {
@@ -840,6 +843,15 @@ public class Plan {
 			if (s[2] != s[3])
 				walls.add(new Wall(s[2], p1.getY(), s[3], p1.getY()));
 		}
+	}
+
+	/**
+	 * Получить финальные фреймы.
+	 * 
+	 * @return финальные фреймы
+	 */
+	public ArrayList<Frame> getFinalFrames() {
+		return finalFrames;
 	}
 
 }

@@ -22,11 +22,6 @@ public class Frame extends Tail {
 	/** Флаг ограниченности слева */
 	public boolean left = false;
 
-	
-	
-	
-	
-	
 	public Frame() {
 		super();
 		used = false;
@@ -41,7 +36,7 @@ public class Frame extends Tail {
 	 *            абсцисса правого нижнего угла
 	 * @param y21
 	 *            ордината правого нижнего угла
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	public Frame(int x11, int y11, int x21, int y21) throws Exception {
 		super(x11, y11, x21, y21);
@@ -57,24 +52,27 @@ public class Frame extends Tail {
 	 *            абсцисса правого нижнего угла
 	 * @param y21
 	 *            ордината правого нижнего угла
-	 * @throws Exception 
 	 */
-	public Frame(double x11, double y11, double x21, double y21) throws Exception {
+	public Frame(double x11, double y11, double x21, double y21) {
 		super(x11, y11, x21, y21);
 		used = false;
 	}
 
-	
-	
-	
-	
-	
-	/** Получить флаг использования */
+	/**
+	 * Получить флаг использования
+	 * 
+	 * @return флаг использования
+	 */
 	public boolean isUsed() {
 		return used;
 	}
 
-	/** Установить флаг использования */
+	/**
+	 * Установить флаг использования
+	 * 
+	 * @param a
+	 *            флаг использования
+	 */
 	public void used(boolean a) {
 		used = a;
 	}

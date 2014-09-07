@@ -31,15 +31,19 @@ import org.xml.sax.SAXException;
 import javax.swing.filechooser.FileFilter;
 
 /**
- * Реализует основную функциональность .
+ * Реализует основную функциональность системы локации, организует интерфейс.
  * 
  * @author Pokrovskaya Oksana
  */
 public class Location extends JFrame {
 
+	/** Идентификатор для кнопки на панели рисования. */
 	final int WALL = 0;
+	/** Идентификатор для кнопки на панели рисования. */
 	final int BORDER = 1;
+	/** Идентификатор для кнопки на панели рисования. */
 	final int STATION = 2;
+	/** Идентификатор для кнопки на панели рисования. */
 	final int DELETE = 3;
 
 	/** Панель меню. */
@@ -88,7 +92,7 @@ public class Location extends JFrame {
 	/** Открытый файл. */
 	private File openedFile = null;
 
-	// объект для позиционирования
+	/** Объект для позиционирования */
 	PosObject object;
 
 	/**
@@ -232,11 +236,9 @@ public class Location extends JFrame {
 		DemoAction wallsAction = new DemoAction("Walls",
 				createImageIcon("wall.gif"), "Edit walls", 'W');
 		DemoAction borderAction = new DemoAction("Border",
-				createImageIcon("border.gif"),
-				"Edit border", 'B');
+				createImageIcon("border.gif"), "Edit border", 'B');
 		DemoAction stationsAction = new DemoAction("Stations",
-				createImageIcon("station.gif"),
-				"Edit base stations", 'S');
+				createImageIcon("station.gif"), "Edit base stations", 'S');
 		DemoAction deleteAction = new DemoAction("Delete",
 				createImageIcon("delete.gif"), "Delete", 'D');
 		toolBar.add(wallsAction);
@@ -337,8 +339,7 @@ public class Location extends JFrame {
 	}
 
 	/**
-	 * Прослушиватель событий меню. При нажатии на кнопку "Open" вызывает диалог
-	 * выбора файла. При нажатии на кнопку "Close" закрывает файл.
+	 * Прослушиватель событий меню.
 	 */
 	private class NewMenuListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
@@ -356,12 +357,8 @@ public class Location extends JFrame {
 					openedFile = fileopen.getSelectedFile();
 					plan = new Plan(openedFile);
 					if (plan.getWalls().size() > 0)
-						try {
-							plan.devide(tailSize);
-						} catch (Exception e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
+						plan.devide(tailSize);
+					panel.setPlan(plan);
 					panel.repaint();
 					stationsComboBox.removeAllItems();
 					for (int i = 0; i < plan.getStations().size(); i++)
@@ -397,13 +394,9 @@ public class Location extends JFrame {
 				firstDraggingPoint = null;
 				secondDraggingPoint = null;
 				plan = new Plan();
-				try {
-					plan.devide(tailSize);
-				} catch (Exception e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+				plan.devide(tailSize);
 				stationsComboBox.removeAllItems();
+				panel.setPlan(plan);
 				panel.repaint();
 				canged = false;
 			}
@@ -469,14 +462,19 @@ public class Location extends JFrame {
 			}
 		}
 	}
-	
+
+	/**
+	 * Предлагает сохранить файл, в случае если в него были внесены изменения.
+	 * (Да, Нет, Отмена)
+	 * 
+	 * @return true, если пользователь выбрал Да или Нет, false, если Отмена
+	 */
 	private boolean saveChanged() {
 		Object[] options = { "Yes", "No", "Cancel" };
 		int n = JOptionPane.showOptionDialog(null,
 				"Do you want to save this file?", "Save",
-				JOptionPane.YES_NO_CANCEL_OPTION,
-				JOptionPane.QUESTION_MESSAGE, null, options,
-				options[2]);
+				JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
+				null, options, options[2]);
 		switch (n) {
 		case 0:
 			if (plan != null) {
@@ -485,8 +483,7 @@ public class Location extends JFrame {
 					canged = false;
 				} else {
 					JFileChooser filesave = new JFileChooser();
-					FileFilter filter = new ExtensionFileFilter(
-							"xml", "xml");
+					FileFilter filter = new ExtensionFileFilter("xml", "xml");
 					filesave.setFileFilter(filter);
 					int ret = filesave.showSaveDialog(null);
 					if (ret == JFileChooser.APPROVE_OPTION) {
@@ -540,12 +537,7 @@ public class Location extends JFrame {
 			JSlider js = (JSlider) e.getSource();
 			tailSize = js.getValue();
 			if (plan != null)
-				try {
-					plan.devide(tailSize);
-				} catch (Exception e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+				plan.devide(tailSize);
 			panel.repaint();
 		}
 	}
@@ -648,12 +640,7 @@ public class Location extends JFrame {
 											firstCheckPoint, secondCheckPoint);
 								else {
 									dragging = false;
-									try {
-										plan.devide(tailSize);
-									} catch (Exception e1) {
-										// TODO Auto-generated catch block
-										e1.printStackTrace();
-									}
+									plan.devide(tailSize);
 									firstCheckPoint = null;
 									secondCheckPoint = null;
 									firstDraggingPoint = null;
@@ -668,12 +655,7 @@ public class Location extends JFrame {
 											.clone();
 								} else {
 									dragging = false;
-									try {
-										plan.devide(tailSize);
-									} catch (Exception e1) {
-										// TODO Auto-generated catch block
-										e1.printStackTrace();
-									}
+									plan.devide(tailSize);
 									plan.deleteBorderPoint(firstCheckPoint);
 									plan.deleteBorderPoint(secondCheckPoint);
 									firstCheckPoint = null;
@@ -730,12 +712,7 @@ public class Location extends JFrame {
 											firstCheckPoint, secondCheckPoint);
 								else {
 									dragging = false;
-									try {
-										plan.devide(tailSize);
-									} catch (Exception e1) {
-										// TODO Auto-generated catch block
-										e1.printStackTrace();
-									}
+									plan.devide(tailSize);
 									firstCheckPoint = null;
 									secondCheckPoint = null;
 									firstDraggingPoint = null;
@@ -750,12 +727,7 @@ public class Location extends JFrame {
 											.clone();
 								} else {
 									dragging = false;
-									try {
-										plan.devide(tailSize);
-									} catch (Exception e1) {
-										// TODO Auto-generated catch block
-										e1.printStackTrace();
-									}
+									plan.devide(tailSize);
 									plan.deleteBorderPoint(firstCheckPoint);
 									plan.deleteBorderPoint(secondCheckPoint);
 									firstCheckPoint = null;
@@ -832,12 +804,7 @@ public class Location extends JFrame {
 							y1 / panel.getBar() / panel.getM(),
 							x2 / panel.getBar() / panel.getM(),
 							y2 / panel.getBar() / panel.getM());
-					try {
-						plan.devide(tailSize);
-					} catch (Exception e2) {
-						// TODO Auto-generated catch block
-						e2.printStackTrace();
-					}
+					plan.devide(tailSize);
 					panel.repaint();
 					break;
 				case BORDER:
@@ -848,12 +815,7 @@ public class Location extends JFrame {
 						secondDraggingPoint = null;
 						dragging = false;
 						plan.deleteWrongBorderPoints();
-						try {
-							plan.devide(tailSize);
-						} catch (Exception e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
+						plan.devide(tailSize);
 						panel.repaint();
 					}
 					break;
@@ -862,12 +824,7 @@ public class Location extends JFrame {
 				case DELETE:
 					if (deleting) {
 						deleting = false;
-						try {
-							plan.devide(tailSize);
-						} catch (Exception e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
+						plan.devide(tailSize);
 					}
 					break;
 				}
@@ -1017,6 +974,8 @@ public class Location extends JFrame {
 
 	/**
 	 * Получить номер выбранной станции.
+	 * 
+	 * @return номер выбранной станции
 	 */
 	public int getStationNumber() {
 		return stationNumber;
@@ -1024,6 +983,8 @@ public class Location extends JFrame {
 
 	/**
 	 * Сообщает, открыт ли какой-нибудь файл.
+	 * 
+	 * @return true, если открыт файл, false иначе
 	 */
 	public boolean hasOpenFile() {
 		if (openedFile != null)
@@ -1034,11 +995,14 @@ public class Location extends JFrame {
 
 	/**
 	 * Получить план.
+	 * 
+	 * @return план
 	 */
 	public Plan getPlan() {
 		return plan;
 	}
 
+	/** Обеспечивает работу с выбором инструментов для рисования. */
 	class DemoAction extends AbstractAction {
 
 		public DemoAction(String text, Icon icon, String description,
