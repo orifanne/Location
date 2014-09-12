@@ -442,7 +442,7 @@ public class Plan {
 	/**
 	 * Получить базовую станцию с номером i.
 	 * 
-	 * @param номер
+	 * @param i номер
 	 *            базовой станции
 	 * @return базовая станция с номером i
 	 */
@@ -700,7 +700,7 @@ public class Plan {
 	/**
 	 * Удаляет точку границы
 	 * 
-	 * @param p
+	 * @param point
 	 *            точка, которую нужно удалить
 	 */
 	public void deleteBorderPoint(Point2D.Double point) {

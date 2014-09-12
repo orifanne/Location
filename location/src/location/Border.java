@@ -16,8 +16,8 @@ import java.util.ArrayList;
 public class Border extends Polygon {
 
 	/**
-	 * @param d
-	 *            массив точек в порядке их соединения
+	 * @param x массив абсцисс точек в порядке их соединения
+	 * @param y массив ординат точек в порядке их соединения
 	 */
 	public Border(int[] x, int[] y) {
 		super(x, y, x.length);

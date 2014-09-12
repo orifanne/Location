@@ -176,7 +176,7 @@ public abstract class AbstractStation extends Point2D.Double {
 	/**
 	 * Установить базовый уровень сигнала
 	 * 
-	 * @param name
+	 * @param s
 	 *            базовый уровень сигнала
 	 */
 	public void setS(double s) {

@@ -170,7 +170,7 @@ public class Station extends AbstractStation {
 	 *            €чейка
 	 * @param plan
 	 *            план здани€
-	 * @return
+	 * @return веро€тность
 	 */
 	double fp(int k, double num, Tail t, Plan plan) {
 		double a;

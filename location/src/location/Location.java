@@ -234,13 +234,13 @@ public class Location extends JFrame {
 		toolBar = new JToolBar(JToolBar.VERTICAL);
 		toolBar.setFloatable(false);
 		DemoAction wallsAction = new DemoAction("Walls",
-				createImageIcon("wall.gif"), "Edit walls", 'W');
+				createImageIcon("wall.png"), "Edit walls", 'W');
 		DemoAction borderAction = new DemoAction("Border",
-				createImageIcon("border.gif"), "Edit border", 'B');
+				createImageIcon("border.png"), "Edit border", 'B');
 		DemoAction stationsAction = new DemoAction("Stations",
-				createImageIcon("station.gif"), "Edit base stations", 'S');
+				createImageIcon("station.png"), "Edit base stations", 'S');
 		DemoAction deleteAction = new DemoAction("Delete",
-				createImageIcon("delete.gif"), "Delete", 'D');
+				createImageIcon("delete.png"), "Delete", 'D');
 		toolBar.add(wallsAction);
 		toolBar.add(borderAction);
 		toolBar.add(stationsAction);
@@ -330,10 +330,20 @@ public class Location extends JFrame {
 		saveAsItem.addActionListener(actionListener);
 	}
 
+	/**
+	 * ѕолучить первую точку, зафиксированную на границе (дл€ перетаскивани€)
+	 * 
+	 * @return перва€ точка
+	 */
 	public Point2D.Double getFirstCheckPoint() {
 		return firstCheckPoint;
 	}
 
+	/**
+	 * ѕолучить вторую точку, зафиксированную на границе (дл€ перетаскивани€)
+	 * 
+	 * @return втора€ точка
+	 */
 	public Point2D.Double getSecondCheckPoint() {
 		return secondCheckPoint;
 	}
@@ -446,7 +456,6 @@ public class Location extends JFrame {
 						int dotPos = s.lastIndexOf(".");
 						if (dotPos > 0) {
 							s1 = s.substring(dotPos);
-							System.out.println(s1);
 							if (!s1.equals("xml")) {
 								s += ".xml";
 								f.renameTo(new File(s));

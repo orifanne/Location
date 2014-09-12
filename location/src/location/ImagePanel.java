@@ -456,7 +456,7 @@ public class ImagePanel extends JPanel {
 	/**
 	 * Установить количество пикселов, отводимое для отрисовки базовой ячейки
 	 * 
-	 * @param Количество
+	 * @param bar количество
 	 *            пикселов, отводимое для отрисовки базовой ячейки
 	 */
 	public void setBar(int bar) {
@@ -466,7 +466,7 @@ public class ImagePanel extends JPanel {
 	/**
 	 * Установить план здания
 	 * 
-	 * @param план
+	 * @param plan план
 	 *            здания
 	 */
 	public void setPlan(Plan plan) {
