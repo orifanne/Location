@@ -10,12 +10,7 @@ import java.util.Random;
  * 
  * @author Pokrovskaya Oksana
  */
-public class PosObject extends Point2D.Double {
-
-	/** Определенная абсцисса */
-	private double probX;
-	/** Определенная ордината */
-	private double probY;
+public class PosObject {
 
 	/** Вектор уровней сигнала */
 	private ArrayList<java.lang.Double> s;
@@ -23,27 +18,23 @@ public class PosObject extends Point2D.Double {
 	/** Ячейка, в которой находится объект */
 	private Tail t;
 
+	/** Ячейка, в которой вероятно находится объект */
+	private Tail probT;
+
+	/** Объект для генерации случайных чисел */
+	Random rand;
+
 	public PosObject() {
-		x = 0;
-		y = 0;
 		t = null;
-		probX = 0;
-		probY = 0;
 		s = new ArrayList<java.lang.Double>();
+		rand = new Random(new Date().getTime());
 	}
 
 	/**
-	 * @param x
-	 *            абсцисса
-	 * @param y
-	 *            ордината
 	 * @param t
 	 *            ячейка расположения
 	 */
-	public PosObject(double x, double y, Tail t) {
-		super(x, y);
-		probX = 0;
-		probY = 0;
+	public PosObject(Tail t) {
 		this.t = t;
 		s = new ArrayList<java.lang.Double>();
 	}
@@ -55,10 +46,7 @@ public class PosObject extends Point2D.Double {
 	 *            план здания
 	 */
 	public void nextStep(Plan plan) {
-		Random rand = new Random(new Date().getTime());
 		int p = rand.nextInt(plan.getTails().size());
-		x = plan.getTails().get(p).getX();
-		y = plan.getTails().get(p).getY();
 		t = plan.getTails().get(p);
 		getVector(plan);
 	}
@@ -72,12 +60,46 @@ public class PosObject extends Point2D.Double {
 	 */
 	public void getVector(Plan plan) {
 		s = new ArrayList<java.lang.Double>();
-		Random rand = new Random(new Date().getTime());
 		for (int i = 0; i < plan.getStations().size(); i++) {
-			double alpha = plan.getStation(i).getMap().get(t).getA();
-			double sigma = plan.getStation(i).getMap().get(t).getQ();
-			s.add((java.lang.Double) (rand.nextGaussian() * sigma + alpha));
+			double alpha = plan.getStation(i).getMap(0).getMap().get(t).getA();
+			double sigma = plan.getStation(i).getMap(0).getMap().get(t).getQ();
+			s.add(Math.max(0,
+					(java.lang.Double) (rand.nextGaussian() * sigma + alpha)));
 		}
+	}
+
+	/**
+	 * Рассчитать местоположение
+	 * 
+	 * @param plan
+	 *            план здания
+	 * @param s
+	 *            станция, для которой нужно использовать карту номер m
+	 * @param m
+	 *            номер карты, которую нужно использовать
+	 */
+	public void locate(Plan plan, int s, int m) {
+		double ps = 0, psx;
+		Tail t1 = null;
+
+		for (int j = 0; j < plan.getTails().size(); j++) {
+			psx = 1;
+			for (int k = 0; k < plan.getStations().size(); k++) {
+				if (!plan.getStation(k).isTaught())
+					continue;
+				if ((getVector(k) > 0)
+						&& (Station.fp(k, getVector(k), plan.getTails().get(j),
+								plan, s, m) > 0))
+					psx *= Station.fp(k, getVector(k), plan.getTails().get(j),
+							plan, s, m);
+			}
+			if (psx > ps) {
+				ps = psx;
+				t1 = plan.getTails().get(j);
+			}
+		}
+
+		probT = t1;
 	}
 
 	/**
@@ -89,6 +111,24 @@ public class PosObject extends Point2D.Double {
 	 */
 	public double getVector(int k) {
 		return s.get(k);
+	}
+
+	/**
+	 * Получать ячейку расположения
+	 * 
+	 * @return ячейка расположения
+	 */
+	public Tail getT() {
+		return t;
+	}
+
+	/**
+	 * Получать ячейку вероятного расположения
+	 * 
+	 * @return ячейка вероятного расположения
+	 */
+	public Tail getProbT() {
+		return probT;
 	}
 
 }

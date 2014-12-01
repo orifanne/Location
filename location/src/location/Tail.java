@@ -1,5 +1,8 @@
 package location;
 
+import java.awt.Rectangle;
+import java.awt.geom.Point2D;
+
 /**
  * ѕредставл€ет €чейку.
  * 
@@ -66,6 +69,20 @@ public class Tail extends AbstractTail {
 
 		x = (x1 + x2) / 2;
 		y = (y1 + y2) / 2;
+	}
+
+	/**
+	 * ќпредел€ет, содержит ли €чейка точку.
+	 * 
+	 * @param p
+	 *            точка
+	 * @return true, если содержит, false иначе
+	 */
+	public boolean contains(Point2D.Double p) {
+		if ((x1 <= p.getX()) && (x2 >= p.getX()) && (y1 <= p.getY())
+				&& (y2 >= p.getY()))
+			return true;
+		return false;
 	}
 
 	/**

@@ -1,8 +1,20 @@
 package location;
 
+import java.awt.Component;
 import java.awt.geom.Point2D;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  * ѕредставл€ет базовую станцию.
@@ -12,16 +24,15 @@ import java.util.HashMap;
 
 public class Station extends AbstractStation {
 
-	/**  арта уровней сигнала, полученна€ моделированием сигнала */
-	private HashMap<Tail, Law> map;
-
-	/**  арта уровней сигнала, полученна€ обучением станции */
-	private HashMap<Tail, Law> tMap;
+	/** —писок карт уровней сигнала */
+	private ArrayList<Map> maps;
 
 	public Station() {
 		super();
-		map = new HashMap<Tail, Law>();
-		tMap = new HashMap<Tail, Law>();
+
+		maps = new ArrayList<Map>();
+		maps.add(new Map(new HashMap<Tail, Law>(), null, "modelled"));
+		maps.add(new Map(new HashMap<Tail, Law>(), null, "taught"));
 	}
 
 	/**
@@ -34,8 +45,10 @@ public class Station extends AbstractStation {
 	 */
 	public Station(int x1, int y1, int s1) {
 		super(x1, y1, s1);
-		map = new HashMap<Tail, Law>();
-		tMap = new HashMap<Tail, Law>();
+
+		maps = new ArrayList<Map>();
+		maps.add(new Map(new HashMap<Tail, Law>(), null, "modelled"));
+		maps.add(new Map(new HashMap<Tail, Law>(), null, "taught"));
 	}
 
 	/**
@@ -46,8 +59,10 @@ public class Station extends AbstractStation {
 	 */
 	public Station(double x, double y) {
 		super(x, y);
-		map = new HashMap<Tail, Law>();
-		tMap = new HashMap<Tail, Law>();
+
+		maps = new ArrayList<Map>();
+		maps.add(new Map(new HashMap<Tail, Law>(), null, "modelled"));
+		maps.add(new Map(new HashMap<Tail, Law>(), null, "taught"));
 	}
 
 	/**
@@ -60,8 +75,10 @@ public class Station extends AbstractStation {
 	 */
 	public Station(double x, double y, String name) {
 		super(x, y, name);
-		map = new HashMap<Tail, Law>();
-		tMap = new HashMap<Tail, Law>();
+
+		maps = new ArrayList<Map>();
+		maps.add(new Map(new HashMap<Tail, Law>(), null, "modelled"));
+		maps.add(new Map(new HashMap<Tail, Law>(), null, "taught"));
 	}
 
 	/**
@@ -74,58 +91,172 @@ public class Station extends AbstractStation {
 	 * @param s
 	 *            базовый уровень сигнала
 	 */
-	public Station(int x, int y, String name, double s) {
+	public Station(double x, double y, String name, double s) {
 		super(x, y, name, s);
-		map = new HashMap<Tail, Law>();
-		tMap = new HashMap<Tail, Law>();
+
+		maps = new ArrayList<Map>();
+		maps.add(new Map(new HashMap<Tail, Law>(), null, "modelled"));
+		maps.add(new Map(new HashMap<Tail, Law>(), null, "taught"));
+	}
+
+	/**
+	 * »мпортировать карту уровней сигналов.
+	 * 
+	 * @param file
+	 *            файл, из которого нужно импортировать карту
+	 * @param sigma
+	 *            дисперси€
+	 */
+	public void importMap(File file, int sigma) {
+		DocumentBuilderFactory f = null;
+		DocumentBuilder builder = null;
+		Document doc = null;
+
+		try {
+			f = DocumentBuilderFactory.newInstance();
+			f.setValidating(false);
+			builder = f.newDocumentBuilder();
+		}
+
+		catch (ParserConfigurationException e) {
+			e.printStackTrace();
+		} // заглушка
+
+		try {
+			doc = builder.parse(file);
+		} catch (SAXException e) {
+			e.printStackTrace();
+		} // заглушка
+		catch (IOException e) {
+			e.printStackTrace();
+		} // заглушка
+
+		NodeList n = doc.getElementsByTagName("map");
+		NamedNodeMap k = null;
+		String name;
+		k = n.item(0).getAttributes();
+		name = k.getNamedItem("name").getNodeValue();
+
+		n = doc.getElementsByTagName("point");
+		k = null;
+		ArrayList<HashMap<Point2D.Double, Law>> points = new ArrayList<HashMap<Point2D.Double, Law>>();
+		for (int i = 0; i < n.getLength(); i++) {
+			k = n.item(i).getAttributes();
+			Point2D.Double p = new Point2D.Double(
+					java.lang.Double.parseDouble(k.getNamedItem("x")
+							.getNodeValue()), java.lang.Double.parseDouble(k
+							.getNamedItem("y").getNodeValue()));
+			HashMap<Point2D.Double, Law> h = new HashMap<Point2D.Double, Law>();
+			h.put(p,
+					new Law(java.lang.Double.parseDouble(k.getNamedItem(
+							"signal").getNodeValue()), sigma));
+			points.add(h);
+		}
+
+		maps.add(new Map(null, points, name));
 	}
 
 	@Override
-	public void explode(Tail tail) {
+	public void explode(Tail tail, int sigma) {
 		double d = Point2D.Double.distance(x, y, tail.getX(), tail.getY());
-		Law l = new Law(s - countFSL(d), 5);
-		map.put(tail, l);
-		tMap.put(tail, new Law(0, 5));
+		Law l = new Law(s - countFSL(d), sigma);
+
+		for (int i = 0; i < maps.size(); i++) {
+			if (maps.get(i).getName().equals("modelled"))
+				maps.get(i).getMap().put(tail, l);
+			if (maps.get(i).getName().equals("taught"))
+				maps.get(i).getMap().put(tail, new Law(0, sigma));
+		}
 	}
 
 	@Override
-	public void explode(ArrayList<Tail> tails) {
+	public void explode(ArrayList<Tail> tails, int sigma) {
 		for (int i = 0; i < tails.size(); i++)
-			explode(tails.get(i));
+			explode(tails.get(i), sigma);
 	}
 
 	@Override
-	public void explode(Tail tail, Plan plan) {
-		int count = 0;
+	public void explode(Tail tail, Plan plan, int sigma) {
+		ArrayList<Point2D.Double> p = new ArrayList<Point2D.Double>();
+		Point2D.Double n = null;
 		for (int i = 0; i < plan.getWalls().size(); i++) {
 			if (plan.getWalls().get(i)
-					.intersectsLine(x, y, tail.getX(), tail.getY()))
-				count++;
+					.intersectsLine(x, y, tail.getX(), tail.getY())
+					&& !plan.getWalls().get(i).intersectsLine(x, y, x, y)) {
+				if (plan.getWalls().get(i).getX1() == plan.getWalls().get(i)
+						.getX2()) {
+					if (y == tail.getY()) {
+						n = new Point2D.Double(plan.getWalls().get(i).getX1(),
+								y);
+						if (!p.contains(n))
+							p.add(n);
+					} else {
+						double k = (y - tail.getY()) / (x - tail.getX());
+						double b = tail.getY() - k * tail.getX();
+						n = new Point2D.Double(plan.getWalls().get(i).getX1(),
+								k * plan.getWalls().get(i).getX1() + b);
+						if (!p.contains(n))
+							p.add(n);
+					}
+				}
+				if (plan.getWalls().get(i).getY1() == plan.getWalls().get(i)
+						.getY2()) {
+					if (x == tail.getX()) {
+						n = new Point2D.Double(x, plan.getWalls().get(i)
+								.getY1());
+						if (!p.contains(n))
+							p.add(n);
+					} else {
+						double k = (y - tail.getY()) / (x - tail.getX());
+						double b = tail.getY() - k * tail.getX();
+						n = new Point2D.Double(
+								(plan.getWalls().get(i).getY1() - b) / k, plan
+										.getWalls().get(i).getY1());
+						if (!p.contains(n))
+							p.add(n);
+					}
+				}
+			}
 		}
+
 		double d = Point2D.Double.distance(x, y, tail.getX(), tail.getY());
-		Law l = new Law(s - countFSL(d) - countExtraPL(count), 5);
-		map.put(tail, l);
-		tMap.put(tail, new Law(0, 5));
+		Law l = new Law(s - countFSL(d) - countExtraPL(p.size()), sigma);
+
+		for (int i = 0; i < maps.size(); i++) {
+			if (maps.get(i).getName().equals("modelled"))
+				maps.get(i).getMap().put(tail, l);
+			if (maps.get(i).getName().equals("taught"))
+				maps.get(i).getMap().put(tail, new Law(0, sigma));
+		}
 	}
 
 	@Override
-	public void explode(ArrayList<Tail> tails, Plan plan) {
+	public void explode(ArrayList<Tail> tails, Plan plan, int sigma) {
 		for (int i = 0; i < tails.size(); i++)
-			explode(tails.get(i), plan);
+			explode(tails.get(i), plan, sigma);
 	}
 
 	@Override
 	public void teach(PosObject object, Plan plan, int num) {
 		taught = false;
-		tMap = new HashMap<Tail, Law>();
-		for (int i = 0; i < plan.getTails().size(); i++)
-			tMap.put(plan.getTails().get(i), new Law(0, 5));
+
+		maps.get(1).newMap(plan.getSigma(), plan.getTails());
 		double[] probx = new double[plan.getTails().size()];
 		double[] probsx = new double[plan.getTails().size()];
 		double[] del = new double[plan.getTails().size()];
 		double ps, psx;
 		for (int i = 0; i < num; i++) {
 			object.nextStep(plan);
+
+			// debug
+
+			/*
+			 * System.out.println(plan.getTails().indexOf(object.getT()) + 1);
+			 * for (int k = 0; k < plan.getStations().size() - 1; k++) {
+			 * System.out.println(object.getVector(k) + " "); }
+			 * System.out.println();
+			 */
+
 			ps = 0;
 			// рассчитать веро€тность прин€ть его в каждой площадке (psx)
 			// и просто веро€тность прин€ть его (ненормализованную) (ps)
@@ -147,15 +278,123 @@ public class Station extends AbstractStation {
 			for (int j = 0; j < plan.getTails().size(); j++) {
 				probx[j] = probsx[j] / ps;
 				int n = plan.getStations().indexOf(this);
-				tMap.get(plan.getTails().get(j)).a += (object.getVector(n) * probx[j]);
+				maps.get(1).getMap().get(plan.getTails().get(j)).a += (object
+						.getVector(n) * probx[j]);
 				del[j] += probx[j];
 			}
 		}
 		for (int i = 0; i < plan.getTails().size(); i++)
 			if (del[i] != 0) {
-				tMap.get(plan.getTails().get(i)).a /= del[i];
-				System.out.println(tMap.get(plan.getTails().get(i)).a);
+				maps.get(1).getMap().get(plan.getTails().get(i)).a /= del[i];
+				// System.out.println(tMap.get(plan.getTails().get(i)).a);
 			}
+		taught = true;
+	}
+
+	/**
+	 * ¬ычисл€ет ошибку позиционировани€ определенной карты уровней сигналов.
+	 * 
+	 * @param object
+	 *            позиционируемый объект
+	 * @param plan
+	 *            план здани€
+	 * @param num
+	 *            количество точек
+	 * @param m
+	 *            номер карты
+	 * @param result
+	 *            вычисленные ошбики; result[0] содержит ошибку позиционировани€
+	 *            как рассто€ние между реальной и определенной позицией, а
+	 *            result[1] - процент угадываний
+	 */
+	public void cmpMapsPos(PosObject object, Plan plan, int num, int m,
+			double[] result) {
+		if (m > 1)
+			maps.get(m).buildMap(plan.getTails(), plan.getSigma());
+		double d = 0;
+		int n = 0;
+		for (int i = 0; i < num; i++) {
+			object.nextStep(plan);
+			object.locate(plan, plan.getStations().indexOf(this), m);
+			double diff = Math.sqrt(Math.pow((object.getT().getX() - object
+					.getProbT().getX()), 2)
+					+ Math.pow(
+							(object.getT().getY() - object.getProbT().getY()),
+							2));
+			if ((object.getT().getX() == object.getProbT().getX())
+					&& (object.getT().getY() == object.getProbT().getY()))
+				n++;
+			d += diff;
+		}
+		result[0] = d / num;
+		result[1] = n / num;
+	}
+
+	/**
+	 * ¬ычисл€ет относительное отличие двух карт уровней сигналов.
+	 * 
+	 * @param object
+	 *            позиционируемый объект
+	 * @param plan
+	 *            план здани€
+	 * @param num
+	 *            количество точек
+	 * @param m1
+	 *            номер первой карты
+	 * @param m2
+	 *            номер второй карты
+	 * @return относительное отличие двух карт
+	 */
+	public double cmpMaps(PosObject object, Plan plan, int num, int m1, int m2) {
+		if (m1 > 1)
+			maps.get(m1).buildMap(plan.getTails(), plan.getSigma());
+		if (m2 > 1)
+			maps.get(m2).buildMap(plan.getTails(), plan.getSigma());
+		double d = 0;
+		for (int i = 0; i < num; i++) {
+			double f = 0;
+			for (int j = 0; j < plan.getTails().size(); j++) {
+				f += maps.get(m1).getMap().get(plan.getTails().get(j)).getA()
+						/ maps.get(m2).getMap().get(plan.getTails().get(j))
+								.getA();
+			}
+			f /= plan.getTails().size();
+			d += f;
+		}
+		return Math.abs(1 - (d / num));
+	}
+
+	/**
+	 * ѕодсчет веро€тности того, что k-а€ компонента вектора равна num в €чейке
+	 * t
+	 * 
+	 * @param k
+	 *            номер компоненты
+	 * @param num
+	 *            веро€тное значение компоненты
+	 * @param t
+	 *            €чейка
+	 * @param plan
+	 *            план здани€
+	 * @param s
+	 *            станци€, дл€ которой нужно использовать карту номер m
+	 * @param m
+	 *            номер карты, которую нужно использовать
+	 * @return веро€тность
+	 */
+	public static double fp(int k, double num, Tail t, Plan plan, int s, int m) {
+		double a;
+		double q;
+		if (k != s)
+			m = 0;
+		a = plan.getStation(k).getMap(m).getMap().get(t).getA();
+		q = plan.getStation(k).getMap(m).getMap().get(t).getQ();
+
+		double cons = 1 / (Math.sqrt(2 * Math.PI) * q);
+		double step = -1 * Math.pow((num - a), 2) / (2 * Math.pow(q, 2));
+
+		double p = cons * Math.pow(Math.E, step);
+		return p;
 	}
 
 	/**
@@ -172,11 +411,11 @@ public class Station extends AbstractStation {
 	 *            план здани€
 	 * @return веро€тность
 	 */
-	double fp(int k, double num, Tail t, Plan plan) {
+	public static double fp(int k, double num, Tail t, Plan plan) {
 		double a;
 		double q;
-		a = plan.getStation(k).getMap().get(t).getA();
-		q = plan.getStation(k).getMap().get(t).getQ();
+		a = plan.getStation(k).getMap(0).getMap().get(t).getA();
+		q = plan.getStation(k).getMap(0).getMap().get(t).getQ();
 
 		double cons = 1 / (Math.sqrt(2 * Math.PI) * q);
 		double step = -1 * Math.pow((num - a), 2) / (2 * Math.pow(q, 2));
@@ -210,20 +449,22 @@ public class Station extends AbstractStation {
 	}
 
 	/**
-	 * ѕолучить карту сил сигналов, полученную моделированием.
+	 * ѕолучить список карт
 	 * 
-	 * @return карта сил сигналов, полученна€ моделированием
+	 * @return список карт
 	 */
-	public HashMap<Tail, Law> getMap() {
-		return map;
+	public ArrayList<Map> getMaps() {
+		return maps;
 	}
 
 	/**
-	 * ѕолучить карту сил сигналов, полученную обучением.
+	 * ѕолучить карту
 	 * 
-	 * @return карта сил сигналов, полученна€ обучением
+	 * @param i
+	 *            номер карты
+	 * @return
 	 */
-	public HashMap<Tail, Law> getTMap() {
-		return tMap;
+	public Map getMap(int i) {
+		return maps.get(i);
 	}
 }

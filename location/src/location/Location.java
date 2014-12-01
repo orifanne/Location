@@ -56,15 +56,11 @@ public class Location extends JFrame {
 	/** Номер выбранной станции. */
 	private int stationNumber = 0;
 
+	/** Номер выбранной карты. */
+	private int mapNumber = 0;
+
 	/** Номер выбранного инструмента для рисования. */
 	private int instrumentNumber = WALL;
-
-	/** Переключатели вида карты для отображения. */
-	private JRadioButton orign, taught;
-	/** Группа переключателей вида карты для отображения. */
-	private ButtonGroup bg;
-	/** Флаг того, что нужно показывать карту, полученную обучением. */
-	boolean displayTaught = false;
 
 	/**
 	 * Главный компоновщик, отвечает за взаимное расположение панели
@@ -93,7 +89,7 @@ public class Location extends JFrame {
 	private File openedFile = null;
 
 	/** Объект для позиционирования */
-	PosObject object;
+	PosObject object = null;
 
 	/**
 	 * Прокручиваемое поле, котоорое вмещает панель для отображения плана
@@ -108,10 +104,7 @@ public class Location extends JFrame {
 	JComboBox<String> stationsComboBox;
 
 	/** Список с выбором для рисования */
-	JComboBox<String> paintComboBox;
-
-	/** Флаг того, что происходит перетаскивание участка границы. */
-	boolean dragging = false;
+	JComboBox<String> mapComboBox;
 
 	/** Флаг того, что происходит удаление участка стены. */
 	boolean deleting = false;
@@ -123,28 +116,6 @@ public class Location extends JFrame {
 	 * Координаты точки, начиная с которой удаляется часть стены.
 	 */
 	Point2D.Double deletePoint = null;
-
-	/**
-	 * Координаты первой точки, зафиксированной на границе (для отметки участка
-	 * для перетаскивания)
-	 */
-	Point2D.Double firstCheckPoint = null;
-
-	/**
-	 * Координаты второй точки, зафиксированной на границе (для отметки участка
-	 * для перетаскивания)
-	 */
-	Point2D.Double secondCheckPoint = null;
-
-	/**
-	 * Координаты первой точки, зафиксированной на границе (для перетаскивания)
-	 */
-	Point2D.Double firstDraggingPoint = null;
-
-	/**
-	 * Координаты второй точки, зафиксированной на границе (для перетаскивания)
-	 */
-	Point2D.Double secondDraggingPoint = null;
 
 	public Location() {
 		// заголовок окна
@@ -158,15 +129,11 @@ public class Location extends JFrame {
 		// завершить программу при закрытии окна
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		taught = new JRadioButton("taught");
-		orign = new JRadioButton("modeled");
-		bg = new ButtonGroup();
-
-		bg.add(orign);
-		bg.add(taught);
-
 		stationsComboBox = new JComboBox<String>();
 		stationsComboBox.addActionListener(new StationsChooseListener());
+
+		mapComboBox = new JComboBox<String>();
+		mapComboBox.addActionListener(new MapChooseListener());
 
 		// будем прослушивать события мыши
 		panel.addMouseListener(new NewMouseListener());
@@ -212,22 +179,22 @@ public class Location extends JFrame {
 		stationsComboBox.setMinimumSize(new Dimension(instrumentsPanel
 				.getPreferredSize().width, 25));
 
+		mapComboBox.setMaximumSize(new Dimension(instrumentsPanel
+				.getPreferredSize().width, 25));
+		mapComboBox.setMinimumSize(new Dimension(instrumentsPanel
+				.getPreferredSize().width, 25));
+
 		instrumentsPanel.add(new JLabel("Base station:"));
 		instrumentsPanel.add(Box.createVerticalStrut(10));
 		instrumentsPanel.add(stationsComboBox);
 		instrumentsPanel.add(Box.createVerticalStrut(10));
 		stationsComboBox.setAlignmentX(JComponent.LEFT_ALIGNMENT);
 
-		instrumentsPanel.add(new JLabel("Map type:"));
+		instrumentsPanel.add(new JLabel("Display map:"));
 		instrumentsPanel.add(Box.createVerticalStrut(10));
-		instrumentsPanel.add(orign);
-		orign.setAlignmentX(JComponent.LEFT_ALIGNMENT);
-		instrumentsPanel.add(taught);
+		instrumentsPanel.add(mapComboBox);
 		instrumentsPanel.add(Box.createVerticalStrut(10));
-		taught.setAlignmentX(JComponent.LEFT_ALIGNMENT);
-
-		orign.addActionListener(new RadioListener());
-		taught.addActionListener(new RadioListener());
+		mapComboBox.setAlignmentX(JComponent.LEFT_ALIGNMENT);
 
 		instrumentsPanel.add(new JLabel("Edit:"));
 		instrumentsPanel.add(Box.createVerticalStrut(10));
@@ -257,7 +224,6 @@ public class Location extends JFrame {
 		Container container = getContentPane();
 		container.add(mainpanel);
 
-		object = new PosObject();
 	}
 
 	/**
@@ -293,11 +259,6 @@ public class Location extends JFrame {
 		openItem.setActionCommand("open");
 		fileMenu.add(openItem);
 
-		JMenuItem closeItem = new JMenuItem("Close");
-		closeItem.setFont(font);
-		closeItem.setActionCommand("close");
-		fileMenu.add(closeItem);
-
 		JMenuItem createItem = new JMenuItem("Create");
 		createItem.setFont(font);
 		createItem.setActionCommand("create");
@@ -320,32 +281,32 @@ public class Location extends JFrame {
 
 		menu.add(fileMenu);
 
+		JMenu toolsMenu = new JMenu("Tools");
+		toolsMenu.setFont(font);
+
+		JMenuItem importItem = new JMenuItem("Import map");
+		importItem.setFont(font);
+		importItem.setActionCommand("import");
+		toolsMenu.add(importItem);
+
+		JMenuItem cmpItem = new JMenuItem("Compare maps");
+		cmpItem.setFont(font);
+		cmpItem.setActionCommand("cmp");
+		toolsMenu.add(cmpItem);
+
+		toolsMenu.insertSeparator(1);
+
+		menu.add(toolsMenu);
+
 		setJMenuBar(menu);
 
 		ActionListener actionListener = new NewMenuListener();
 		openItem.addActionListener(actionListener);
-		closeItem.addActionListener(actionListener);
 		createItem.addActionListener(actionListener);
 		saveItem.addActionListener(actionListener);
 		saveAsItem.addActionListener(actionListener);
-	}
-
-	/**
-	 * Получить первую точку, зафиксированную на границе (для перетаскивания)
-	 * 
-	 * @return первая точка
-	 */
-	public Point2D.Double getFirstCheckPoint() {
-		return firstCheckPoint;
-	}
-
-	/**
-	 * Получить вторую точку, зафиксированную на границе (для перетаскивания)
-	 * 
-	 * @return вторая точка
-	 */
-	public Point2D.Double getSecondCheckPoint() {
-		return secondCheckPoint;
+		importItem.addActionListener(actionListener);
+		cmpItem.addActionListener(actionListener);
 	}
 
 	/**
@@ -356,59 +317,51 @@ public class Location extends JFrame {
 			String command = e.getActionCommand();
 			if ("open".equals(command)) {
 				if (canged) {
-					if (!saveChanged())
+					if (!Dialogs.saveChanged(plan, openedFile))
 						return;
 				}
-				JFileChooser fileopen = new JFileChooser();
-				FileFilter filter = new ExtensionFileFilter("xml", "xml");
-				fileopen.setFileFilter(filter);
-				int ret = fileopen.showOpenDialog(null);
-				if (ret == JFileChooser.APPROVE_OPTION) {
-					openedFile = fileopen.getSelectedFile();
+				openedFile = Dialogs.showOpenDialog();
+				if (openedFile != null) {
 					plan = new Plan(openedFile);
-					if (plan.getWalls().size() > 0)
-						plan.devide(tailSize);
+					// ?
+					// if (plan.getWalls().size() > 0)
+					plan.devide(tailSize);
 					panel.setPlan(plan);
 					panel.repaint();
+
 					stationsComboBox.removeAllItems();
 					for (int i = 0; i < plan.getStations().size(); i++)
 						stationsComboBox.addItem(plan.getStation(i).getName());
+
+					mapComboBox.removeAllItems();
+					if (plan.getStations().size() > 0)
+						for (int i = 0; i < plan.getStation(stationNumber)
+								.getMaps().size(); i++)
+							mapComboBox.addItem(plan.getStation(stationNumber)
+									.getMap(i).getName());
+
 					canged = false;
+					object = new PosObject();
+					stationNumber = 0;
 				}
-			}
-			if ("close".equals(command)) {
-				if (canged) {
-					if (!saveChanged())
-						return;
-				}
-				canged = false;
-				openedFile = null;
-				plan = null;
-				firstCheckPoint = null;
-				secondCheckPoint = null;
-				firstDraggingPoint = null;
-				secondDraggingPoint = null;
-				stationsComboBox.removeAllItems();
-				panel.repaint();
 			}
 			if ("create".equals(command)) {
 
 				if (canged) {
-					if (!saveChanged())
+					if (!Dialogs.saveChanged(plan, openedFile))
 						return;
 				}
 
 				openedFile = null;
-				firstCheckPoint = null;
-				secondCheckPoint = null;
-				firstDraggingPoint = null;
-				secondDraggingPoint = null;
 				plan = new Plan();
 				plan.devide(tailSize);
 				stationsComboBox.removeAllItems();
+				mapComboBox.removeAllItems();
 				panel.setPlan(plan);
 				panel.repaint();
 				canged = false;
+				object = new PosObject();
+				stationNumber = 0;
 			}
 			if ("save".equals(command)) {
 				if (plan != null) {
@@ -416,19 +369,14 @@ public class Location extends JFrame {
 						plan.save(openedFile);
 						canged = false;
 					} else {
-						JFileChooser filesave = new JFileChooser();
-						FileFilter filter = new ExtensionFileFilter("xml",
-								"xml");
-						filesave.setFileFilter(filter);
-						int ret = filesave.showSaveDialog(null);
-						if (ret == JFileChooser.APPROVE_OPTION) {
-							File f = filesave.getSelectedFile();
+						File f = Dialogs.showSaveDialog();
+						if (f != null) {
 							String s = f.getAbsolutePath();
 							String s1 = null;
 							int dotPos = s.lastIndexOf(".");
 							if (dotPos > 0) {
 								s1 = s.substring(dotPos);
-								System.out.println(s1);
+								// System.out.println(s1);
 								if (!s1.equals("xml")) {
 									s += ".xml";
 									f.renameTo(new File(s));
@@ -445,12 +393,8 @@ public class Location extends JFrame {
 			}
 			if ("saveas".equals(command)) {
 				if (plan != null) {
-					JFileChooser filesave = new JFileChooser();
-					FileFilter filter = new ExtensionFileFilter("xml", "xml");
-					filesave.setFileFilter(filter);
-					int ret = filesave.showSaveDialog(null);
-					if (ret == JFileChooser.APPROVE_OPTION) {
-						File f = filesave.getSelectedFile();
+					File f = Dialogs.showSaveDialog();
+					if (f != null) {
 						String s = f.getAbsolutePath();
 						String s1 = null;
 						int dotPos = s.lastIndexOf(".");
@@ -469,60 +413,28 @@ public class Location extends JFrame {
 					}
 				}
 			}
-		}
-	}
-
-	/**
-	 * Предлагает сохранить файл, в случае если в него были внесены изменения.
-	 * (Да, Нет, Отмена)
-	 * 
-	 * @return true, если пользователь выбрал Да или Нет, false, если Отмена
-	 */
-	private boolean saveChanged() {
-		Object[] options = { "Yes", "No", "Cancel" };
-		int n = JOptionPane.showOptionDialog(null,
-				"Do you want to save this file?", "Save",
-				JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
-				null, options, options[2]);
-		switch (n) {
-		case 0:
-			if (plan != null) {
-				if (openedFile != null) {
-					plan.save(openedFile);
-					canged = false;
-				} else {
-					JFileChooser filesave = new JFileChooser();
-					FileFilter filter = new ExtensionFileFilter("xml", "xml");
-					filesave.setFileFilter(filter);
-					int ret = filesave.showSaveDialog(null);
-					if (ret == JFileChooser.APPROVE_OPTION) {
-						File f = filesave.getSelectedFile();
-						String s = f.getAbsolutePath();
-						String s1 = null;
-						int dotPos = s.lastIndexOf(".");
-						if (dotPos > 0) {
-							s1 = s.substring(dotPos);
-							System.out.println(s1);
-							if (!s1.equals("xml")) {
-								s += ".xml";
-								f.renameTo(new File(s));
-							}
-						} else {
-							s += ".xml";
-							f.renameTo(new File(s));
-						}
-						plan.save(f);
-						canged = false;
+			if ("import".equals(command)) {
+				if ((plan != null) && (plan.getStations().size() > 0)) {
+					openedFile = Dialogs.showOpenDialog();
+					if (openedFile != null) {
+						plan.getStation(stationNumber).importMap(openedFile, plan.sigma);
+						mapComboBox.removeAllItems();
+						for (int i = 0; i < plan.getStation(stationNumber)
+								.getMaps().size(); i++)
+							mapComboBox.addItem(plan.getStation(stationNumber)
+									.getMap(i).getName());
 					}
 				}
 			}
-			break;
-		case 1:
-			break;
-		case 2:
-			return false;
+			if ("cmp".equals(command)) {
+				if ((plan != null)
+						&& (plan.getStations().size() > 0)
+						&& (plan.getStation(stationNumber).getMaps().size() > 0)) {
+					Dialogs d = new Dialogs();
+					d.showCompareMapsDialog(plan, stationNumber, object);
+				}
+			}
 		}
-		return true;
 	}
 
 	/**
@@ -552,44 +464,38 @@ public class Location extends JFrame {
 	}
 
 	/**
-	 * Прослушиватель событий выбора станции для отображения карты.
+	 * Прослушиватель событий выбора станции для отображения станции.
 	 */
 	private class StationsChooseListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			JComboBox<String> c = (JComboBox<String>) e.getSource();
-			stationNumber = c.getSelectedIndex();
+			if (c.getSelectedIndex() >= 0) {
+				stationNumber = c.getSelectedIndex();
+
+				mapComboBox.removeAllItems();
+				for (int i = 0; i < plan.getStation(stationNumber).getMaps()
+						.size(); i++)
+					mapComboBox.addItem(plan.getStation(stationNumber)
+							.getMap(i).getName());
+			}
+
 			panel.repaint();
 		}
 	};
 
 	/**
-	 * Прослушиватель событий выбора инструментов для рисования.
+	 * Прослушиватель событий выбора станции для отображения карты.
 	 */
-	private class PaintChooseListener implements ActionListener {
+	private class MapChooseListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			JComboBox<String> c = (JComboBox<String>) e.getSource();
-			instrumentNumber = c.getSelectedIndex();
+			mapNumber = c.getSelectedIndex();
+			if ((mapNumber == 1)
+					&& ((plan != null) && (object != null) && (stationNumber >= 0)))
+				plan.getStation(stationNumber).teach(object, plan, 100);
+			panel.repaint();
 		}
 	};
-
-	/**
-	 * Прослушиватель событий выбора типа карты для отбражения (смоделированная
-	 * или обученная).
-	 */
-	private class RadioListener implements ActionListener {
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			if ((plan != null) && (object != null) && (stationNumber > 0)) {
-				if (orign.isSelected())
-					displayTaught = false;
-				else {
-					plan.getStation(stationNumber).teach(object, plan, 1000);
-					displayTaught = true;
-				}
-				panel.repaint();
-			}
-		}
-	}
 
 	/**
 	 * Прослушиватель перемещений мыши.
@@ -603,156 +509,10 @@ public class Location extends JFrame {
 			y -= y % (panel.getM() * panel.getBar());
 			switch (instrumentNumber) {
 			case BORDER:
-				if (dragging) {
-					boolean f = false;
-					if ((x >= 0) && (y >= 0)) {
-						// вертикальный отрезок
-						if (firstCheckPoint.getX() == secondCheckPoint.getX()) {
-							firstDraggingPoint.setLocation(x / panel.getBar()
-									/ panel.getM(), firstCheckPoint.getY());
-							secondDraggingPoint.setLocation(x / panel.getBar()
-									/ panel.getM(), secondCheckPoint.getY());
-							if ((x / panel.getBar() / panel.getM()) != firstCheckPoint
-									.getX()) {
-								Line2D.Float line = plan.getBorder().checkLine(
-										firstCheckPoint, secondCheckPoint);
-								if (firstCheckPoint.getY() > secondCheckPoint
-										.getY()) {
-									if (line.getY1() > line.getY2()) {
-										f = plan.addBorderPoints(
-												firstCheckPoint,
-												secondCheckPoint, line.getP1(),
-												line.getP2());
-									} else {
-										f = plan.addBorderPoints(
-												firstCheckPoint,
-												secondCheckPoint, line.getP2(),
-												line.getP1());
-									}
-								} else {
-									if (line.getY1() > line.getY2()) {
-										f = plan.addBorderPoints(
-												firstCheckPoint,
-												secondCheckPoint, line.getP2(),
-												line.getP1());
-									} else {
-										f = plan.addBorderPoints(
-												firstCheckPoint,
-												secondCheckPoint, line.getP1(),
-												line.getP2());
-									}
-								}
-								if (f)
-									f = plan.addBorderPoints(
-											firstDraggingPoint,
-											secondDraggingPoint,
-											firstCheckPoint, secondCheckPoint);
-								else {
-									dragging = false;
-									plan.devide(tailSize);
-									firstCheckPoint = null;
-									secondCheckPoint = null;
-									firstDraggingPoint = null;
-									secondDraggingPoint = null;
-									panel.repaint();
-									return;
-								}
-								if (f) {
-									firstCheckPoint = (Point2D.Double) firstDraggingPoint
-											.clone();
-									secondCheckPoint = (Point2D.Double) secondDraggingPoint
-											.clone();
-								} else {
-									dragging = false;
-									plan.devide(tailSize);
-									plan.deleteBorderPoint(firstCheckPoint);
-									plan.deleteBorderPoint(secondCheckPoint);
-									firstCheckPoint = null;
-									secondCheckPoint = null;
-									firstDraggingPoint = null;
-									secondDraggingPoint = null;
-									panel.repaint();
-									return;
-								}
-							}
-						}
-						// горизонтальный отрезок
-						if (firstCheckPoint.getY() == secondCheckPoint.getY()) {
-							firstDraggingPoint.setLocation(
-									firstCheckPoint.getX(), y / panel.getBar()
-											/ panel.getM());
-							secondDraggingPoint.setLocation(
-									secondCheckPoint.getX(), y / panel.getBar()
-											/ panel.getM());
-							if ((y / panel.getBar() / panel.getM()) != firstCheckPoint
-									.getY()) {
-								Line2D.Float line = plan.getBorder().checkLine(
-										firstCheckPoint, secondCheckPoint);
-								if (firstCheckPoint.getX() > secondCheckPoint
-										.getX()) {
-									if (line.getX1() > line.getX2()) {
-										f = plan.addBorderPoints(
-												firstCheckPoint,
-												secondCheckPoint, line.getP1(),
-												line.getP2());
-									} else {
-										f = plan.addBorderPoints(
-												firstCheckPoint,
-												secondCheckPoint, line.getP2(),
-												line.getP1());
-									}
-								} else {
-									if (line.getX1() > line.getX2()) {
-										f = plan.addBorderPoints(
-												firstCheckPoint,
-												secondCheckPoint, line.getP2(),
-												line.getP1());
-									} else {
-										f = plan.addBorderPoints(
-												firstCheckPoint,
-												secondCheckPoint, line.getP1(),
-												line.getP2());
-									}
-								}
-								if (f)
-									f = plan.addBorderPoints(
-											firstDraggingPoint,
-											secondDraggingPoint,
-											firstCheckPoint, secondCheckPoint);
-								else {
-									dragging = false;
-									plan.devide(tailSize);
-									firstCheckPoint = null;
-									secondCheckPoint = null;
-									firstDraggingPoint = null;
-									secondDraggingPoint = null;
-									panel.repaint();
-									return;
-								}
-								if (f) {
-									firstCheckPoint = (Point2D.Double) firstDraggingPoint
-											.clone();
-									secondCheckPoint = (Point2D.Double) secondDraggingPoint
-											.clone();
-								} else {
-									dragging = false;
-									plan.devide(tailSize);
-									plan.deleteBorderPoint(firstCheckPoint);
-									plan.deleteBorderPoint(secondCheckPoint);
-									firstCheckPoint = null;
-									secondCheckPoint = null;
-									firstDraggingPoint = null;
-									secondDraggingPoint = null;
-									panel.repaint();
-									return;
-								}
-							}
-						}
-						if (f)
-							plan.deleteWrongBorderPoints();
-						panel.repaint();
-					}
-				}
+				plan.getBorder().drag(x / panel.getBar() / panel.getM(),
+						y / panel.getBar() / panel.getM());
+				plan.devide(tailSize);
+				panel.repaint();
 				canged = true;
 				break;
 			case DELETE:
@@ -817,18 +577,9 @@ public class Location extends JFrame {
 					panel.repaint();
 					break;
 				case BORDER:
-					if (dragging) {
-						firstCheckPoint = null;
-						secondCheckPoint = null;
-						firstDraggingPoint = null;
-						secondDraggingPoint = null;
-						dragging = false;
-						plan.deleteWrongBorderPoints();
-						plan.devide(tailSize);
-						panel.repaint();
-					}
-					break;
-				case STATION:
+					plan.getBorder().stopDragging();
+					plan.devide(tailSize);
+					panel.repaint();
 					break;
 				case DELETE:
 					if (deleting) {
@@ -857,20 +608,9 @@ public class Location extends JFrame {
 				y1 -= y1 % (panel.getM() * panel.getBar());
 				switch (instrumentNumber) {
 				case BORDER:
-					if ((firstCheckPoint != null) && (secondCheckPoint != null)) {
-						Point2D.Double p = new Point2D.Double(x1
-								/ panel.getBar() / panel.getM(), y1
-								/ panel.getBar() / panel.getM());
-						Line2D.Float l = new Line2D.Float(firstCheckPoint,
-								secondCheckPoint);
-						if (l.intersectsLine(new Line2D.Float(p, p))) {
-							dragging = true;
-							firstDraggingPoint = (Point2D.Double) firstCheckPoint
-									.clone();
-							secondDraggingPoint = (Point2D.Double) secondCheckPoint
-									.clone();
-						}
-					}
+					plan.getBorder().setDraggingPoints(
+							x1 / panel.getBar() / panel.getM(),
+							y1 / panel.getBar() / panel.getM());
 					break;
 				case DELETE:
 					Point2D.Double p = new Point2D.Double(x1 / panel.getBar()
@@ -893,74 +633,46 @@ public class Location extends JFrame {
 				y -= y % (panel.getM() * panel.getBar());
 				switch (instrumentNumber) {
 				case BORDER:
-					if (!dragging) {
-						Point2D.Double p = new Point2D.Double(x
-								/ panel.getBar() / panel.getM(), y
-								/ panel.getBar() / panel.getM());
-						if ((plan.getBorder().containingLine(p)) != null) {
-							if (firstCheckPoint == null)
-								firstCheckPoint = p;
-							else {
-								if (plan.getBorder().checkLine(firstCheckPoint,
-										p) != null)
-									secondCheckPoint = p;
-							}
-							panel.repaint();
-						} else {
-							firstCheckPoint = null;
-							secondCheckPoint = null;
-							panel.repaint();
-						}
-					}
+					plan.getBorder().setCheckPoints(
+							x / panel.getBar() / panel.getM(),
+							y / panel.getBar() / panel.getM());
+					panel.repaint();
 					break;
 				case STATION:
 					int i;
-					JTextField name = new JTextField();
-					JTextField power = new JTextField();
-					if ((i = plan.findStation(
-							x / panel.getBar() / panel.getM(),
-							y / panel.getBar() / panel.getM())) != -1) {
-						name.setText(plan.getStation(i).getName());
-						power.setText(java.lang.Double.toString(plan
-								.getStation(i).getS()));
-						final JComponent[] inputs = new JComponent[] {
-								new JLabel("Имя:"), name,
-								new JLabel("Базовый уровень сигнала:"), power, };
-						JOptionPane.showMessageDialog(null, inputs,
-								"Edit station data", JOptionPane.PLAIN_MESSAGE);
-						if (name.getText() != "")
-							plan.setStationName(i, name.getText());
-						stationsComboBox.removeAllItems();
-						for (int j = 0; j < plan.getStations().size(); j++)
-							stationsComboBox.addItem(plan.getStation(j)
-									.getName());
-						try {
-							plan.setStationS(i, java.lang.Double
-									.parseDouble(power.getText()));
-						} catch (NullPointerException | NumberFormatException e1) {
-							// заглушка, здесь ничего не надо делать
-						}
-					} else {
-						final JComponent[] inputs = new JComponent[] {
-								new JLabel("Имя:"), name,
-								new JLabel("Базовый уровень сигнала:"), power, };
-						JOptionPane.showMessageDialog(null, inputs,
-								"Edit station data", JOptionPane.PLAIN_MESSAGE);
-						try {
-							if (name.getText() != "") {
+					String[] name = new String[1];
+					double n;
+					try {
+						if ((i = plan.findStation(
+								x / panel.getBar() / panel.getM(),
+								y / panel.getBar() / panel.getM())) != -1) {
+
+							n = Dialogs.showStationDialog(name,
+									plan.getStation(i));
+							if (name[0] != "") {
+								plan.setStationName(i, name[0]);
+								stationsComboBox.removeAllItems();
+								for (int j = 0; j < plan.getStations().size(); j++)
+									stationsComboBox.addItem(plan.getStation(j)
+											.getName());
+							}
+							plan.setStationS(i, n);
+
+						} else {
+							n = Dialogs.showStationDialog(name);
+							if (name[0] != "") {
 								plan.addStation(
 										x / panel.getBar() / panel.getM(),
-										y / panel.getBar() / panel.getM(), name
-												.getText(), java.lang.Double
-												.parseDouble(power.getText()));
-								stationsComboBox.addItem(name.getText());
+										y / panel.getBar() / panel.getM(),
+										name[0], n);
+								stationsComboBox.addItem(name[0]);
 								panel.repaint();
 							}
-						} catch (NullPointerException | NumberFormatException e1) {
-							// заглушка, здесь ничего не надо делать
 						}
+						canged = true;
+					} catch (NullPointerException | NumberFormatException e1) {
+						// заглушка, здесь ничего не надо делать
 					}
-					canged = true;
 					break;
 				case DELETE:
 					if ((i = plan.findStation(
@@ -1026,10 +738,7 @@ public class Location extends JFrame {
 			switch (getValue(NAME).toString()) {
 			case "Walls":
 				instrumentNumber = WALL;
-				firstCheckPoint = null;
-				secondCheckPoint = null;
-				firstDraggingPoint = null;
-				secondDraggingPoint = null;
+				plan.getBorder().setNullPoints();
 				panel.repaint();
 				break;
 			case "Border":
@@ -1037,21 +746,34 @@ public class Location extends JFrame {
 				break;
 			case "Stations":
 				instrumentNumber = STATION;
-				firstCheckPoint = null;
-				secondCheckPoint = null;
-				firstDraggingPoint = null;
-				secondDraggingPoint = null;
+				plan.getBorder().setNullPoints();
 				panel.repaint();
 				break;
 			case "Delete":
 				instrumentNumber = DELETE;
-				firstCheckPoint = null;
-				secondCheckPoint = null;
-				firstDraggingPoint = null;
-				secondDraggingPoint = null;
+				plan.getBorder().setNullPoints();
 				panel.repaint();
 				break;
 			}
 		}
 	}
+
+	/**
+	 * Получить позиционируемый объект.
+	 * 
+	 * @return позиционируемый объект
+	 */
+	public PosObject getPosObject() {
+		return object;
+	}
+
+	/**
+	 * Получить номер выбранной для отображения карты.
+	 * 
+	 * @return номер карты
+	 */
+	public int getMapNumber() {
+		return mapNumber;
+	}
+
 }

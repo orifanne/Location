@@ -35,6 +35,9 @@ import java.util.Collections;
  */
 public class Plan {
 
+	/** Дисперсия по умолчанию. */
+	int sigma = 3;
+
 	// массив точек по горизонтали
 	private ArrayList<java.lang.Double> vDotes = null;
 	// массив точек по вертикали
@@ -123,7 +126,7 @@ public class Plan {
 
 		n = doc.getElementsByTagName("station");
 		k = null;
-		double x, y;
+		double x, y, s;
 		String name;
 		stations = new ArrayList<Station>();
 		for (int i = 0; i < n.getLength(); i++) {
@@ -133,7 +136,9 @@ public class Plan {
 			y = java.lang.Double
 					.parseDouble(k.getNamedItem("y").getNodeValue());
 			name = k.getNamedItem("name").getNodeValue();
-			stations.add(new Station(x, y, name));
+			s = java.lang.Double
+					.parseDouble(k.getNamedItem("s").getNodeValue());
+			stations.add(new Station(x, y, name, s));
 		}
 	}
 
@@ -306,7 +311,7 @@ public class Plan {
 	 */
 	public void explodeAllStations() {
 		for (int i = 0; i < stations.size(); i++) {
-			stations.get(i).explode(tails, this);
+			stations.get(i).explode(tails, this, sigma);
 			stations.get(i).setTaught(true);
 		}
 	}
@@ -442,8 +447,8 @@ public class Plan {
 	/**
 	 * Получить базовую станцию с номером i.
 	 * 
-	 * @param i номер
-	 *            базовой станции
+	 * @param i
+	 *            номер базовой станции
 	 * @return базовая станция с номером i
 	 */
 	public Station getStation(int i) {
@@ -644,6 +649,16 @@ public class Plan {
 			stEl.setAttribute("y",
 					Integer.toString((int) stations.get(i).getY(), 10));
 			stEl.setAttribute("name", stations.get(i).getName());
+			stEl.setAttribute("s",
+					java.lang.Double.toString(stations.get(i).getS()));
+			// TODO сохранение карт
+			/**
+			for (int j = 0; j < stations.get(i).getMaps().size(); j++) {
+				Element mapEl = doc.createElement("map");
+				mapEl.setAttribute("name", stations.get(i).getMap(j).getName());
+				
+			}
+			*/
 			planEl.appendChild(stEl);
 		}
 
@@ -747,7 +762,7 @@ public class Plan {
 	 */
 	public void setStationS(int i, double s) {
 		stations.get(i).setS(s);
-		stations.get(i).explode(tails, this);
+		stations.get(i).explode(tails, this, 3);
 	}
 
 	/**
@@ -765,7 +780,7 @@ public class Plan {
 	public void addStation(int x, int y, String text, double s) {
 		Station s1 = new Station(x, y, text, s);
 		stations.add(s1);
-		stations.get(stations.indexOf(s1)).explode(tails, this);
+		stations.get(stations.indexOf(s1)).explode(tails, this, 3);
 	}
 
 	/**
@@ -854,4 +869,22 @@ public class Plan {
 		return finalFrames;
 	}
 
+	/**
+	 * Получить среднеквадратическое отклонение
+	 * 
+	 * @return среднеквадратическое отклонение
+	 */
+	public int getSigma() {
+		return sigma;
+	}
+
+	/**
+	 * Задать среднеквадратическое отклонение
+	 * 
+	 * @param sigma
+	 *            среднеквадратическое отклонение
+	 */
+	public void setSigma(int sigma) {
+		this.sigma = sigma;
+	}
 }

@@ -3,6 +3,7 @@ package location;
 import javax.swing.*;
 
 import java.awt.*;
+import java.awt.image.ImageObserver;
 import java.util.ArrayList;
 
 /**
@@ -39,7 +40,7 @@ public class ImagePanel extends JPanel {
 	/** Количество оттенков для отображения карты */
 	private int range = 5;
 	/** Минимальное значение уровня сигнала */
-	private double minA = 5;
+	private double minA = 0;
 	/** Максимальное значение уровня сигнала */
 	private double maxA = 150;
 
@@ -140,6 +141,8 @@ public class ImagePanel extends JPanel {
 			// отрисовываем точки, ограничивающие отрезок перетаскивания части
 			// границы
 			drawCheckPonts(g);
+
+			//drawPosObject(g);
 		}
 	}
 
@@ -174,20 +177,13 @@ public class ImagePanel extends JPanel {
 		if (plan.getStations().size() > 0) {
 			ArrayList<Tail> t = plan.getTails();
 			Station s = plan.getStation(location.getStationNumber());
+			if (location.getMapNumber() > 1)
+				s.getMap(location.getMapNumber()).buildMap(t, plan.getSigma());
 			for (int i = 0; i < t.size(); i++) {
-				if (location.displayTaught) {
-					if (s.getTMap().containsKey(t.get(i))) {
-						Law l = s.getTMap().get(t.get(i));
-						if (l != null)
-							drawMapTail(g, t.get(i), l.getA());
-					}
-				} else {
-					if (s.getMap().containsKey(t.get(i))) {
-						Law l = s.getMap().get(t.get(i));
-						if (l != null)
-							drawMapTail(g, t.get(i), l.getA());
-					}
-				}
+
+				Law l = s.getMap(location.getMapNumber()).getMap()
+						.get(t.get(i));
+				drawMapTail(g, t.get(i), l.getA());
 			}
 		}
 	}
@@ -203,6 +199,8 @@ public class ImagePanel extends JPanel {
 	 *            уровень сигнала в ячейке
 	 */
 	private void drawMapTail(Graphics2D g, Tail t, double a) {
+		if (a == 0)
+			return;
 		int i;
 		for (i = 0; i < range; i++)
 			if (a < r[i])
@@ -384,20 +382,50 @@ public class ImagePanel extends JPanel {
 		BasicStroke b = new BasicStroke(bPen);
 		g.setStroke(b);
 		g.setColor(Color.green);
-		if (location.getFirstCheckPoint() != null)
+		if (plan.getBorder().getFirstCheckPoint() != null)
 			g.drawOval(
-					(int) (location.getFirstCheckPoint().getX() * m * bar - radCheckPont
-							* bar), (int) (location.getFirstCheckPoint().getY()
+					(int) (plan.getBorder().getFirstCheckPoint().getX() * m * bar - radCheckPont
+							* bar), (int) (plan.getBorder().getFirstCheckPoint().getY()
 							* m * bar - radCheckPont * bar),
 					(int) (radCheckPont * bar * 2),
 					(int) (radCheckPont * bar * 2));
-		if (location.getSecondCheckPoint() != null)
+		if (plan.getBorder().getSecondCheckPoint() != null)
 			g.drawOval(
-					(int) (location.getSecondCheckPoint().getX() * m * bar - radCheckPont
-							* bar), (int) (location.getSecondCheckPoint()
+					(int) (plan.getBorder().getSecondCheckPoint().getX() * m * bar - radCheckPont
+							* bar), (int) (plan.getBorder().getSecondCheckPoint()
 							.getY() * m * bar - radCheckPont * bar),
 					(int) (radCheckPont * bar * 2),
 					(int) (radCheckPont * bar * 2));
+	}
+
+	/**
+	 * Отрисовывает позиционируемый объект.
+	 * 
+	 * @param g
+	 *            графический объет для рисования
+	 */
+	public void drawPosObject(Graphics2D g) {
+		if (location.getPosObject() != null) {
+			if (location.getPosObject().getT() != null) {
+				BasicStroke b = new BasicStroke(bPen);
+				g.setStroke(b);
+				g.setColor(Color.blue);
+				g.drawOval((int) (location.getPosObject().getT().getX() * m
+						* bar - (radCheckPont * bar + 1)), (int) (location
+						.getPosObject().getT().getY()
+						* m * bar - (radCheckPont * bar + 1)),
+						(int) ((radCheckPont * bar + 1) * 2),
+						(int) ((radCheckPont * bar + 1) * 2));
+			}
+			if (location.getPosObject().getProbT() != null) {
+				g.setColor(Color.red);
+				g.drawOval((int) (location.getPosObject().getProbT().getX() * m
+						* bar - radCheckPont * bar), (int) (location
+						.getPosObject().getProbT().getY()
+						* m * bar - radCheckPont * bar), (int) (radCheckPont
+						* bar * 2), (int) (radCheckPont * bar * 2));
+			}
+		}
 	}
 
 	/**
@@ -456,8 +484,8 @@ public class ImagePanel extends JPanel {
 	/**
 	 * Установить количество пикселов, отводимое для отрисовки базовой ячейки
 	 * 
-	 * @param bar количество
-	 *            пикселов, отводимое для отрисовки базовой ячейки
+	 * @param bar
+	 *            количество пикселов, отводимое для отрисовки базовой ячейки
 	 */
 	public void setBar(int bar) {
 		this.bar = bar;
@@ -466,8 +494,8 @@ public class ImagePanel extends JPanel {
 	/**
 	 * Установить план здания
 	 * 
-	 * @param plan план
-	 *            здания
+	 * @param plan
+	 *            план здания
 	 */
 	public void setPlan(Plan plan) {
 		this.plan = plan;

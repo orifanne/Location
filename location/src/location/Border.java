@@ -15,16 +15,260 @@ import java.util.ArrayList;
  */
 public class Border extends Polygon {
 
+	/** Флаг того, что происходит перетаскивание участка границы. */
+	boolean dragging = false;
+
 	/**
-	 * @param x массив абсцисс точек в порядке их соединения
-	 * @param y массив ординат точек в порядке их соединения
+	 * Координаты первой точки, зафиксированной на границе (для отметки участка
+	 * для перетаскивания)
+	 */
+	Point2D.Double firstCheckPoint = null;
+
+	/**
+	 * Координаты второй точки, зафиксированной на границе (для отметки участка
+	 * для перетаскивания)
+	 */
+	Point2D.Double secondCheckPoint = null;
+
+	/**
+	 * Координаты первой точки, зафиксированной на границе (для перетаскивания)
+	 */
+	Point2D.Double firstDraggingPoint = null;
+
+	/**
+	 * Координаты второй точки, зафиксированной на границе (для перетаскивания)
+	 */
+	Point2D.Double secondDraggingPoint = null;
+
+	/**
+	 * @param x
+	 *            массив абсцисс точек в порядке их соединения
+	 * @param y
+	 *            массив ординат точек в порядке их соединения
 	 */
 	public Border(int[] x, int[] y) {
 		super(x, y, x.length);
+		firstCheckPoint = null;
+		secondCheckPoint = null;
+		firstDraggingPoint = null;
+		secondDraggingPoint = null;
 	}
 
 	public Border() {
 		super();
+		firstCheckPoint = null;
+		secondCheckPoint = null;
+		firstDraggingPoint = null;
+		secondDraggingPoint = null;
+	}
+
+	/**
+	 * Устанавливает в null все точки, связанные с перетаскиванием участка
+	 * границы. (firstCheckPoint, secondCheckPoint, firstDraggingPoint,
+	 * secondDraggingPoint)
+	 */
+	public void setNullPoints() {
+		firstCheckPoint = null;
+		secondCheckPoint = null;
+		firstDraggingPoint = null;
+		secondDraggingPoint = null;
+	}
+
+	/**
+	 * Осуществляет перетаскивание участка границы.
+	 * 
+	 * @param x
+	 *            абсцисса точки, к которой нужно перетащить
+	 * @param y
+	 *            ордината точки, к которой нужно перетащить
+	 */
+	public void drag(int x, int y) {
+		if (dragging) {
+			boolean f = false;
+			if ((x >= 0) && (y >= 0)) {
+				// вертикальный отрезок
+				if (firstCheckPoint.getX() == secondCheckPoint.getX()) {
+					firstDraggingPoint.setLocation(x, firstCheckPoint.getY());
+					secondDraggingPoint.setLocation(x, secondCheckPoint.getY());
+					if ((x) != firstCheckPoint.getX()) {
+						Line2D.Float line = checkLine(firstCheckPoint,
+								secondCheckPoint);
+						if (firstCheckPoint.getY() > secondCheckPoint.getY()) {
+							if (line.getY1() > line.getY2()) {
+								f = addPoints(firstCheckPoint,
+										secondCheckPoint, line.getP1(),
+										line.getP2());
+							} else {
+								f = addPoints(firstCheckPoint,
+										secondCheckPoint, line.getP2(),
+										line.getP1());
+							}
+						} else {
+							if (line.getY1() > line.getY2()) {
+								f = addPoints(firstCheckPoint,
+										secondCheckPoint, line.getP2(),
+										line.getP1());
+							} else {
+								f = addPoints(firstCheckPoint,
+										secondCheckPoint, line.getP1(),
+										line.getP2());
+							}
+						}
+						if (f)
+							f = addPoints(firstDraggingPoint,
+									secondDraggingPoint, firstCheckPoint,
+									secondCheckPoint);
+						else {
+							dragging = false;
+							firstCheckPoint = null;
+							secondCheckPoint = null;
+							firstDraggingPoint = null;
+							secondDraggingPoint = null;
+							return;
+						}
+						if (f) {
+							firstCheckPoint = (Point2D.Double) firstDraggingPoint
+									.clone();
+							secondCheckPoint = (Point2D.Double) secondDraggingPoint
+									.clone();
+						} else {
+							dragging = false;
+							deletePoint(firstCheckPoint);
+							deletePoint(secondCheckPoint);
+							firstCheckPoint = null;
+							secondCheckPoint = null;
+							firstDraggingPoint = null;
+							secondDraggingPoint = null;
+							return;
+						}
+					}
+				}
+				// горизонтальный отрезок
+				if (firstCheckPoint.getY() == secondCheckPoint.getY()) {
+					firstDraggingPoint.setLocation(firstCheckPoint.getX(), y);
+					secondDraggingPoint.setLocation(secondCheckPoint.getX(), y);
+					if ((y) != firstCheckPoint.getY()) {
+						Line2D.Float line = checkLine(firstCheckPoint,
+								secondCheckPoint);
+						if (firstCheckPoint.getX() > secondCheckPoint.getX()) {
+							if (line.getX1() > line.getX2()) {
+								f = addPoints(firstCheckPoint,
+										secondCheckPoint, line.getP1(),
+										line.getP2());
+							} else {
+								f = addPoints(firstCheckPoint,
+										secondCheckPoint, line.getP2(),
+										line.getP1());
+							}
+						} else {
+							if (line.getX1() > line.getX2()) {
+								f = addPoints(firstCheckPoint,
+										secondCheckPoint, line.getP2(),
+										line.getP1());
+							} else {
+								f = addPoints(firstCheckPoint,
+										secondCheckPoint, line.getP1(),
+										line.getP2());
+							}
+						}
+						if (f)
+							f = addPoints(firstDraggingPoint,
+									secondDraggingPoint, firstCheckPoint,
+									secondCheckPoint);
+						else {
+							dragging = false;
+							firstCheckPoint = null;
+							secondCheckPoint = null;
+							firstDraggingPoint = null;
+							secondDraggingPoint = null;
+							return;
+						}
+						if (f) {
+							firstCheckPoint = (Point2D.Double) firstDraggingPoint
+									.clone();
+							secondCheckPoint = (Point2D.Double) secondDraggingPoint
+									.clone();
+						} else {
+							dragging = false;
+							deletePoint(firstCheckPoint);
+							deletePoint(secondCheckPoint);
+							firstCheckPoint = null;
+							secondCheckPoint = null;
+							firstDraggingPoint = null;
+							secondDraggingPoint = null;
+							return;
+						}
+					}
+				}
+				if (f)
+					deleteWrongPoints();
+			}
+		}
+	}
+
+	/**
+	 * Прекращает перетаскивание участка границы.
+	 */
+	public void stopDragging() {
+		if (dragging) {
+			firstCheckPoint = null;
+			secondCheckPoint = null;
+			firstDraggingPoint = null;
+			secondDraggingPoint = null;
+			dragging = false;
+			deleteWrongPoints();
+		}
+	}
+
+	/**
+	 * Пытается установить firstDraggingPoint или SecondDraggingPoint, в
+	 * зависимости от текущего состояния и параметров.
+	 * 
+	 * @param x
+	 *            абсцисса точки, претендующей на то, чтобы быть
+	 *            firstDraggingPoint или SecondDraggingPoint
+	 * @param y
+	 *            ордината точки, претендующей на то, чтобы быть
+	 *            firstDraggingPoint или SecondDraggingPoint
+	 */
+	public void setDraggingPoints(int x, int y) {
+		if ((firstCheckPoint != null) && (secondCheckPoint != null)) {
+			Point2D.Double p = new Point2D.Double(x, y);
+			Line2D.Float l = new Line2D.Float(firstCheckPoint, secondCheckPoint);
+			if (l.intersectsLine(new Line2D.Float(p, p))) {
+				dragging = true;
+				firstDraggingPoint = (Point2D.Double) firstCheckPoint.clone();
+				secondDraggingPoint = (Point2D.Double) secondCheckPoint.clone();
+			}
+		}
+	}
+
+	/**
+	 * Пытается установить firstCheckPoint или SecondCheckPoint, в зависимости
+	 * от текущего состояния и параметров.
+	 * 
+	 * @param x
+	 *            абсцисса точки, претендующей на то, чтобы быть firstCheckPoint
+	 *            или SecondCheckPoint
+	 * @param y
+	 *            ордината точки, претендующей на то, чтобы быть firstCheckPoint
+	 *            или SecondCheckPoint
+	 */
+	public void setCheckPoints(int x, int y) {
+		if (!dragging) {
+			Point2D.Double p = new Point2D.Double(x, y);
+			if (containingLine(p) != null) {
+				if (firstCheckPoint == null)
+					firstCheckPoint = p;
+				else {
+					if (checkLine(firstCheckPoint, p) != null)
+						secondCheckPoint = p;
+				}
+			} else {
+				firstCheckPoint = null;
+				secondCheckPoint = null;
+			}
+		}
 	}
 
 	/**
@@ -685,5 +929,23 @@ public class Border extends Polygon {
 			return true;
 		else
 			return false;
+	}
+
+	/**
+	 * Получить первую точку, зафиксированную на границе (для перетаскивания)
+	 * 
+	 * @return первая точка
+	 */
+	public Point2D.Double getFirstCheckPoint() {
+		return firstCheckPoint;
+	}
+
+	/**
+	 * Получить вторую точку, зафиксированную на границе (для перетаскивания)
+	 * 
+	 * @return вторая точка
+	 */
+	public Point2D.Double getSecondCheckPoint() {
+		return secondCheckPoint;
 	}
 }

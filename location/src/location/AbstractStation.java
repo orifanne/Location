@@ -49,17 +49,17 @@ public abstract class AbstractStation extends Point2D.Double {
 	}
 
 	/**
-	 * @param x2
+	 * @param x
 	 *            абсцисса
-	 * @param y2
+	 * @param y
 	 *            ордината
 	 * @param name2
 	 *            имя станции
 	 * @param s2
 	 *            базовый уровень сигнала
 	 */
-	public AbstractStation(int x2, int y2, String name2, double s2) {
-		super(x2, y2);
+	public AbstractStation(double x, double y, String name2, double s2) {
+		super(x, y);
 		name = name2;
 		s = s2;
 	}
@@ -83,16 +83,20 @@ public abstract class AbstractStation extends Point2D.Double {
 	 * 
 	 * @param tail
 	 *            ячейка, в которой необходимо рассчитать уровень сигнала
+	 * @param sigma
+	 *            дисперсия уровня сигнала
 	 */
-	public abstract void explode(Tail tail);
+	public abstract void explode(Tail tail, int sigma);
 
 	/**
 	 * Строит карту уровней сигнала.
 	 * 
 	 * @param tails
 	 *            ячейки, для которых необходимо построить карту уровней сигнала
+	 * @param sigma
+	 *            дисперсия уровня сигнала
 	 */
-	public abstract void explode(ArrayList<Tail> tails);
+	public abstract void explode(ArrayList<Tail> tails, int sigma);
 
 	/**
 	 * Рассчитывает уровень сигнала с учетом плана помещения.
@@ -101,8 +105,10 @@ public abstract class AbstractStation extends Point2D.Double {
 	 *            ячейка, в которой необходимо рассчитать уровень сигнала
 	 * @param plan
 	 *            план помещения
+	 * @param sigma
+	 *            дисперсия уровня сигнала
 	 */
-	public abstract void explode(Tail tail, Plan plan);
+	public abstract void explode(Tail tail, Plan plan, int sigma);
 
 	/**
 	 * Строит карту уровней сигнала с учетом плана помещения.
@@ -111,8 +117,10 @@ public abstract class AbstractStation extends Point2D.Double {
 	 *            ячейки, для которых необходимо построить карту уровней сигнала
 	 * @param plan
 	 *            план помещения
+	 * @param sigma
+	 *            дисперсия уровня сигнала
 	 */
-	public abstract void explode(ArrayList<Tail> tails, Plan plan);
+	public abstract void explode(ArrayList<Tail> tails, Plan plan, int sigma);
 
 	/**
 	 * Обучает станцию.
