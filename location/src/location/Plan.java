@@ -38,6 +38,14 @@ public class Plan {
 	/** ƒисперси€ по умолчанию. */
 	int sigma = 3;
 
+	/** ‘лаг того, что происходит удаление участка стены. */
+	boolean deleting = false;
+
+	/**
+	 *  оординаты точки, начина€ с которой удал€етс€ часть стены.
+	 */
+	Point2D.Double deletePoint = null;
+
 	// массив точек по горизонтали
 	private ArrayList<java.lang.Double> vDotes = null;
 	// массив точек по вертикали
@@ -126,7 +134,7 @@ public class Plan {
 
 		n = doc.getElementsByTagName("station");
 		k = null;
-		double x, y, s;
+		double x, y;
 		String name;
 		stations = new ArrayList<Station>();
 		for (int i = 0; i < n.getLength(); i++) {
@@ -136,9 +144,8 @@ public class Plan {
 			y = java.lang.Double
 					.parseDouble(k.getNamedItem("y").getNodeValue());
 			name = k.getNamedItem("name").getNodeValue();
-			s = java.lang.Double
-					.parseDouble(k.getNamedItem("s").getNodeValue());
-			stations.add(new Station(x, y, name, s));
+
+			stations.add(new Station(x, y, name));
 		}
 	}
 
@@ -306,13 +313,13 @@ public class Plan {
 	}
 
 	/**
-	 * —оставл€ет карты сил сигнала дл€ всех станций, моделиру€ рспрострнение
+	 * —оставл€ет карты сил сигнала дл€ всех станций, моделиру€ распрострнение
 	 * сигнала.
 	 */
 	public void explodeAllStations() {
 		for (int i = 0; i < stations.size(); i++) {
-			stations.get(i).explode(tails, this, sigma);
-			stations.get(i).setTaught(true);
+			if (stations.get(i).getMaps().size() > 0)
+				stations.get(i).getActiveMap().buildMap(tails, sigma);
 		}
 	}
 
@@ -649,16 +656,14 @@ public class Plan {
 			stEl.setAttribute("y",
 					Integer.toString((int) stations.get(i).getY(), 10));
 			stEl.setAttribute("name", stations.get(i).getName());
-			stEl.setAttribute("s",
-					java.lang.Double.toString(stations.get(i).getS()));
 			// TODO сохранение карт
 			/**
-			for (int j = 0; j < stations.get(i).getMaps().size(); j++) {
-				Element mapEl = doc.createElement("map");
-				mapEl.setAttribute("name", stations.get(i).getMap(j).getName());
-				
-			}
-			*/
+			 * for (int j = 0; j < stations.get(i).getMaps().size(); j++) {
+			 * Element mapEl = doc.createElement("map");
+			 * mapEl.setAttribute("name", stations.get(i).getMap(j).getName());
+			 * 
+			 * }
+			 */
 			planEl.appendChild(stEl);
 		}
 
@@ -753,19 +758,6 @@ public class Plan {
 	}
 
 	/**
-	 * ”становить базовый уровень сигнала станции
-	 * 
-	 * @param i
-	 *            номер базовой станции
-	 * @param s
-	 *            базовый уровень сигнала станции
-	 */
-	public void setStationS(int i, double s) {
-		stations.get(i).setS(s);
-		stations.get(i).explode(tails, this, 3);
-	}
-
-	/**
 	 * ƒобавить базовую станцию.
 	 * 
 	 * @param x
@@ -774,13 +766,10 @@ public class Plan {
 	 *            ордината
 	 * @param text
 	 *            им€
-	 * @param s
-	 *            базовый уровень сигнала станции
 	 */
-	public void addStation(int x, int y, String text, double s) {
-		Station s1 = new Station(x, y, text, s);
+	public void addStation(int x, int y, String text) {
+		Station s1 = new Station(x, y, text);
 		stations.add(s1);
-		stations.get(stations.indexOf(s1)).explode(tails, this, 3);
 	}
 
 	/**
@@ -861,6 +850,40 @@ public class Plan {
 	}
 
 	/**
+	 * ”далить участок стены, начина€ с точки deletePoint, заканчива€ указанной
+	 * 
+	 * @param p
+	 *            точка, до которой надо произвести удаление участка стены
+	 */
+	public void deleteWall(Point2D.Double p) {
+		if (deleting) {
+			if (((deletePoint.getX() != p.getX()) && (deletePoint.getY() != p
+					.getY()))
+					|| ((deletePoint.getX() == p.getX()) && (deletePoint.getY() == p
+							.getY())))
+				return;
+
+			ArrayList<Wall> w1 = findWallsForPoint(deletePoint);
+			ArrayList<Wall> w2 = findWallsForPoint(p);
+			Wall del = null;
+			for (int i = 0; i < w1.size(); i++)
+				if (w2.contains(w1.get(i)))
+					del = w1.get(i);
+			if (del != null) {
+				deleteWallPart(deletePoint, p, del);
+				deletePoint = (Point2D.Double) p.clone();
+			}
+		}
+	}
+
+	public void startDeleting(Point2D.Double p) {
+		if (findWallsForPoint(p).size() != 0) {
+			deletePoint = p;
+			deleting = true;
+		}
+	}
+
+	/**
 	 * ѕолучить финальные фреймы.
 	 * 
 	 * @return финальные фреймы
@@ -886,5 +909,24 @@ public class Plan {
 	 */
 	public void setSigma(int sigma) {
 		this.sigma = sigma;
+	}
+
+	/**
+	 * ѕолучить флаг удалени€ участка стены
+	 * 
+	 * @return флаг удалени€ участка стены
+	 */
+	public boolean isDeleting() {
+		return deleting;
+	}
+
+	/**
+	 * ”становить флаг удалени€ участка стены
+	 * 
+	 * @param deleting
+	 *            флаг удалени€ участка стены
+	 */
+	public void setDeleting(boolean deleting) {
+		this.deleting = deleting;
 	}
 }

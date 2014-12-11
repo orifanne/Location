@@ -40,6 +40,8 @@ public class Map {
 	 *            дисперсия
 	 */
 	public void buildMap(ArrayList<Tail> t, int sigma) {
+		if ((points == null) || (points.size() == 0))
+			return;
 		map = new HashMap<Tail, Law>();
 		for (int i = 0; i < t.size(); i++) {
 			double a = 0;
@@ -56,6 +58,29 @@ public class Map {
 				a /= (double) d;
 			map.put(t.get(i), new Law(a, sigma));
 		}
+	}
+
+	/**
+	 * Подсчет вероятности того, что k-ая компонента вектора равна num в ячейке
+	 * t
+	 * 
+	 * @param k
+	 *            номер компоненты
+	 * @param num
+	 *            вероятное значение компоненты
+	 * @param t
+	 *            ячейка
+	 * @return вероятность
+	 */
+	public double fp(int k, double num, Tail t) {
+		double a = map.get(t).getA();
+		double q = map.get(t).getQ();
+
+		double cons = 1 / (Math.sqrt(2 * Math.PI) * q);
+		double step = -1 * Math.pow((num - a), 2) / (2 * Math.pow(q, 2));
+
+		double p = cons * Math.pow(Math.E, step);
+		return p;
 	}
 
 	/**
@@ -108,5 +133,14 @@ public class Map {
 		map = new HashMap<Tail, Law>();
 		for (int i = 0; i < tails.size(); i++)
 			map.put(tails.get(i), new Law(0, sigma));
+	}
+
+	/**
+	 * Получить набор точек измерений
+	 * 
+	 * @return набор точек измерений
+	 */
+	public ArrayList<HashMap<Point2D.Double, Law>> getPoints() {
+		return points;
 	}
 }

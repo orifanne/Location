@@ -31,7 +31,7 @@ import org.xml.sax.SAXException;
 import javax.swing.filechooser.FileFilter;
 
 /**
- * –еализует основную функциональность системы локации, организует интерфейс.
+ * ќрганизует интерфейс.
  * 
  * @author Pokrovskaya Oksana
  */
@@ -55,9 +55,6 @@ public class Location extends JFrame {
 
 	/** Ќомер выбранной станции. */
 	private int stationNumber = 0;
-
-	/** Ќомер выбранной карты. */
-	private int mapNumber = 0;
 
 	/** Ќомер выбранного инструмента дл€ рисовани€. */
 	private int instrumentNumber = WALL;
@@ -110,7 +107,7 @@ public class Location extends JFrame {
 	boolean deleting = false;
 
 	/** ‘лаг того, что в файл были внесены изменени€. */
-	boolean canged = false;
+	boolean changed = false;
 
 	/**
 	 *  оординаты точки, начина€ с которой удал€етс€ часть стены.
@@ -294,7 +291,13 @@ public class Location extends JFrame {
 		cmpItem.setActionCommand("cmp");
 		toolsMenu.add(cmpItem);
 
+		JMenuItem modelItem = new JMenuItem("Model map");
+		modelItem.setFont(font);
+		modelItem.setActionCommand("model");
+		toolsMenu.add(modelItem);
+
 		toolsMenu.insertSeparator(1);
+		toolsMenu.insertSeparator(3);
 
 		menu.add(toolsMenu);
 
@@ -307,6 +310,7 @@ public class Location extends JFrame {
 		saveAsItem.addActionListener(actionListener);
 		importItem.addActionListener(actionListener);
 		cmpItem.addActionListener(actionListener);
+		modelItem.addActionListener(actionListener);
 	}
 
 	/**
@@ -316,7 +320,7 @@ public class Location extends JFrame {
 		public void actionPerformed(ActionEvent e) {
 			String command = e.getActionCommand();
 			if ("open".equals(command)) {
-				if (canged) {
+				if (changed) {
 					if (!Dialogs.saveChanged(plan, openedFile))
 						return;
 				}
@@ -327,7 +331,6 @@ public class Location extends JFrame {
 					// if (plan.getWalls().size() > 0)
 					plan.devide(tailSize);
 					panel.setPlan(plan);
-					panel.repaint();
 
 					stationsComboBox.removeAllItems();
 					for (int i = 0; i < plan.getStations().size(); i++)
@@ -340,14 +343,15 @@ public class Location extends JFrame {
 							mapComboBox.addItem(plan.getStation(stationNumber)
 									.getMap(i).getName());
 
-					canged = false;
+					changed = false;
 					object = new PosObject();
 					stationNumber = 0;
+					panel.repaint();
 				}
 			}
 			if ("create".equals(command)) {
 
-				if (canged) {
+				if (changed) {
 					if (!Dialogs.saveChanged(plan, openedFile))
 						return;
 				}
@@ -358,16 +362,16 @@ public class Location extends JFrame {
 				stationsComboBox.removeAllItems();
 				mapComboBox.removeAllItems();
 				panel.setPlan(plan);
-				panel.repaint();
-				canged = false;
+				changed = false;
 				object = new PosObject();
 				stationNumber = 0;
+				panel.repaint();
 			}
 			if ("save".equals(command)) {
 				if (plan != null) {
 					if (openedFile != null) {
 						plan.save(openedFile);
-						canged = false;
+						changed = false;
 					} else {
 						File f = Dialogs.showSaveDialog();
 						if (f != null) {
@@ -386,7 +390,7 @@ public class Location extends JFrame {
 								f.renameTo(new File(s));
 							}
 							plan.save(f);
-							canged = false;
+							changed = false;
 						}
 					}
 				}
@@ -409,7 +413,7 @@ public class Location extends JFrame {
 							f.renameTo(new File(s));
 						}
 						plan.save(f);
-						canged = false;
+						changed = false;
 					}
 				}
 			}
@@ -417,7 +421,8 @@ public class Location extends JFrame {
 				if ((plan != null) && (plan.getStations().size() > 0)) {
 					openedFile = Dialogs.showOpenDialog();
 					if (openedFile != null) {
-						plan.getStation(stationNumber).importMap(openedFile, plan.sigma);
+						plan.getStation(stationNumber).importMap(openedFile,
+								plan.sigma);
 						mapComboBox.removeAllItems();
 						for (int i = 0; i < plan.getStation(stationNumber)
 								.getMaps().size(); i++)
@@ -432,6 +437,19 @@ public class Location extends JFrame {
 						&& (plan.getStation(stationNumber).getMaps().size() > 0)) {
 					Dialogs d = new Dialogs();
 					d.showCompareMapsDialog(plan, stationNumber, object);
+				}
+			}
+			if ("model".equals(command)) {
+				if ((plan != null) && (plan.getStations().size() > 0)) {
+					String[] name = new String[1];
+					try {
+						double s = Dialogs.showMapModelDialog(name);
+						plan.getStation(stationNumber)
+								.explode(plan, name[0], s);
+						mapComboBox.addItem(name[0]);
+					} catch (NumberFormatException e1) {
+						// ignoge
+					}
 				}
 			}
 		}
@@ -477,23 +495,25 @@ public class Location extends JFrame {
 						.size(); i++)
 					mapComboBox.addItem(plan.getStation(stationNumber)
 							.getMap(i).getName());
+				if (plan.getStation(stationNumber).getMaps().size() > 0)
+					mapComboBox.setSelectedIndex(plan.getStation(stationNumber)
+							.getActiveMapNumber());
 			}
-
 			panel.repaint();
 		}
 	};
 
 	/**
-	 * ѕрослушиватель событий выбора станции дл€ отображени€ карты.
+	 * ѕрослушиватель событий выбора карты дл€ отображени€.
 	 */
 	private class MapChooseListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			JComboBox<String> c = (JComboBox<String>) e.getSource();
-			mapNumber = c.getSelectedIndex();
-			if ((mapNumber == 1)
-					&& ((plan != null) && (object != null) && (stationNumber >= 0)))
-				plan.getStation(stationNumber).teach(object, plan, 100);
-			panel.repaint();
+			if (plan != null) {
+				Station s = plan.getStation(stationNumber);
+				s.setActiveMapNumber(c.getSelectedIndex());
+				panel.repaint();
+			}
 		}
 	};
 
@@ -502,6 +522,7 @@ public class Location extends JFrame {
 	 */
 	private class NewMouseMotionListener implements MouseMotionListener {
 		public void mouseDragged(MouseEvent e) {
+			changed = true;
 			// приводим координаты перетаскивани€ к нужной кратности
 			int x = e.getX();
 			x -= x % (panel.getM() * panel.getBar());
@@ -513,31 +534,12 @@ public class Location extends JFrame {
 						y / panel.getBar() / panel.getM());
 				plan.devide(tailSize);
 				panel.repaint();
-				canged = true;
 				break;
 			case DELETE:
-				if (deleting) {
-					Point2D.Double p = new Point2D.Double(x / panel.getBar()
-							/ panel.getM(), y / panel.getBar() / panel.getM());
-					if (((deletePoint.getX() != p.getX()) && (deletePoint
-							.getY() != p.getY()))
-							|| ((deletePoint.getX() == p.getX()) && (deletePoint
-									.getY() == p.getY())))
-						return;
-
-					ArrayList<Wall> w1 = plan.findWallsForPoint(deletePoint);
-					ArrayList<Wall> w2 = plan.findWallsForPoint(p);
-					Wall del = null;
-					for (int i = 0; i < w1.size(); i++)
-						if (w2.contains(w1.get(i)))
-							del = w1.get(i);
-					if (del != null) {
-						plan.deleteWallPart(deletePoint, p, del);
-						deletePoint = (Point2D.Double) p.clone();
-						panel.repaint();
-					}
-				}
-				canged = true;
+				Point2D.Double p = new Point2D.Double(x / panel.getBar()
+						/ panel.getM(), y / panel.getBar() / panel.getM());
+				plan.deleteWall(p);
+				panel.repaint();
 				break;
 			}
 
@@ -561,6 +563,7 @@ public class Location extends JFrame {
 
 		public void mouseReleased(MouseEvent e) {
 			if (plan != null) {
+				changed = true;
 				switch (instrumentNumber) {
 				case WALL:
 					// запоминаем координаты конца, привод€ к нужной кратности
@@ -582,10 +585,8 @@ public class Location extends JFrame {
 					panel.repaint();
 					break;
 				case DELETE:
-					if (deleting) {
-						deleting = false;
-						plan.devide(tailSize);
-					}
+					plan.setDeleting(false);
+					plan.devide(tailSize);
 					break;
 				}
 			}
@@ -601,6 +602,7 @@ public class Location extends JFrame {
 
 		public void mousePressed(MouseEvent e) {
 			if (plan != null) {
+				changed = true;
 				// запоминаем координаты начала, привод€ к нужной кратности
 				x1 = e.getX();
 				x1 -= x1 % (panel.getM() * panel.getBar());
@@ -615,10 +617,7 @@ public class Location extends JFrame {
 				case DELETE:
 					Point2D.Double p = new Point2D.Double(x1 / panel.getBar()
 							/ panel.getM(), y1 / panel.getBar() / panel.getM());
-					if (plan.findWallsForPoint(p).size() != 0) {
-						deletePoint = p;
-						deleting = true;
-					}
+					plan.startDeleting(p);
 					break;
 				}
 			}
@@ -626,6 +625,7 @@ public class Location extends JFrame {
 
 		public void mouseClicked(MouseEvent e) {
 			if (plan != null) {
+				changed = true;
 				// приводим координаты клика к нужной кратности
 				int x = e.getX();
 				x -= x % (panel.getM() * panel.getBar());
@@ -641,36 +641,32 @@ public class Location extends JFrame {
 				case STATION:
 					int i;
 					String[] name = new String[1];
-					double n;
+					String n;
 					try {
 						if ((i = plan.findStation(
 								x / panel.getBar() / panel.getM(),
 								y / panel.getBar() / panel.getM())) != -1) {
 
-							n = Dialogs.showStationDialog(name,
-									plan.getStation(i));
-							if (name[0] != "") {
+							n = Dialogs.showStationDialog(plan.getStation(i));
+							if (n != "") {
 								plan.setStationName(i, name[0]);
 								stationsComboBox.removeAllItems();
 								for (int j = 0; j < plan.getStations().size(); j++)
 									stationsComboBox.addItem(plan.getStation(j)
 											.getName());
 							}
-							plan.setStationS(i, n);
 
 						} else {
-							n = Dialogs.showStationDialog(name);
-							if (name[0] != "") {
+							n = Dialogs.showStationDialog();
+							if (n != "") {
 								plan.addStation(
 										x / panel.getBar() / panel.getM(),
-										y / panel.getBar() / panel.getM(),
-										name[0], n);
+										y / panel.getBar() / panel.getM(), n);
 								stationsComboBox.addItem(name[0]);
 								panel.repaint();
 							}
 						}
-						canged = true;
-					} catch (NullPointerException | NumberFormatException e1) {
+					} catch (NullPointerException e1) {
 						// заглушка, здесь ничего не надо делать
 					}
 					break;
@@ -685,7 +681,6 @@ public class Location extends JFrame {
 									.getName());
 						panel.repaint();
 					}
-					canged = true;
 					break;
 				}
 
@@ -765,15 +760,6 @@ public class Location extends JFrame {
 	 */
 	public PosObject getPosObject() {
 		return object;
-	}
-
-	/**
-	 * ѕолучить номер выбранной дл€ отображени€ карты.
-	 * 
-	 * @return номер карты
-	 */
-	public int getMapNumber() {
-		return mapNumber;
 	}
 
 }

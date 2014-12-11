@@ -61,8 +61,10 @@ public class PosObject {
 	public void getVector(Plan plan) {
 		s = new ArrayList<java.lang.Double>();
 		for (int i = 0; i < plan.getStations().size(); i++) {
-			double alpha = plan.getStation(i).getMap(0).getMap().get(t).getA();
-			double sigma = plan.getStation(i).getMap(0).getMap().get(t).getQ();
+			Map m = plan.getStation(i).getMap(
+					plan.getStation(i).getActiveMapNumber());
+			double alpha = m.getMap().get(t).getA();
+			double sigma = m.getMap().get(t).getQ();
 			s.add(Math.max(0,
 					(java.lang.Double) (rand.nextGaussian() * sigma + alpha)));
 		}
@@ -73,25 +75,22 @@ public class PosObject {
 	 * 
 	 * @param plan
 	 *            план здания
-	 * @param s
-	 *            станция, для которой нужно использовать карту номер m
-	 * @param m
-	 *            номер карты, которую нужно использовать
 	 */
-	public void locate(Plan plan, int s, int m) {
+	public void locate(Plan plan) {
 		double ps = 0, psx;
 		Tail t1 = null;
 
 		for (int j = 0; j < plan.getTails().size(); j++) {
 			psx = 1;
 			for (int k = 0; k < plan.getStations().size(); k++) {
-				if (!plan.getStation(k).isTaught())
+				Station s = plan.getStation(k);
+				if ((!s.isTaught()) || (s.getMaps().size() == 0))
 					continue;
 				if ((getVector(k) > 0)
-						&& (Station.fp(k, getVector(k), plan.getTails().get(j),
-								plan, s, m) > 0))
-					psx *= Station.fp(k, getVector(k), plan.getTails().get(j),
-							plan, s, m);
+						&& (s.getMap(s.getActiveMapNumber()).fp(k,
+								getVector(k), plan.getTails().get(j)) > 0))
+					psx *= s.getMap(s.getActiveMapNumber()).fp(k, getVector(k),
+							plan.getTails().get(j));
 			}
 			if (psx > ps) {
 				ps = psx;

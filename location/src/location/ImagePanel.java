@@ -142,7 +142,7 @@ public class ImagePanel extends JPanel {
 			// границы
 			drawCheckPonts(g);
 
-			//drawPosObject(g);
+			// drawPosObject(g);
 		}
 	}
 
@@ -177,13 +177,15 @@ public class ImagePanel extends JPanel {
 		if (plan.getStations().size() > 0) {
 			ArrayList<Tail> t = plan.getTails();
 			Station s = plan.getStation(location.getStationNumber());
-			if (location.getMapNumber() > 1)
-				s.getMap(location.getMapNumber()).buildMap(t, plan.getSigma());
-			for (int i = 0; i < t.size(); i++) {
-
-				Law l = s.getMap(location.getMapNumber()).getMap()
-						.get(t.get(i));
-				drawMapTail(g, t.get(i), l.getA());
+			if (s.getMaps().size() > 0) {
+				Map m = s.getActiveMap();
+				if (m != null) {
+					m.buildMap(t, plan.getSigma());
+					for (int i = 0; i < t.size(); i++) {
+						Law l = m.getMap().get(t.get(i));
+						drawMapTail(g, t.get(i), l.getA());
+					}
+				}
 			}
 		}
 	}
@@ -383,17 +385,17 @@ public class ImagePanel extends JPanel {
 		g.setStroke(b);
 		g.setColor(Color.green);
 		if (plan.getBorder().getFirstCheckPoint() != null)
-			g.drawOval(
-					(int) (plan.getBorder().getFirstCheckPoint().getX() * m * bar - radCheckPont
-							* bar), (int) (plan.getBorder().getFirstCheckPoint().getY()
-							* m * bar - radCheckPont * bar),
+			g.drawOval((int) (plan.getBorder().getFirstCheckPoint().getX() * m
+					* bar - radCheckPont * bar), (int) (plan.getBorder()
+					.getFirstCheckPoint().getY()
+					* m * bar - radCheckPont * bar),
 					(int) (radCheckPont * bar * 2),
 					(int) (radCheckPont * bar * 2));
 		if (plan.getBorder().getSecondCheckPoint() != null)
-			g.drawOval(
-					(int) (plan.getBorder().getSecondCheckPoint().getX() * m * bar - radCheckPont
-							* bar), (int) (plan.getBorder().getSecondCheckPoint()
-							.getY() * m * bar - radCheckPont * bar),
+			g.drawOval((int) (plan.getBorder().getSecondCheckPoint().getX() * m
+					* bar - radCheckPont * bar), (int) (plan.getBorder()
+					.getSecondCheckPoint().getY()
+					* m * bar - radCheckPont * bar),
 					(int) (radCheckPont * bar * 2),
 					(int) (radCheckPont * bar * 2));
 	}

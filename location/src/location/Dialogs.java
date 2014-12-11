@@ -100,14 +100,19 @@ public class Dialogs {
 				}
 		}
 
-		String s1 = null, s2 = null, s3 = null, s4 = null, s5 = null;
+		String s1 = null, s2 = null, s3 = null, s4 = null, s5 = null, s6 = null;
 		double[] res = new double[2];
-		double cmp = 0;
+		double cmpRel = 0, cmpAbs = 0;
 
 		if ((m1 >= 0) && (m2 >= 0)) {
-			cmp = plan.getStation(stationNumber).cmpMaps(object, plan, 1000,
-					m1, m2);
-			s1 = "Maps difference: " + java.lang.Double.toString(cmp);
+			cmpRel = plan.getStation(stationNumber).cmpMapsRel(object, plan,
+					1000, m1, m2);
+			s1 = "Maps relative difference: "
+					+ java.lang.Double.toString(cmpRel);
+			cmpAbs = plan.getStation(stationNumber).cmpMapsAbs(object, plan,
+					1000, m1, m2);
+			s6 = "Maps absolute difference: "
+					+ java.lang.Double.toString(cmpAbs);
 		}
 		if (m1 >= 0) {
 			plan.getStation(stationNumber).cmpMapsPos(object, plan, 1000, m1,
@@ -126,7 +131,7 @@ public class Dialogs {
 					+ " map percent: " + java.lang.Double.toString(res[1]);
 		}
 
-		Object[] results = { s1, s2, s3, s4, s5 };
+		Object[] results = { s1, s6, s2, s3, s4, s5 };
 
 		JOptionPane.showMessageDialog(null, results, "Results",
 				JOptionPane.INFORMATION_MESSAGE);
@@ -186,43 +191,32 @@ public class Dialogs {
 	/**
 	 * Показывает диалог для ввода данных о базовой станции.
 	 * 
-	 * @param n
-	 *            строка для имени станции
-	 * @return введенную пользователем силу сигнала
+	 * @return введенное пользователем имя станции
 	 */
-	public static double showStationDialog(String[] n)
-			throws NumberFormatException {
+	public static String showStationDialog() {
 		JTextField name = new JTextField();
-		JTextField power = new JTextField();
-		final JComponent[] inputs = new JComponent[] { new JLabel("Имя:"),
-				name, new JLabel("Базовый уровень сигнала:"), power, };
+		final JComponent[] inputs = new JComponent[] { new JLabel("Имя:"), name };
 		JOptionPane.showMessageDialog(null, inputs, "Enter station data",
 				JOptionPane.PLAIN_MESSAGE);
-		n[0] = name.getText();
-		return java.lang.Double.parseDouble(power.getText());
+		return name.getText();
 	}
 
 	/**
 	 * Показывает диалог для редактирования данных о базовой станции.
 	 * 
-	 * @param n
-	 *            строка для имени станции
 	 * @param s
 	 *            станция
-	 * @return введенную пользователем силу сигнала
+	 * @return введенное пользователем имя станции
 	 */
-	public static double showStationDialog(String[] n, Station s)
-			throws NumberFormatException {
+	public static String showStationDialog(Station s) {
 		JTextField name = new JTextField();
-		JTextField power = new JTextField();
+
 		name.setText(s.getName());
-		power.setText(java.lang.Double.toString(s.getS()));
-		final JComponent[] inputs = new JComponent[] { new JLabel("Имя:"),
-				name, new JLabel("Базовый уровень сигнала:"), power, };
+
+		final JComponent[] inputs = new JComponent[] { new JLabel("Имя:"), name };
 		JOptionPane.showMessageDialog(null, inputs, "Edit station data",
 				JOptionPane.PLAIN_MESSAGE);
-		n[0] = name.getText();
-		return java.lang.Double.parseDouble(power.getText());
+		return name.getText();
 	}
 
 	/**
@@ -260,6 +254,25 @@ public class Dialogs {
 
 			// System.out.println(mapsSelected);
 		}
+	}
 
+	/**
+	 * Показывает диалог для ввода данных при моделировании карты.
+	 * 
+	 * @param n
+	 *            строка для имени карты
+	 * @return введенный пользователем базовый уровень сигнала
+	 */
+	public static double showMapModelDialog(String[] n)
+			throws NumberFormatException {
+		JTextField s = new JTextField();
+		JTextField name = new JTextField();
+		final JComponent[] inputs = new JComponent[] {
+				new JLabel("Имя карты:"), name,
+				new JLabel("Базовый уровень сигнала:"), s };
+		JOptionPane.showMessageDialog(null, inputs, "Enter map data",
+				JOptionPane.PLAIN_MESSAGE);
+		n[0] = name.getText();
+		return Double.parseDouble(s.getText());
 	}
 }

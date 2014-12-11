@@ -11,9 +11,6 @@ import java.util.HashMap;
  */
 public abstract class AbstractStation extends Point2D.Double {
 
-	/** Базовая сила сигнала */
-	protected double s = 150;
-
 	/** Имя станции */
 	protected String name = "station";
 
@@ -21,19 +18,6 @@ public abstract class AbstractStation extends Point2D.Double {
 	 * Флаг того, что для станции построена карта сил сигналов (станция обучена)
 	 */
 	protected boolean taught = false;
-
-	/**
-	 * @param x1
-	 *            абсцисса
-	 * @param y1
-	 *            ордината
-	 * @param s1
-	 *            базовая сила сигнала
-	 */
-	public AbstractStation(double x1, double y1, double s1) {
-		super(x1, y1);
-		s = s1;
-	}
 
 	/**
 	 * @param x2
@@ -46,22 +30,6 @@ public abstract class AbstractStation extends Point2D.Double {
 	public AbstractStation(double x2, double y2, String name2) {
 		super(x2, y2);
 		name = name2;
-	}
-
-	/**
-	 * @param x
-	 *            абсцисса
-	 * @param y
-	 *            ордината
-	 * @param name2
-	 *            имя станции
-	 * @param s2
-	 *            базовый уровень сигнала
-	 */
-	public AbstractStation(double x, double y, String name2, double s2) {
-		super(x, y);
-		name = name2;
-		s = s2;
 	}
 
 	public AbstractStation() {
@@ -79,48 +47,63 @@ public abstract class AbstractStation extends Point2D.Double {
 	}
 
 	/**
-	 * Рассчитывает уровень сигнала.
+	 * Рассчитывает уровень сигнала, моделируя распространение сигнала.
 	 * 
 	 * @param tail
 	 *            ячейка, в которой необходимо рассчитать уровень сигнала
 	 * @param sigma
 	 *            дисперсия уровня сигнала
+	 * @param m
+	 *            карта, в которую нужно записать результат
+	 * @param s
+	 *            базовая сила сигнала
 	 */
-	public abstract void explode(Tail tail, int sigma);
+	public abstract void explode(Tail tail, int sigma, Map m, double s);
 
 	/**
-	 * Строит карту уровней сигнала.
+	 * Строит карту уровней сигнала, моделируя распространение сигнала, и
+	 * добавляет ее к списку карт данной базовой станции.
 	 * 
 	 * @param tails
 	 *            ячейки, для которых необходимо построить карту уровней сигнала
 	 * @param sigma
 	 *            дисперсия уровня сигнала
+	 * @param name
+	 *            имя новой карты
+	 * @param s
+	 *            базовая сила сигнала
 	 */
-	public abstract void explode(ArrayList<Tail> tails, int sigma);
+	public abstract void explode(ArrayList<Tail> tails, int sigma, String name,
+			double s);
 
 	/**
-	 * Рассчитывает уровень сигнала с учетом плана помещения.
+	 * Рассчитывает уровень сигнала с учетом плана помещения, моделируя
+	 * распространение сигнала.
 	 * 
 	 * @param tail
 	 *            ячейка, в которой необходимо рассчитать уровень сигнала
 	 * @param plan
 	 *            план помещения
-	 * @param sigma
-	 *            дисперсия уровня сигнала
+	 * @param m
+	 *            карта, в которую нужно записать результат
+	 * @param s
+	 *            базовая сила сигнала
 	 */
-	public abstract void explode(Tail tail, Plan plan, int sigma);
+	public abstract void explode(Tail tail, Plan plan, Map m, double s);
 
 	/**
-	 * Строит карту уровней сигнала с учетом плана помещения.
+	 * Строит карту уровней сигнала с учетом плана помещения, моделируя
+	 * распространение сигнала, и добавляет ее к списку карт данной базовой
+	 * станции.
 	 * 
-	 * @param tails
-	 *            ячейки, для которых необходимо построить карту уровней сигнала
 	 * @param plan
 	 *            план помещения
-	 * @param sigma
-	 *            дисперсия уровня сигнала
+	 * @param name
+	 *            имя новой карты
+	 * @param s
+	 *            базовая сила сигнала
 	 */
-	public abstract void explode(ArrayList<Tail> tails, Plan plan, int sigma);
+	public abstract void explode(Plan plan, String name, double s);
 
 	/**
 	 * Обучает станцию.
@@ -170,25 +153,6 @@ public abstract class AbstractStation extends Point2D.Double {
 	 */
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	/**
-	 * Получить базовый уровень сигнала
-	 * 
-	 * @return базовый уровень сигнала
-	 */
-	public double getS() {
-		return s;
-	}
-
-	/**
-	 * Установить базовый уровень сигнала
-	 * 
-	 * @param s
-	 *            базовый уровень сигнала
-	 */
-	public void setS(double s) {
-		this.s = s;
 	}
 
 }

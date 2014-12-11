@@ -27,28 +27,13 @@ public class Station extends AbstractStation {
 	/** Список карт уровней сигнала */
 	private ArrayList<Map> maps;
 
+	/** Номер активной карты */
+	private int activeMapNumber = 0;
+
 	public Station() {
 		super();
 
 		maps = new ArrayList<Map>();
-		maps.add(new Map(new HashMap<Tail, Law>(), null, "modelled"));
-		maps.add(new Map(new HashMap<Tail, Law>(), null, "taught"));
-	}
-
-	/**
-	 * @param x1
-	 *            абсцисса
-	 * @param y1
-	 *            ордината
-	 * @param s1
-	 *            базовая сила сигнала
-	 */
-	public Station(int x1, int y1, int s1) {
-		super(x1, y1, s1);
-
-		maps = new ArrayList<Map>();
-		maps.add(new Map(new HashMap<Tail, Law>(), null, "modelled"));
-		maps.add(new Map(new HashMap<Tail, Law>(), null, "taught"));
 	}
 
 	/**
@@ -61,8 +46,6 @@ public class Station extends AbstractStation {
 		super(x, y);
 
 		maps = new ArrayList<Map>();
-		maps.add(new Map(new HashMap<Tail, Law>(), null, "modelled"));
-		maps.add(new Map(new HashMap<Tail, Law>(), null, "taught"));
 	}
 
 	/**
@@ -77,26 +60,6 @@ public class Station extends AbstractStation {
 		super(x, y, name);
 
 		maps = new ArrayList<Map>();
-		maps.add(new Map(new HashMap<Tail, Law>(), null, "modelled"));
-		maps.add(new Map(new HashMap<Tail, Law>(), null, "taught"));
-	}
-
-	/**
-	 * @param x
-	 *            абсцисса
-	 * @param y
-	 *            ордината
-	 * @param name
-	 *            имя станции
-	 * @param s
-	 *            базовый уровень сигнала
-	 */
-	public Station(double x, double y, String name, double s) {
-		super(x, y, name, s);
-
-		maps = new ArrayList<Map>();
-		maps.add(new Map(new HashMap<Tail, Law>(), null, "modelled"));
-		maps.add(new Map(new HashMap<Tail, Law>(), null, "taught"));
 	}
 
 	/**
@@ -157,26 +120,26 @@ public class Station extends AbstractStation {
 	}
 
 	@Override
-	public void explode(Tail tail, int sigma) {
+	public void explode(Tail tail, int sigma, Map m, double s) {
 		double d = Point2D.Double.distance(x, y, tail.getX(), tail.getY());
 		Law l = new Law(s - countFSL(d), sigma);
-
-		for (int i = 0; i < maps.size(); i++) {
-			if (maps.get(i).getName().equals("modelled"))
-				maps.get(i).getMap().put(tail, l);
-			if (maps.get(i).getName().equals("taught"))
-				maps.get(i).getMap().put(tail, new Law(0, sigma));
-		}
+		m.getMap().put(tail, l);
+		HashMap<Point2D.Double, Law> h = new HashMap<Point2D.Double, Law>();
+		h.put(tail.getLocation(), l);
+		m.getPoints().add(h);
 	}
 
 	@Override
-	public void explode(ArrayList<Tail> tails, int sigma) {
+	public void explode(ArrayList<Tail> tails, int sigma, String name, double s) {
+		Map m = new Map(new HashMap<Tail, Law>(),
+				new ArrayList<HashMap<Point2D.Double, Law>>(), name);
 		for (int i = 0; i < tails.size(); i++)
-			explode(tails.get(i), sigma);
+			explode(tails.get(i), sigma, m, s);
+		maps.add(m);
 	}
 
 	@Override
-	public void explode(Tail tail, Plan plan, int sigma) {
+	public void explode(Tail tail, Plan plan, Map m, double s) {
 		ArrayList<Point2D.Double> p = new ArrayList<Point2D.Double>();
 		Point2D.Double n = null;
 		for (int i = 0; i < plan.getWalls().size(); i++) {
@@ -220,20 +183,22 @@ public class Station extends AbstractStation {
 		}
 
 		double d = Point2D.Double.distance(x, y, tail.getX(), tail.getY());
-		Law l = new Law(s - countFSL(d) - countExtraPL(p.size()), sigma);
+		Law l = new Law(s - countFSL(d) - countExtraPL(p.size()), plan.getSigma());
 
-		for (int i = 0; i < maps.size(); i++) {
-			if (maps.get(i).getName().equals("modelled"))
-				maps.get(i).getMap().put(tail, l);
-			if (maps.get(i).getName().equals("taught"))
-				maps.get(i).getMap().put(tail, new Law(0, sigma));
-		}
+		m.getMap().put(tail, l);
+
+		HashMap<Point2D.Double, Law> h = new HashMap<Point2D.Double, Law>();
+		h.put(tail.getLocation(), l);
+		m.getPoints().add(h);
 	}
 
 	@Override
-	public void explode(ArrayList<Tail> tails, Plan plan, int sigma) {
-		for (int i = 0; i < tails.size(); i++)
-			explode(tails.get(i), plan, sigma);
+	public void explode(Plan plan, String name, double s) {
+		Map m = new Map(new HashMap<Tail, Law>(),
+				new ArrayList<HashMap<Point2D.Double, Law>>(), name);
+		for (int i = 0; i < plan.getTails().size(); i++)
+			explode(plan.getTails().get(i), plan, m, s);
+		maps.add(m);
 	}
 
 	@Override
@@ -309,13 +274,15 @@ public class Station extends AbstractStation {
 	 */
 	public void cmpMapsPos(PosObject object, Plan plan, int num, int m,
 			double[] result) {
+		int tmp = activeMapNumber;
+		activeMapNumber = m;
 		if (m > 1)
 			maps.get(m).buildMap(plan.getTails(), plan.getSigma());
 		double d = 0;
 		int n = 0;
 		for (int i = 0; i < num; i++) {
 			object.nextStep(plan);
-			object.locate(plan, plan.getStations().indexOf(this), m);
+			object.locate(plan);
 			double diff = Math.sqrt(Math.pow((object.getT().getX() - object
 					.getProbT().getX()), 2)
 					+ Math.pow(
@@ -328,10 +295,11 @@ public class Station extends AbstractStation {
 		}
 		result[0] = d / num;
 		result[1] = n / num;
+		activeMapNumber = tmp;
 	}
 
 	/**
-	 * Вычисляет относительное отличие двух карт уровней сигналов.
+	 * Вычисляет среднее относительное отличие двух карт уровней сигналов.
 	 * 
 	 * @param object
 	 *            позиционируемый объект
@@ -345,7 +313,53 @@ public class Station extends AbstractStation {
 	 *            номер второй карты
 	 * @return относительное отличие двух карт
 	 */
-	public double cmpMaps(PosObject object, Plan plan, int num, int m1, int m2) {
+	public double cmpMapsRel(PosObject object, Plan plan, int num, int m1,
+			int m2) {
+		if (m1 > 1)
+			maps.get(m1).buildMap(plan.getTails(), plan.getSigma());
+		if (m2 > 1)
+			maps.get(m2).buildMap(plan.getTails(), plan.getSigma());
+		double d = 0;
+		for (int i = 0; i < num; i++) {
+			double f = 0;
+			int n = 0;
+			for (int j = 0; j < plan.getTails().size(); j++) {
+				if ((maps.get(m1).getMap().get(plan.getTails().get(j)).getA() != 0)
+						&& (maps.get(m2).getMap().get(plan.getTails().get(j))
+								.getA() != 0)) {
+					f += maps.get(m1).getMap().get(plan.getTails().get(j))
+							.getA()
+							/ maps.get(m2).getMap().get(plan.getTails().get(j))
+									.getA();
+					n++;
+				}
+			}
+			if (n > 0) {
+				f /= n;
+				d += f;
+			}
+		}
+
+		return Math.abs(d / num);
+	}
+
+	/**
+	 * Вычисляет среднее абсолютное отличие двух карт уровней сигналов.
+	 * 
+	 * @param object
+	 *            позиционируемый объект
+	 * @param plan
+	 *            план здания
+	 * @param num
+	 *            количество точек
+	 * @param m1
+	 *            номер первой карты
+	 * @param m2
+	 *            номер второй карты
+	 * @return относительное отличие двух карт
+	 */
+	public double cmpMapsAbs(PosObject object, Plan plan, int num, int m1,
+			int m2) {
 		if (m1 > 1)
 			maps.get(m1).buildMap(plan.getTails(), plan.getSigma());
 		if (m2 > 1)
@@ -354,14 +368,16 @@ public class Station extends AbstractStation {
 		for (int i = 0; i < num; i++) {
 			double f = 0;
 			for (int j = 0; j < plan.getTails().size(); j++) {
-				f += maps.get(m1).getMap().get(plan.getTails().get(j)).getA()
-						/ maps.get(m2).getMap().get(plan.getTails().get(j))
-								.getA();
+				f += Math.abs(maps.get(m1).getMap().get(plan.getTails().get(j))
+						.getA()
+						- maps.get(m2).getMap().get(plan.getTails().get(j))
+								.getA());
 			}
 			f /= plan.getTails().size();
 			d += f;
+
 		}
-		return Math.abs(1 - (d / num));
+		return d / num;
 	}
 
 	/**
@@ -466,5 +482,33 @@ public class Station extends AbstractStation {
 	 */
 	public Map getMap(int i) {
 		return maps.get(i);
+	}
+
+	/**
+	 * Получить номер активной карты
+	 * 
+	 * @return номер активной карты
+	 */
+	public int getActiveMapNumber() {
+		return activeMapNumber;
+	}
+
+	/**
+	 * Установить номер активной карты
+	 * 
+	 * @param activeMapNumber
+	 *            номер активной карты
+	 */
+	public void setActiveMapNumber(int activeMapNumber) {
+		this.activeMapNumber = activeMapNumber;
+	}
+
+	/**
+	 * Получить активную карту
+	 * 
+	 * @return активная карта
+	 */
+	public Map getActiveMap() {
+		return this.getMap(activeMapNumber);
 	}
 }
