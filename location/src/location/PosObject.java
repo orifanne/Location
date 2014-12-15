@@ -61,8 +61,9 @@ public class PosObject {
 	public void getVector(Plan plan) {
 		s = new ArrayList<java.lang.Double>();
 		for (int i = 0; i < plan.getStations().size(); i++) {
-			Map m = plan.getStation(i).getMap(
-					plan.getStation(i).getActiveMapNumber());
+			if (plan.getStation(i).getMaps().size() == 0)
+				continue;
+			Map m = plan.getStation(i).getActiveMap();
 			double alpha = m.getMap().get(t).getA();
 			double sigma = m.getMap().get(t).getQ();
 			s.add(Math.max(0,
@@ -84,12 +85,12 @@ public class PosObject {
 			psx = 1;
 			for (int k = 0; k < plan.getStations().size(); k++) {
 				Station s = plan.getStation(k);
-				if ((!s.isTaught()) || (s.getMaps().size() == 0))
+				if (s.getMaps().size() == 0)
 					continue;
 				if ((getVector(k) > 0)
-						&& (s.getMap(s.getActiveMapNumber()).fp(k,
+						&& (s.getActiveMap().fp(k,
 								getVector(k), plan.getTails().get(j)) > 0))
-					psx *= s.getMap(s.getActiveMapNumber()).fp(k, getVector(k),
+					psx *= s.getActiveMap().fp(k, getVector(k),
 							plan.getTails().get(j));
 			}
 			if (psx > ps) {

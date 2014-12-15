@@ -15,11 +15,6 @@ public abstract class AbstractStation extends Point2D.Double {
 	protected String name = "station";
 
 	/**
-	 * Флаг того, что для станции построена карта сил сигналов (станция обучена)
-	 */
-	protected boolean taught = false;
-
-	/**
 	 * @param x2
 	 *            абсцисса
 	 * @param y2
@@ -106,7 +101,8 @@ public abstract class AbstractStation extends Point2D.Double {
 	public abstract void explode(Plan plan, String name, double s);
 
 	/**
-	 * Обучает станцию.
+	 * Строит карту уровней сигнала с учетом плана помещения, обучая станцию, и
+	 * добавляет ее к списку карт данной базовой станции.
 	 * 
 	 * @param object
 	 *            позиционируемый объект
@@ -114,27 +110,10 @@ public abstract class AbstractStation extends Point2D.Double {
 	 *            план здания
 	 * @param num
 	 *            количество точек позиционирования (количество шагов объекта)
+	 * @param name
+	 *            имя новой карты
 	 */
-	public abstract void teach(PosObject object, Plan plan, int num);
-
-	/**
-	 * Узнать, обучена ли станция
-	 * 
-	 * @return true - станция обучена, false - не обучена
-	 */
-	public boolean isTaught() {
-		return taught;
-	}
-
-	/**
-	 * Установить флаг обучения
-	 * 
-	 * @param taught
-	 *            значение флага
-	 */
-	public void setTaught(boolean taught) {
-		this.taught = taught;
-	}
+	public abstract void teach(PosObject object, Plan plan, int num, String name);
 
 	/**
 	 * Получить имя

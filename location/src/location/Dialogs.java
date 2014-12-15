@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonModel;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -274,5 +275,24 @@ public class Dialogs {
 				JOptionPane.PLAIN_MESSAGE);
 		n[0] = name.getText();
 		return Double.parseDouble(s.getText());
+	}
+
+	/**
+	 * Показывает диалог для ввода данных при обучении станции.
+	 * 
+	 * @param n
+	 *            строка для имени карты
+	 * @return число точек для обучения
+	 */
+	public static int showTeachStationDialog(String[] n) {
+		JTextField s = new JTextField();
+		JTextField name = new JTextField();
+		final JComponent[] inputs = new JComponent[] {
+				new JLabel("Имя карты:"), name,
+				new JLabel("Число точек для обучения:"), s };
+		JOptionPane.showMessageDialog(null, inputs, "Enter map data",
+				JOptionPane.PLAIN_MESSAGE);
+		n[0] = name.getText();
+		return Integer.parseInt(s.getText());
 	}
 }

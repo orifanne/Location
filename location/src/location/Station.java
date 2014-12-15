@@ -183,7 +183,8 @@ public class Station extends AbstractStation {
 		}
 
 		double d = Point2D.Double.distance(x, y, tail.getX(), tail.getY());
-		Law l = new Law(s - countFSL(d) - countExtraPL(p.size()), plan.getSigma());
+		Law l = new Law(s - countFSL(d) - countExtraPL(p.size()),
+				plan.getSigma());
 
 		m.getMap().put(tail, l);
 
@@ -202,14 +203,17 @@ public class Station extends AbstractStation {
 	}
 
 	@Override
-	public void teach(PosObject object, Plan plan, int num) {
-		taught = false;
+	public void teach(PosObject object, Plan plan, int num, String name) {
+		Map m = new Map(new HashMap<Tail, Law>(),
+				new ArrayList<HashMap<Point2D.Double, Law>>(), name);
+		for (int i = 0; i < plan.getTails().size(); i++)
+			m.getMap().put(plan.getTails().get(i), new Law(0, plan.getSigma()));
 
-		maps.get(1).newMap(plan.getSigma(), plan.getTails());
 		double[] probx = new double[plan.getTails().size()];
 		double[] probsx = new double[plan.getTails().size()];
 		double[] del = new double[plan.getTails().size()];
 		double ps, psx;
+
 		for (int i = 0; i < num; i++) {
 			object.nextStep(plan);
 
@@ -228,13 +232,14 @@ public class Station extends AbstractStation {
 			for (int j = 0; j < plan.getTails().size(); j++) {
 				psx = 1;
 				for (int k = 0; k < plan.getStations().size(); k++) {
-					if (!plan.getStation(k).isTaught())
+					Station s = plan.getStation(k);
+					if (s.getMaps().size() == 0)
 						continue;
 					if ((object.getVector(k) > 0)
-							&& (fp(k, object.getVector(k),
-									plan.getTails().get(j), plan) > 0))
-						psx *= fp(k, object.getVector(k), plan.getTails()
-								.get(j), plan);
+							&& (s.getActiveMap().fp(k, object.getVector(k),
+									plan.getTails().get(j)) > 0))
+						psx *= s.getActiveMap().fp(k, object.getVector(k),
+								plan.getTails().get(j));
 				}
 				probsx[j] = psx;
 				ps += psx;
@@ -243,17 +248,21 @@ public class Station extends AbstractStation {
 			for (int j = 0; j < plan.getTails().size(); j++) {
 				probx[j] = probsx[j] / ps;
 				int n = plan.getStations().indexOf(this);
-				maps.get(1).getMap().get(plan.getTails().get(j)).a += (object
+				m.getMap().get(plan.getTails().get(j)).a += (object
 						.getVector(n) * probx[j]);
 				del[j] += probx[j];
 			}
 		}
 		for (int i = 0; i < plan.getTails().size(); i++)
 			if (del[i] != 0) {
-				maps.get(1).getMap().get(plan.getTails().get(i)).a /= del[i];
-				// System.out.println(tMap.get(plan.getTails().get(i)).a);
+				m.getMap().get(plan.getTails().get(i)).a /= del[i];
+
+				HashMap<Point2D.Double, Law> h = new HashMap<Point2D.Double, Law>();
+				h.put(plan.getTails().get(i).getLocation(), new Law(m.getMap()
+						.get(plan.getTails().get(i)).a, plan.getSigma()));
+				m.getPoints().add(h);
 			}
-		taught = true;
+		maps.add(m);
 	}
 
 	/**

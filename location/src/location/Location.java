@@ -295,9 +295,15 @@ public class Location extends JFrame {
 		modelItem.setFont(font);
 		modelItem.setActionCommand("model");
 		toolsMenu.add(modelItem);
+		
+		JMenuItem teachItem = new JMenuItem("Teach station");
+		teachItem.setFont(font);
+		teachItem.setActionCommand("teach");
+		toolsMenu.add(teachItem);
 
 		toolsMenu.insertSeparator(1);
 		toolsMenu.insertSeparator(3);
+		toolsMenu.insertSeparator(5);
 
 		menu.add(toolsMenu);
 
@@ -311,6 +317,7 @@ public class Location extends JFrame {
 		importItem.addActionListener(actionListener);
 		cmpItem.addActionListener(actionListener);
 		modelItem.addActionListener(actionListener);
+		teachItem.addActionListener(actionListener);
 	}
 
 	/**
@@ -446,6 +453,19 @@ public class Location extends JFrame {
 						double s = Dialogs.showMapModelDialog(name);
 						plan.getStation(stationNumber)
 								.explode(plan, name[0], s);
+						mapComboBox.addItem(name[0]);
+					} catch (NumberFormatException e1) {
+						// ignoge
+					}
+				}
+			}
+			if ("teach".equals(command)) {
+				if ((plan != null) && (plan.getStations().size() > 0)) {
+					String[] name = new String[1];
+					try {
+						int s = Dialogs.showTeachStationDialog(name);
+						plan.getStation(stationNumber)
+								.teach(object, plan, s, name[0]);
 						mapComboBox.addItem(name[0]);
 					} catch (NumberFormatException e1) {
 						// ignoge
