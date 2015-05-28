@@ -95,12 +95,12 @@ public class Location extends JFrame {
 	JScrollPane scrollPane = new JScrollPane(panel);
 
 	/** Размер конечной ячейки. */
-	private int tailSize = 1;
+	public static int tailSize = 1;
 
-	/** Список с выбором для станций */
+	/** Список с выбором для отображения разных базовых станций */
 	JComboBox<String> stationsComboBox;
 
-	/** Список с выбором для рисования */
+	/** Список с выбором для отображения разных карт уровней сигнала */
 	JComboBox<String> mapComboBox;
 
 	/** Флаг того, что происходит удаление участка стены. */
@@ -108,6 +108,9 @@ public class Location extends JFrame {
 
 	/** Флаг того, что в файл были внесены изменения. */
 	boolean changed = false;
+	
+	/** Флаг того, что пользователь может выбирать карту для отображения. */
+	boolean selectMap = true;
 
 	/**
 	 * Координаты точки, начиная с которой удаляется часть стены.
@@ -116,7 +119,7 @@ public class Location extends JFrame {
 
 	public Location() {
 		// заголовок окна
-		super("Location");
+		super("Система локального позиционирования");
 		// координаты левого верхнего угла + ширина и высота
 		setBounds(0, 0, width, height);
 		// нельзя изменять размер окна
@@ -159,13 +162,13 @@ public class Location extends JFrame {
 		instrumentsPanel.setPreferredSize(new Dimension(width / 5, height));
 		instrumentsPanel.setMinimumSize(new Dimension(width / 5, height));
 
-		instrumentsPanel.add(new JLabel("Scale:"));
+		instrumentsPanel.add(new JLabel("Масштаб:"));
 		instrumentsPanel.add(Box.createVerticalStrut(10));
 		instrumentsPanel.add(scale);
 		instrumentsPanel.add(Box.createVerticalStrut(10));
 		scale.setAlignmentX(JComponent.LEFT_ALIGNMENT);
 
-		instrumentsPanel.add(new JLabel("Tail size:"));
+		instrumentsPanel.add(new JLabel("Размер зоны:"));
 		instrumentsPanel.add(Box.createVerticalStrut(10));
 		instrumentsPanel.add(scaleTail);
 		instrumentsPanel.add(Box.createVerticalStrut(10));
@@ -181,13 +184,13 @@ public class Location extends JFrame {
 		mapComboBox.setMinimumSize(new Dimension(instrumentsPanel
 				.getPreferredSize().width, 25));
 
-		instrumentsPanel.add(new JLabel("Base station:"));
+		instrumentsPanel.add(new JLabel("Базовая станция:"));
 		instrumentsPanel.add(Box.createVerticalStrut(10));
 		instrumentsPanel.add(stationsComboBox);
 		instrumentsPanel.add(Box.createVerticalStrut(10));
 		stationsComboBox.setAlignmentX(JComponent.LEFT_ALIGNMENT);
 
-		instrumentsPanel.add(new JLabel("Display map:"));
+		instrumentsPanel.add(new JLabel("Карта уровней сигналов:"));
 		instrumentsPanel.add(Box.createVerticalStrut(10));
 		instrumentsPanel.add(mapComboBox);
 		instrumentsPanel.add(Box.createVerticalStrut(10));
@@ -197,14 +200,14 @@ public class Location extends JFrame {
 		instrumentsPanel.add(Box.createVerticalStrut(10));
 		toolBar = new JToolBar(JToolBar.VERTICAL);
 		toolBar.setFloatable(false);
-		DemoAction wallsAction = new DemoAction("Walls",
-				createImageIcon("wall.png"), "Edit walls", 'W');
-		DemoAction borderAction = new DemoAction("Border",
-				createImageIcon("border.png"), "Edit border", 'B');
-		DemoAction stationsAction = new DemoAction("Stations",
-				createImageIcon("station.png"), "Edit base stations", 'S');
-		DemoAction deleteAction = new DemoAction("Delete",
-				createImageIcon("delete.png"), "Delete", 'D');
+		DemoAction wallsAction = new DemoAction("Стена",
+				createImageIcon("wall.png"), "Редактировать стены", 'W');
+		DemoAction borderAction = new DemoAction("Граница области локации",
+				createImageIcon("border.png"), "Редактировать границу области локации", 'B');
+		DemoAction stationsAction = new DemoAction("Станции",
+				createImageIcon("station.png"), "Редактировать базовые станции", 'S');
+		DemoAction deleteAction = new DemoAction("Удалить",
+				createImageIcon("delete.png"), "Удалить", 'D');
 		toolBar.add(wallsAction);
 		toolBar.add(borderAction);
 		toolBar.add(stationsAction);
@@ -248,25 +251,25 @@ public class Location extends JFrame {
 		Font font = new Font("Verdana", Font.PLAIN, 11);
 
 		menu = new JMenuBar();
-		JMenu fileMenu = new JMenu("File");
+		JMenu fileMenu = new JMenu("Файл");
 		fileMenu.setFont(font);
 
-		JMenuItem openItem = new JMenuItem("Open");
+		JMenuItem openItem = new JMenuItem("Открыть");
 		openItem.setFont(font);
 		openItem.setActionCommand("open");
 		fileMenu.add(openItem);
 
-		JMenuItem createItem = new JMenuItem("Create");
+		JMenuItem createItem = new JMenuItem("Создать");
 		createItem.setFont(font);
 		createItem.setActionCommand("create");
 		fileMenu.add(createItem);
 
-		JMenuItem saveItem = new JMenuItem("Save");
+		JMenuItem saveItem = new JMenuItem("Сохранить");
 		saveItem.setFont(font);
 		saveItem.setActionCommand("save");
 		fileMenu.add(saveItem);
 
-		JMenuItem saveAsItem = new JMenuItem("Save as");
+		JMenuItem saveAsItem = new JMenuItem("Сохранить как");
 		saveAsItem.setFont(font);
 		saveAsItem.setActionCommand("saveas");
 		fileMenu.add(saveAsItem);
@@ -274,36 +277,48 @@ public class Location extends JFrame {
 		fileMenu.insertSeparator(1);
 		fileMenu.insertSeparator(3);
 		fileMenu.insertSeparator(5);
-		fileMenu.insertSeparator(7);
+		//fileMenu.insertSeparator(7);
 
 		menu.add(fileMenu);
 
-		JMenu toolsMenu = new JMenu("Tools");
+		JMenu toolsMenu = new JMenu("Инструменты");
 		toolsMenu.setFont(font);
 
-		JMenuItem importItem = new JMenuItem("Import map");
+		JMenuItem importItem = new JMenuItem("Импортировать карту");
 		importItem.setFont(font);
 		importItem.setActionCommand("import");
 		toolsMenu.add(importItem);
 
-		JMenuItem cmpItem = new JMenuItem("Compare maps");
+		JMenuItem cmpItem = new JMenuItem("Сравнить карты");
 		cmpItem.setFont(font);
 		cmpItem.setActionCommand("cmp");
 		toolsMenu.add(cmpItem);
 
-		JMenuItem modelItem = new JMenuItem("Model map");
+		JMenuItem modelItem = new JMenuItem("Смоделировать карту");
 		modelItem.setFont(font);
 		modelItem.setActionCommand("model");
 		toolsMenu.add(modelItem);
-		
-		JMenuItem teachItem = new JMenuItem("Teach station");
+
+		JMenuItem teachItem = new JMenuItem("Обучить станцию");
 		teachItem.setFont(font);
 		teachItem.setActionCommand("teach");
 		toolsMenu.add(teachItem);
+		
+		JMenuItem placeItem = new JMenuItem("Расставить станции");
+		placeItem.setFont(font);
+		placeItem.setActionCommand("place");
+		toolsMenu.add(placeItem);
+		
+		JMenuItem evaluateItem = new JMenuItem("Рассчитать оценки");
+		evaluateItem.setFont(font);
+		evaluateItem.setActionCommand("evaluate");
+		toolsMenu.add(evaluateItem);
 
 		toolsMenu.insertSeparator(1);
 		toolsMenu.insertSeparator(3);
 		toolsMenu.insertSeparator(5);
+		toolsMenu.insertSeparator(7);
+		toolsMenu.insertSeparator(9);
 
 		menu.add(toolsMenu);
 
@@ -318,6 +333,8 @@ public class Location extends JFrame {
 		cmpItem.addActionListener(actionListener);
 		modelItem.addActionListener(actionListener);
 		teachItem.addActionListener(actionListener);
+		placeItem.addActionListener(actionListener);
+		evaluateItem.addActionListener(actionListener);
 	}
 
 	/**
@@ -430,11 +447,14 @@ public class Location extends JFrame {
 					if (openedFile != null) {
 						plan.getStation(stationNumber).importMap(openedFile,
 								plan.sigma);
+						selectMap = false;
 						mapComboBox.removeAllItems();
 						for (int i = 0; i < plan.getStation(stationNumber)
 								.getMaps().size(); i++)
 							mapComboBox.addItem(plan.getStation(stationNumber)
 									.getMap(i).getName());
+						selectMap = true;
+						changed = true;
 					}
 				}
 			}
@@ -454,6 +474,7 @@ public class Location extends JFrame {
 						plan.getStation(stationNumber)
 								.explode(plan, name[0], s);
 						mapComboBox.addItem(name[0]);
+						changed = true;
 					} catch (NumberFormatException e1) {
 						// ignoge
 					}
@@ -464,12 +485,37 @@ public class Location extends JFrame {
 					String[] name = new String[1];
 					try {
 						int s = Dialogs.showTeachStationDialog(name);
-						plan.getStation(stationNumber)
-								.teach(object, plan, s, name[0]);
+						plan.getStation(stationNumber).teach(object, plan, s,
+								name[0]);
 						mapComboBox.addItem(name[0]);
+						changed = true;
 					} catch (NumberFormatException e1) {
 						// ignoge
 					}
+				}
+			}
+			if ("place".equals(command)) {
+				if (plan != null) {
+					String n = "";
+					try {
+						n = Dialogs.showPlaceStationsDialog();
+						plan.placeStations(Integer.valueOf(n));
+						stationsComboBox.removeAllItems();
+						for (int j = 0; j < plan.getStations().size(); j++)
+							stationsComboBox.addItem(plan.getStation(j)
+									.getName());
+						panel.repaint();
+					} catch (NumberFormatException e1) {
+						// ignoge
+					}
+					
+				}
+			}
+			if ("evaluate".equals(command)) {
+				if ((plan != null)
+						&& (plan.getStations().size() > 0)
+						&& (plan.getStation(stationNumber).getMaps().size() > 0)) {
+					Dialogs.showEvaluateMapDialog(plan, stationNumber, object);
 				}
 			}
 		}
@@ -509,7 +555,7 @@ public class Location extends JFrame {
 			JComboBox<String> c = (JComboBox<String>) e.getSource();
 			if (c.getSelectedIndex() >= 0) {
 				stationNumber = c.getSelectedIndex();
-
+				selectMap = false;
 				mapComboBox.removeAllItems();
 				for (int i = 0; i < plan.getStation(stationNumber).getMaps()
 						.size(); i++)
@@ -518,6 +564,7 @@ public class Location extends JFrame {
 				if (plan.getStation(stationNumber).getMaps().size() > 0)
 					mapComboBox.setSelectedIndex(plan.getStation(stationNumber)
 							.getActiveMapNumber());
+				selectMap = true;
 			}
 			panel.repaint();
 		}
@@ -529,7 +576,7 @@ public class Location extends JFrame {
 	private class MapChooseListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			JComboBox<String> c = (JComboBox<String>) e.getSource();
-			if (plan != null) {
+			if ((plan != null) && (selectMap)) {
 				Station s = plan.getStation(stationNumber);
 				s.setActiveMapNumber(c.getSelectedIndex());
 				panel.repaint();

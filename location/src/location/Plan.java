@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 
 /**
  * Представляет план здания.
@@ -57,10 +58,8 @@ public class Plan {
 	/** финальные фреймы */
 	private ArrayList<Frame> finalFrames = null;
 
-	/** Конечные ячейки. */
+	/** Список ячеек, на которые разбит план помещения. */
 	private ArrayList<Tail> tails = null;
-	/** Количество конечных ячеек. */
-	private int tailsNum = 0;
 
 	/** Базовые станции */
 	ArrayList<Station> stations = null;
@@ -68,7 +67,7 @@ public class Plan {
 	/** Массив стен. */
 	private ArrayList<Wall> walls = null;
 
-	/** Внешний контур. */
+	/** Граница области локации. */
 	private Border border = null;
 
 	/**
@@ -144,8 +143,42 @@ public class Plan {
 			y = java.lang.Double
 					.parseDouble(k.getNamedItem("y").getNodeValue());
 			name = k.getNamedItem("name").getNodeValue();
+			Station s = new Station(x, y, name);
 
-			stations.add(new Station(x, y, name));
+			// TODO чтение карт
+
+			if (n.item(i).hasChildNodes()) {
+
+				Node n1 = n.item(i).getChildNodes().item(0);
+
+				while (n1 != null) {
+
+					NamedNodeMap k1 = n1.getAttributes();
+					String name1 = k1.getNamedItem("name").getNodeValue();
+
+					NodeList n2 = n1.getChildNodes();
+					ArrayList<HashMap<Point2D.Double, Law>> points = new ArrayList<HashMap<Point2D.Double, Law>>();
+					for (int j = 0; j < n2.getLength(); j++) {
+						k1 = n2.item(j).getAttributes();
+						Point2D.Double p = new Point2D.Double(
+								java.lang.Double.parseDouble(k1.getNamedItem(
+										"x").getNodeValue()),
+								java.lang.Double.parseDouble(k1.getNamedItem(
+										"y").getNodeValue()));
+
+						HashMap<Point2D.Double, Law> h = new HashMap<Point2D.Double, Law>();
+						h.put(p,
+								new Law(
+										java.lang.Double.parseDouble(k1
+												.getNamedItem("signal")
+												.getNodeValue()), sigma));
+						points.add(h);
+					}
+					s.getMaps().add(new Map(null, points, name1));
+					n1 = n1.getNextSibling();
+				}
+			}
+			stations.add(s);
 		}
 	}
 
@@ -238,7 +271,6 @@ public class Plan {
 		// разбиваеи их на конечные ячейки
 		doTails(tailSize);
 
-		explodeAllStations();
 	}
 
 	/**
@@ -248,7 +280,6 @@ public class Plan {
 	 *            желаемый размер ячейки
 	 */
 	private void doTails(int tailSize) {
-		tailsNum = 0;
 		tails = new ArrayList<Tail>();
 		for (int i = 0; i < finalFrames.size(); i++) {
 			double a = finalFrames.get(i).getX2() - finalFrames.get(i).getX1();
@@ -280,7 +311,6 @@ public class Plan {
 					for (double v = finalFrames.get(i).getY1(); v < finalFrames
 							.get(i).getY2(); v += finalSizeB) {
 						tails.add(new Tail(u, v, u + finalSizeA, v + finalSizeB));
-						tailsNum++;
 					}
 				continue;
 			}
@@ -290,7 +320,6 @@ public class Plan {
 						.get(i).getX2(); u += finalSizeA) {
 					tails.add(new Tail(u, finalFrames.get(i).getY1(), u
 							+ finalSizeA, finalFrames.get(i).getY2()));
-					tailsNum++;
 				}
 				continue;
 			}
@@ -300,7 +329,6 @@ public class Plan {
 						.get(i).getY2(); v += finalSizeB) {
 					tails.add(new Tail(finalFrames.get(i).getX1(), v,
 							finalFrames.get(i).getX2(), v + finalSizeB));
-					tailsNum++;
 				}
 				continue;
 			}
@@ -308,18 +336,6 @@ public class Plan {
 			tails.add(new Tail(finalFrames.get(i).getX1(), finalFrames.get(i)
 					.getY1(), finalFrames.get(i).getX2(), finalFrames.get(i)
 					.getY2()));
-			tailsNum++;
-		}
-	}
-
-	/**
-	 * Составляет карты сил сигнала для всех станций, моделируя распрострнение
-	 * сигнала.
-	 */
-	public void explodeAllStations() {
-		for (int i = 0; i < stations.size(); i++) {
-			if (stations.get(i).getMaps().size() > 0)
-				stations.get(i).getActiveMap().buildMap(tails, sigma);
 		}
 	}
 
@@ -656,14 +672,30 @@ public class Plan {
 			stEl.setAttribute("y",
 					Integer.toString((int) stations.get(i).getY(), 10));
 			stEl.setAttribute("name", stations.get(i).getName());
-			// TODO сохранение карт
-			/**
-			 * for (int j = 0; j < stations.get(i).getMaps().size(); j++) {
-			 * Element mapEl = doc.createElement("map");
-			 * mapEl.setAttribute("name", stations.get(i).getMap(j).getName());
-			 * 
-			 * }
-			 */
+
+			for (int j = 0; j < stations.get(i).getMaps().size(); j++) {
+				Map m = stations.get(i).getMap(j);
+				Element mapEl = doc.createElement("map");
+				mapEl.setAttribute("name", m.getName());
+
+				for (int k = 0; k < m.getPoints().size(); k++) {
+					Element pointEl = doc.createElement("point");
+					pointEl.setAttribute("x", java.lang.Double
+							.toString(((Point2D.Double) m.getPoints().get(k)
+									.keySet().toArray()[0]).getX()));
+					pointEl.setAttribute("y", java.lang.Double
+							.toString(((Point2D.Double) m.getPoints().get(k)
+									.keySet().toArray()[0]).getY()));
+					pointEl.setAttribute(
+							"signal",
+							java.lang.Double.toString(((Law) (m.getPoints()
+									.get(k).values().toArray()[0])).getA()));
+					mapEl.appendChild(pointEl);
+				}
+
+				stEl.appendChild(mapEl);
+			}
+
 			planEl.appendChild(stEl);
 		}
 
@@ -876,11 +908,108 @@ public class Plan {
 		}
 	}
 
+	/**
+	 * Начать удаление участка стены
+	 * 
+	 * @param p
+	 *            точка deletePoint
+	 */
 	public void startDeleting(Point2D.Double p) {
 		if (findWallsForPoint(p).size() != 0) {
 			deletePoint = p;
 			deleting = true;
 		}
+	}
+
+	/**
+	 * Выполнить расстановку базовых станций
+	 */
+	public void placeStations(int K) {
+		PosObject object = new PosObject();
+		stations = new ArrayList<Station>();
+		ArrayList<Station> st = new ArrayList<Station>();
+		for (int i = 0; i < tails.size(); i++) {
+			Station s = new Station(tails.get(i).getX(), tails.get(i).getY(),
+					"station" + Integer.toString(i));
+			s.explode(this, "map1", 100);
+			st.add(s);
+		}
+
+		for (int k = 0; k < K; k++) {
+			int mini = 0;
+			double minsum = 100000;
+			for (int i = 0; i < st.size(); i++) {
+				stations.add(st.get(i));
+				object.nextStep(this);
+				// считаем энтропию
+				double sum = countEnt(object);
+				if (sum < minsum) {
+					minsum = sum;
+					mini = i;
+				}
+				stations.remove(st.get(i));
+			}
+			// теперь станция из st с номером mini обеспечивает минимальную
+			// энтропию
+			// при присоединении к stations
+			stations.add(st.get(mini));
+			st.remove(mini);
+		}
+	}
+
+	/**
+	 * Подсчитывает условную энтропию
+	 * 
+	 * @param object
+	 *            объект позиционироания, который зарегистрировал вектор уровней
+	 *            сигнала
+	 * @return условная энтропия
+	 */
+	public double countEnt(PosObject object) {
+		java.lang.Double sum = 0.0;
+		for (int j = 0; j < stations.size(); j++) {
+			// суммма по площадкам
+			for (int t = 0; t < tails.size(); t++) {
+				// произведение по станциям
+				double prod = 1;
+				for (int p = 0; p < stations.size(); p++) {
+					double p_sx = stations.get(p).getActiveMap()
+							.fp(j, object.getVector(j), tails.get(t));
+					// числитель
+					double tmp = 1;
+					for (int d = 0; d < stations.size(); d++) {
+						tmp = tmp
+								* stations
+										.get(d)
+										.getActiveMap()
+										.fp(j, object.getVector(j),
+												tails.get(t));
+					}
+					
+					// знаменатель
+					double tmp_ = 0;
+					double tmp__ = 1;
+					for (int x = 0; x < tails.size(); x++) {
+						for (int d = 0; d < stations.size(); d++)
+							tmp__ = tmp__
+									* stations
+											.get(d)
+											.getActiveMap()
+											.fp(j, object.getVector(j),
+													tails.get(t));
+						tmp_ = tmp_ + tmp__;
+					}
+					if ((tmp == 0) && (tmp_ == 0)) {
+						System.out.println("!");
+					}
+					prod = prod * p_sx * Math.log(tmp / tmp_);
+
+				}
+				sum = sum + prod;
+			}
+		}
+
+		return sum;
 	}
 
 	/**

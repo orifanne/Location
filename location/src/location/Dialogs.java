@@ -25,7 +25,7 @@ public class Dialogs {
 	 * Максимально возможное число выбранных карт в диалоге выбора карт для
 	 * сравнения.
 	 */
-	private final int mapsSelectedLimit = 2;
+	private int mapsSelectedLimit = 2;
 
 	/**
 	 * Показывает диалог файла для открытия
@@ -71,6 +71,7 @@ public class Dialogs {
 	 */
 	public void showCompareMapsDialog(Plan plan, int stationNumber,
 			PosObject object) {
+		mapsSelectedLimit = 2;
 		mapsSelected = 0;
 		ArrayList<JCheckBox> j = new ArrayList<JCheckBox>();
 		for (int i = 0; i < plan.getStation(stationNumber).getMaps().size(); i++) {
@@ -81,9 +82,10 @@ public class Dialogs {
 		}
 
 		Object[] params = j.toArray();
-		int n = JOptionPane.showConfirmDialog(null, params,
-				"What maps do you want to compare?",
-				JOptionPane.OK_CANCEL_OPTION);
+		int n = JOptionPane
+				.showConfirmDialog(null, params,
+						"Какие карты вы хотите сравнить?",
+						JOptionPane.OK_CANCEL_OPTION);
 
 		int m1 = -1;
 		int m2 = -1;
@@ -101,41 +103,60 @@ public class Dialogs {
 				}
 		}
 
-		String s1 = null, s2 = null, s3 = null, s4 = null, s5 = null, s6 = null;
-		double[] res = new double[2];
-		double cmpRel = 0, cmpAbs = 0;
+		String s1 = null;
+		double cmpRel = 0;
 
 		if ((m1 >= 0) && (m2 >= 0)) {
 			cmpRel = plan.getStation(stationNumber).cmpMapsRel(object, plan,
 					1000, m1, m2);
-			s1 = "Maps relative difference: "
-					+ java.lang.Double.toString(cmpRel);
-			cmpAbs = plan.getStation(stationNumber).cmpMapsAbs(object, plan,
-					1000, m1, m2);
-			s6 = "Maps absolute difference: "
-					+ java.lang.Double.toString(cmpAbs);
-		}
-		if (m1 >= 0) {
-			plan.getStation(stationNumber).cmpMapsPos(object, plan, 1000, m1,
-					res);
-			s2 = plan.getStation(stationNumber).getMap(m1).getName()
-					+ " map err: " + java.lang.Double.toString(res[0]);
-			s4 = plan.getStation(stationNumber).getMap(m1).getName()
-					+ " map percent: " + java.lang.Double.toString(res[1]);
-		}
-		if (m2 >= 0) {
-			plan.getStation(stationNumber).cmpMapsPos(object, plan, 1000, m2,
-					res);
-			s3 = plan.getStation(stationNumber).getMap(m2).getName()
-					+ " map err: " + java.lang.Double.toString(res[0]);
-			s5 = plan.getStation(stationNumber).getMap(m2).getName()
-					+ " map percent: " + java.lang.Double.toString(res[1]);
-		}
+			s1 = "Относительное различие: " + java.lang.Double.toString(cmpRel);
+			Object[] results = { s1 };
 
-		Object[] results = { s1, s6, s2, s3, s4, s5 };
+			JOptionPane.showMessageDialog(null, results, "Результат",
+					JOptionPane.INFORMATION_MESSAGE);
+		}
+	}
 
-		JOptionPane.showMessageDialog(null, results, "Results",
-				JOptionPane.INFORMATION_MESSAGE);
+	/**
+	 * Показывает диалог оценки карты сил сигналов.
+	 * 
+	 * @param plan
+	 *            план здания
+	 * @param stationNumber
+	 *            номер станции
+	 * @param object
+	 *            позиционируемый объект
+	 */
+	public static void showEvaluateMapDialog(Plan plan, int stationNumber,
+			PosObject object) {
+		double[] res = new double[5];
+		JTextField name = new JTextField();
+		final JComponent[] inputs = new JComponent[] {
+				new JLabel("Пороговое значение вероятности:"), name };
+		JOptionPane.showMessageDialog(null, inputs,
+				"Введите пороговое значение вероятности",
+				JOptionPane.PLAIN_MESSAGE);
+		try {
+			plan.getStation(stationNumber).evaluateMap(object, plan, 1000,
+					java.lang.Double.valueOf(name.getText()), res);
+			String s1 = "Ошибка позиционирования: "
+					+ java.lang.Double.toString(res[0]);
+			String s2 = "Процент угадываний: "
+					+ java.lang.Double.toString(res[1]);
+			String s3 = "Разброс по вероятности: "
+					+ java.lang.Double.toString(res[2]);
+			String s4 = "Разброс по площади: "
+					+ java.lang.Double.toString(res[3]);
+			String s5 = "Условная энтропия: "
+					+ java.lang.Double.toString(res[4]);
+
+			Object[] results = { s1, s2, s3, s4, s5 };
+
+			JOptionPane.showMessageDialog(null, results, "Результат",
+					JOptionPane.INFORMATION_MESSAGE);
+		} catch (NumberFormatException e1) {
+			// ignoge
+		}
 	}
 
 	/**
@@ -145,9 +166,9 @@ public class Dialogs {
 	 * @return true, если пользователь выбрал Да или Нет, false, если Отмена
 	 */
 	public static boolean saveChanged(Plan plan, File openedFile) {
-		Object[] options = { "Yes", "No", "Cancel" };
+		Object[] options = { "Да", "Нет", "Отмена" };
 		int n = JOptionPane.showOptionDialog(null,
-				"Do you want to save this file?", "Save",
+				"Вы хотите сохранить этот файл?", "Сохранить",
 				JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
 				null, options, options[2]);
 		switch (n) {
@@ -215,14 +236,28 @@ public class Dialogs {
 		name.setText(s.getName());
 
 		final JComponent[] inputs = new JComponent[] { new JLabel("Имя:"), name };
-		JOptionPane.showMessageDialog(null, inputs, "Edit station data",
+		JOptionPane.showMessageDialog(null, inputs, "Введите данные о станции",
 				JOptionPane.PLAIN_MESSAGE);
 		return name.getText();
 	}
 
 	/**
-	 * Обеспечивает возможность выбора только двух карт в диалоге выбора карт
-	 * для сравнения.
+	 * Показывает диалог для ввода данных при расстановке станций.
+	 * 
+	 * @return введенное пользователем число станций
+	 */
+	public static String showPlaceStationsDialog() {
+		JTextField name = new JTextField();
+		final JComponent[] inputs = new JComponent[] {
+				new JLabel("Число станций:"), name };
+		JOptionPane.showMessageDialog(null, inputs, "Введите число станций",
+				JOptionPane.PLAIN_MESSAGE);
+		return name.getText();
+	}
+
+	/**
+	 * Обеспечивает возможность выбора mapsSelectedLimit карт в диалоге выбора
+	 * карт.
 	 */
 	class MapsSelectCheckboxListener implements ChangeListener {
 		boolean changed = false;
@@ -252,8 +287,6 @@ public class Dialogs {
 					changed = false;
 				}
 			}
-
-			// System.out.println(mapsSelected);
 		}
 	}
 
@@ -271,7 +304,7 @@ public class Dialogs {
 		final JComponent[] inputs = new JComponent[] {
 				new JLabel("Имя карты:"), name,
 				new JLabel("Базовый уровень сигнала:"), s };
-		JOptionPane.showMessageDialog(null, inputs, "Enter map data",
+		JOptionPane.showMessageDialog(null, inputs, "Введите данные о карте",
 				JOptionPane.PLAIN_MESSAGE);
 		n[0] = name.getText();
 		return Double.parseDouble(s.getText());
@@ -290,7 +323,7 @@ public class Dialogs {
 		final JComponent[] inputs = new JComponent[] {
 				new JLabel("Имя карты:"), name,
 				new JLabel("Число точек для обучения:"), s };
-		JOptionPane.showMessageDialog(null, inputs, "Enter map data",
+		JOptionPane.showMessageDialog(null, inputs, "Введите данные о карте",
 				JOptionPane.PLAIN_MESSAGE);
 		n[0] = name.getText();
 		return Integer.parseInt(s.getText());

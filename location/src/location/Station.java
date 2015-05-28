@@ -1,6 +1,5 @@
 package location;
 
-import java.awt.Component;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
@@ -217,15 +216,6 @@ public class Station extends AbstractStation {
 		for (int i = 0; i < num; i++) {
 			object.nextStep(plan);
 
-			// debug
-
-			/*
-			 * System.out.println(plan.getTails().indexOf(object.getT()) + 1);
-			 * for (int k = 0; k < plan.getStations().size() - 1; k++) {
-			 * System.out.println(object.getVector(k) + " "); }
-			 * System.out.println();
-			 */
-
 			ps = 0;
 			// рассчитать вероятность принять его в каждой площадке (psx)
 			// и просто вероятность принять его (ненормализованную) (ps)
@@ -266,7 +256,7 @@ public class Station extends AbstractStation {
 	}
 
 	/**
-	 * Вычисляет ошибку позиционирования определенной карты уровней сигналов.
+	 * Вычисляет оценки для активной карты уровней сигналов.
 	 * 
 	 * @param object
 	 *            позиционируемый объект
@@ -274,37 +264,39 @@ public class Station extends AbstractStation {
 	 *            план здания
 	 * @param num
 	 *            количество точек
-	 * @param m
-	 *            номер карты
 	 * @param result
-	 *            вычисленные ошбики; result[0] содержит ошибку позиционирования
-	 *            как расстояние между реальной и определенной позицией, а
-	 *            result[1] - процент угадываний
+	 *            вычисленные оценки; result[0] содержит ошибку позиционирования
+	 *            как усредненное расстояние между реальной и определенной
+	 *            позицией, result[1] - процент угадываний, result[2] - разброс
+	 *            по вероятности, result[3] - разброс по площади, result[4] - энтропию
 	 */
-	public void cmpMapsPos(PosObject object, Plan plan, int num, int m,
-			double[] result) {
-		int tmp = activeMapNumber;
-		activeMapNumber = m;
-		if (m > 1)
-			maps.get(m).buildMap(plan.getTails(), plan.getSigma());
+	public void evaluateMap(PosObject object, Plan plan, int num, double eps, double[] result) {
+		for (int i = 0; i < plan.getStations().size(); i++) {
+			plan.getStation(i).getActiveMap().buildMap(plan.getTails(), plan.getSigma());
+		}
 		double d = 0;
+		double dist = 0;
+		double k = 0;
+		double ent = 0;
 		int n = 0;
 		for (int i = 0; i < num; i++) {
 			object.nextStep(plan);
-			object.locate(plan);
-			double diff = Math.sqrt(Math.pow((object.getT().getX() - object
-					.getProbT().getX()), 2)
-					+ Math.pow(
-							(object.getT().getY() - object.getProbT().getY()),
-							2));
-			if ((object.getT().getX() == object.getProbT().getX())
-					&& (object.getT().getY() == object.getProbT().getY()))
+			//ent += plan.countEnt(object);
+			double[] res = object.locate(plan, eps);
+			k += res[0];
+			dist += res[1];
+			double diff = Point2D.Double.distance(object.getT().getX(), object
+					.getT().getY(), object.getProbT().getX(), object.getProbT()
+					.getY());
+			if (diff <= ((double) Location.tailSize / 2.0))
 				n++;
 			d += diff;
 		}
 		result[0] = d / num;
-		result[1] = n / num;
-		activeMapNumber = tmp;
+		result[1] = (double) n / (double) num;
+		result[2] = k / num;
+		result[3] = dist / num;
+		result[4] = ent / num;
 	}
 
 	/**
@@ -324,129 +316,26 @@ public class Station extends AbstractStation {
 	 */
 	public double cmpMapsRel(PosObject object, Plan plan, int num, int m1,
 			int m2) {
-		if (m1 > 1)
-			maps.get(m1).buildMap(plan.getTails(), plan.getSigma());
-		if (m2 > 1)
-			maps.get(m2).buildMap(plan.getTails(), plan.getSigma());
+		maps.get(m1).buildMap(plan.getTails(), plan.getSigma());
+		maps.get(m2).buildMap(plan.getTails(), plan.getSigma());
 		double d = 0;
 		for (int i = 0; i < num; i++) {
-			double f = 0;
-			int n = 0;
+			java.lang.Double f = 0.0;
 			for (int j = 0; j < plan.getTails().size(); j++) {
-				if ((maps.get(m1).getMap().get(plan.getTails().get(j)).getA() != 0)
-						&& (maps.get(m2).getMap().get(plan.getTails().get(j))
-								.getA() != 0)) {
-					f += maps.get(m1).getMap().get(plan.getTails().get(j))
-							.getA()
-							/ maps.get(m2).getMap().get(plan.getTails().get(j))
-									.getA();
-					n++;
+				double f_ = (maps.get(m1).getMap().get(plan.getTails().get(j))
+						.getA() - maps.get(m2).getMap()
+						.get(plan.getTails().get(j)).getA())
+						/ maps.get(m2).getMap().get(plan.getTails().get(j))
+								.getA();
+				if (!f.isInfinite() && !f.isNaN()) {
+					f += f_;
 				}
-			}
-			if (n > 0) {
-				f /= n;
-				d += f;
-			}
-		}
-
-		return Math.abs(d / num);
-	}
-
-	/**
-	 * Вычисляет среднее абсолютное отличие двух карт уровней сигналов.
-	 * 
-	 * @param object
-	 *            позиционируемый объект
-	 * @param plan
-	 *            план здания
-	 * @param num
-	 *            количество точек
-	 * @param m1
-	 *            номер первой карты
-	 * @param m2
-	 *            номер второй карты
-	 * @return относительное отличие двух карт
-	 */
-	public double cmpMapsAbs(PosObject object, Plan plan, int num, int m1,
-			int m2) {
-		if (m1 > 1)
-			maps.get(m1).buildMap(plan.getTails(), plan.getSigma());
-		if (m2 > 1)
-			maps.get(m2).buildMap(plan.getTails(), plan.getSigma());
-		double d = 0;
-		for (int i = 0; i < num; i++) {
-			double f = 0;
-			for (int j = 0; j < plan.getTails().size(); j++) {
-				f += Math.abs(maps.get(m1).getMap().get(plan.getTails().get(j))
-						.getA()
-						- maps.get(m2).getMap().get(plan.getTails().get(j))
-								.getA());
 			}
 			f /= plan.getTails().size();
 			d += f;
-
 		}
-		return d / num;
-	}
 
-	/**
-	 * Подсчет вероятности того, что k-ая компонента вектора равна num в ячейке
-	 * t
-	 * 
-	 * @param k
-	 *            номер компоненты
-	 * @param num
-	 *            вероятное значение компоненты
-	 * @param t
-	 *            ячейка
-	 * @param plan
-	 *            план здания
-	 * @param s
-	 *            станция, для которой нужно использовать карту номер m
-	 * @param m
-	 *            номер карты, которую нужно использовать
-	 * @return вероятность
-	 */
-	public static double fp(int k, double num, Tail t, Plan plan, int s, int m) {
-		double a;
-		double q;
-		if (k != s)
-			m = 0;
-		a = plan.getStation(k).getMap(m).getMap().get(t).getA();
-		q = plan.getStation(k).getMap(m).getMap().get(t).getQ();
-
-		double cons = 1 / (Math.sqrt(2 * Math.PI) * q);
-		double step = -1 * Math.pow((num - a), 2) / (2 * Math.pow(q, 2));
-
-		double p = cons * Math.pow(Math.E, step);
-		return p;
-	}
-
-	/**
-	 * Подсчет вероятности того, что k-ая компонента вектора равна num в ячейке
-	 * t
-	 * 
-	 * @param k
-	 *            номер компоненты
-	 * @param num
-	 *            вероятное значение компоненты
-	 * @param t
-	 *            ячейка
-	 * @param plan
-	 *            план здания
-	 * @return вероятность
-	 */
-	public static double fp(int k, double num, Tail t, Plan plan) {
-		double a;
-		double q;
-		a = plan.getStation(k).getMap(0).getMap().get(t).getA();
-		q = plan.getStation(k).getMap(0).getMap().get(t).getQ();
-
-		double cons = 1 / (Math.sqrt(2 * Math.PI) * q);
-		double step = -1 * Math.pow((num - a), 2) / (2 * Math.pow(q, 2));
-
-		double p = cons * Math.pow(Math.E, step);
-		return p;
+		return Math.abs(d / num);
 	}
 
 	/**
@@ -458,7 +347,11 @@ public class Station extends AbstractStation {
 	 */
 	private double countFSL(double d) {
 		// -27,55 + 20·log10F+20·log10d
-		return -27.55 + 20 * Math.log10(2440) + 20 * Math.log10(d);
+		java.lang.Double t = -27.55 + 20 * Math.log10(2440) + 20
+				* Math.log10(d);
+		if (t.isInfinite())
+			return 0;
+		return t;
 	}
 
 	/**
