@@ -399,13 +399,7 @@ public class ImagePanel extends JPanel {
 					(int) (radCheckPont * bar * 2));
 	}
 
-	/**
-	 * Отрисовывает позиционируемый объект.
-	 * 
-	 * @param g
-	 *            графический объет для рисования
-	 */
-	public void drawPosObject(Graphics2D g) {
+	/*public void drawPosObject(Graphics2D g) {
 		if (location.getPosObject() != null) {
 			if (location.getPosObject().getT() != null) {
 				BasicStroke b = new BasicStroke(bPen);
@@ -427,7 +421,7 @@ public class ImagePanel extends JPanel {
 						* bar * 2), (int) (radCheckPont * bar * 2));
 			}
 		}
-	}
+	}*/
 
 	/**
 	 * Заполняет цветом прямоугольник.

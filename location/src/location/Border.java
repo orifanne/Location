@@ -53,14 +53,6 @@ public class Border extends Polygon {
 		secondDraggingPoint = null;
 	}
 
-	public Border() {
-		super();
-		firstCheckPoint = null;
-		secondCheckPoint = null;
-		firstDraggingPoint = null;
-		secondDraggingPoint = null;
-	}
-
 	/**
 	 * Устанавливает в null все точки, связанные с перетаскиванием участка
 	 * границы. (firstCheckPoint, secondCheckPoint, firstDraggingPoint,

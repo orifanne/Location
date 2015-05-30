@@ -66,11 +66,8 @@ public class Dialogs {
 	 *            план здания
 	 * @param stationNumber
 	 *            номер станции, для которой нужно показать карты для выбора
-	 * @param object
-	 *            позиционируемый объект
 	 */
-	public void showCompareMapsDialog(Plan plan, int stationNumber,
-			PosObject object) {
+	public void showCompareMapsDialog(Plan plan, int stationNumber) {
 		mapsSelectedLimit = 2;
 		mapsSelected = 0;
 		ArrayList<JCheckBox> j = new ArrayList<JCheckBox>();
@@ -107,8 +104,8 @@ public class Dialogs {
 		double cmpRel = 0;
 
 		if ((m1 >= 0) && (m2 >= 0)) {
-			cmpRel = plan.getStation(stationNumber).cmpMapsRel(object, plan,
-					1000, m1, m2);
+			cmpRel = plan.getStation(stationNumber).cmpMapsRel(plan, 1000, m1,
+					m2);
 			s1 = "Относительное различие: " + java.lang.Double.toString(cmpRel);
 			Object[] results = { s1 };
 
@@ -124,11 +121,9 @@ public class Dialogs {
 	 *            план здания
 	 * @param stationNumber
 	 *            номер станции
-	 * @param object
-	 *            позиционируемый объект
 	 */
 	public static void showEvaluateMapDialog(Plan plan, int stationNumber,
-			PosObject object) {
+			double tailSize) {
 		double[] res = new double[5];
 		JTextField name = new JTextField();
 		final JComponent[] inputs = new JComponent[] {
@@ -137,8 +132,8 @@ public class Dialogs {
 				"Введите пороговое значение вероятности",
 				JOptionPane.PLAIN_MESSAGE);
 		try {
-			plan.getStation(stationNumber).evaluateMap(object, plan, 1000,
-					java.lang.Double.valueOf(name.getText()), res);
+			plan.getStation(stationNumber).evaluateMap(plan, 1000,
+					java.lang.Double.valueOf(name.getText()), tailSize, res);
 			String s1 = "Ошибка позиционирования: "
 					+ java.lang.Double.toString(res[0]);
 			String s2 = "Процент угадываний: "

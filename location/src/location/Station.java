@@ -29,24 +29,6 @@ public class Station extends AbstractStation {
 	/** Номер активной карты */
 	private int activeMapNumber = 0;
 
-	public Station() {
-		super();
-
-		maps = new ArrayList<Map>();
-	}
-
-	/**
-	 * @param x
-	 *            абсцисса
-	 * @param y
-	 *            ордината
-	 */
-	public Station(double x, double y) {
-		super(x, y);
-
-		maps = new ArrayList<Map>();
-	}
-
 	/**
 	 * @param x
 	 *            абсцисса
@@ -129,15 +111,6 @@ public class Station extends AbstractStation {
 	}
 
 	@Override
-	public void explode(ArrayList<Tail> tails, int sigma, String name, double s) {
-		Map m = new Map(new HashMap<Tail, Law>(),
-				new ArrayList<HashMap<Point2D.Double, Law>>(), name);
-		for (int i = 0; i < tails.size(); i++)
-			explode(tails.get(i), sigma, m, s);
-		maps.add(m);
-	}
-
-	@Override
 	public void explode(Tail tail, Plan plan, Map m, double s) {
 		ArrayList<Point2D.Double> p = new ArrayList<Point2D.Double>();
 		Point2D.Double n = null;
@@ -202,7 +175,8 @@ public class Station extends AbstractStation {
 	}
 
 	@Override
-	public void teach(PosObject object, Plan plan, int num, String name) {
+	public void teach(Plan plan, int num, String name) {
+		PosObject object = new PosObject();
 		for (int i = 0; i < plan.getStations().size(); i++) {
 			plan.getStation(i).getActiveMap().buildMap(plan.getTails(), plan.getSigma());
 		}
@@ -261,8 +235,6 @@ public class Station extends AbstractStation {
 	/**
 	 * Вычисляет оценки для активной карты уровней сигналов.
 	 * 
-	 * @param object
-	 *            позиционируемый объект
 	 * @param plan
 	 *            план здания
 	 * @param num
@@ -273,10 +245,11 @@ public class Station extends AbstractStation {
 	 *            позицией, result[1] - процент угадываний, result[2] - разброс
 	 *            по вероятности, result[3] - разброс по площади, result[4] - энтропию
 	 */
-	public void evaluateMap(PosObject object, Plan plan, int num, double eps, double[] result) {
+	public void evaluateMap(Plan plan, int num, double eps, double tailSize, double[] result) {
 		for (int i = 0; i < plan.getStations().size(); i++) {
 			plan.getStation(i).getActiveMap().buildMap(plan.getTails(), plan.getSigma());
 		}
+		PosObject object = new PosObject();
 		double d = 0;
 		double dist = 0;
 		double k = 0;
@@ -291,7 +264,7 @@ public class Station extends AbstractStation {
 			double diff = Point2D.Double.distance(object.getT().getX(), object
 					.getT().getY(), object.getProbT().getX(), object.getProbT()
 					.getY());
-			if (diff <= ((double) Location.tailSize / 2.0))
+			if (diff <= tailSize)
 				n++;
 			d += diff;
 		}
@@ -305,8 +278,6 @@ public class Station extends AbstractStation {
 	/**
 	 * Вычисляет среднее относительное отличие двух карт уровней сигналов.
 	 * 
-	 * @param object
-	 *            позиционируемый объект
 	 * @param plan
 	 *            план здания
 	 * @param num
@@ -317,7 +288,7 @@ public class Station extends AbstractStation {
 	 *            номер второй карты
 	 * @return относительное отличие двух карт
 	 */
-	public double cmpMapsRel(PosObject object, Plan plan, int num, int m1,
+	public double cmpMapsRel(Plan plan, int num, int m1,
 			int m2) {
 		maps.get(m1).buildMap(plan.getTails(), plan.getSigma());
 		maps.get(m2).buildMap(plan.getTails(), plan.getSigma());

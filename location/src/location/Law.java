@@ -12,21 +12,6 @@ public class Law {
 	/** Дисперсия */
 	private double q = 0;
 
-	public Law() {
-		a = 0;
-		q = 0;
-	}
-
-	/**
-	 * @param a1
-	 *            математическое ожидание
-	 */
-	public Law(double a1) {
-		if (a1 >= 0)
-			a = a1;
-		q = 0;
-	}
-
 	/**
 	 * @param a1
 	 *            математическое ожидание

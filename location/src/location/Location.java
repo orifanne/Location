@@ -84,9 +84,21 @@ public class Location extends JFrame {
 	private Plan plan = null;
 	/** Открытый файл. */
 	private File openedFile = null;
-
-	/** Объект для позиционирования */
-	PosObject object = null;
+	
+	/** Прослушиватель событий меню. */
+	NewMenuListener menuListener;
+	/** Прослушиватель событий слайдера масштаба. */
+	NewChangeListener changeListener;
+	/** Прослушиватель событий слайдера размера зоны. */
+	NewTailChangeListener tailChangeListener;
+	/** Прослушиватель событий выбора из списка базовых станций. */
+	StationsChooseListener stationsChooseListener;
+	/** Прослушиватель событий выбора из списка карт уровней сигнала. */
+	MapChooseListener mapChooseListener;
+	/** Прослушиватель перемещений мыши. */
+	NewMouseMotionListener mouseMotionListener;
+	/** Прослушиватель событий мыши. */
+	NewMouseListener mouseListener;
 
 	/**
 	 * Прокручиваемое поле, котоорое вмещает панель для отображения плана
@@ -95,7 +107,7 @@ public class Location extends JFrame {
 	JScrollPane scrollPane = new JScrollPane(panel);
 
 	/** Размер конечной ячейки. */
-	public static int tailSize = 1;
+	private int tailSize = 1;
 
 	/** Список с выбором для отображения разных базовых станций */
 	JComboBox<String> stationsComboBox;
@@ -129,15 +141,19 @@ public class Location extends JFrame {
 		// завершить программу при закрытии окна
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+		stationsChooseListener = new StationsChooseListener();
 		stationsComboBox = new JComboBox<String>();
-		stationsComboBox.addActionListener(new StationsChooseListener());
+		stationsComboBox.addActionListener(stationsChooseListener);
 
+		mapChooseListener = new MapChooseListener();
 		mapComboBox = new JComboBox<String>();
-		mapComboBox.addActionListener(new MapChooseListener());
+		mapComboBox.addActionListener(mapChooseListener);
 
+		mouseListener = new NewMouseListener();
+		mouseMotionListener = new NewMouseMotionListener();
 		// будем прослушивать события мыши
-		panel.addMouseListener(new NewMouseListener());
-		panel.addMouseMotionListener(new NewMouseMotionListener());
+		panel.addMouseListener(mouseListener);
+		panel.addMouseMotionListener(mouseMotionListener);
 		panel.setDoubleBuffered(true);
 
 		panel.setPreferredSize(new Dimension(width * 5, height * 5));
@@ -151,10 +167,12 @@ public class Location extends JFrame {
 		scrollPane.setPreferredSize(new Dimension(width - 200, height));
 
 		scale = new JSlider(JSlider.HORIZONTAL, 1, 10, panel.getM());
-		scale.addChangeListener(new NewChangeListener());
+		changeListener = new NewChangeListener();
+		scale.addChangeListener(changeListener);
 
+		tailChangeListener = new NewTailChangeListener();
 		scaleTail = new JSlider(JSlider.HORIZONTAL, 1, 10, tailSize);
-		scaleTail.addChangeListener(new NewTailChangeListener());
+		scaleTail.addChangeListener(tailChangeListener);
 
 		// компановка панели инструментов
 		instrumentsPanel.setLayout(new BoxLayout(instrumentsPanel,
@@ -324,17 +342,17 @@ public class Location extends JFrame {
 
 		setJMenuBar(menu);
 
-		ActionListener actionListener = new NewMenuListener();
-		openItem.addActionListener(actionListener);
-		createItem.addActionListener(actionListener);
-		saveItem.addActionListener(actionListener);
-		saveAsItem.addActionListener(actionListener);
-		importItem.addActionListener(actionListener);
-		cmpItem.addActionListener(actionListener);
-		modelItem.addActionListener(actionListener);
-		teachItem.addActionListener(actionListener);
-		placeItem.addActionListener(actionListener);
-		evaluateItem.addActionListener(actionListener);
+		menuListener = new NewMenuListener();
+		openItem.addActionListener(menuListener);
+		createItem.addActionListener(menuListener);
+		saveItem.addActionListener(menuListener);
+		saveAsItem.addActionListener(menuListener);
+		importItem.addActionListener(menuListener);
+		cmpItem.addActionListener(menuListener);
+		modelItem.addActionListener(menuListener);
+		teachItem.addActionListener(menuListener);
+		placeItem.addActionListener(menuListener);
+		evaluateItem.addActionListener(menuListener);
 	}
 
 	/**
@@ -368,7 +386,6 @@ public class Location extends JFrame {
 									.getMap(i).getName());
 
 					changed = false;
-					object = new PosObject();
 					stationNumber = 0;
 					panel.repaint();
 				}
@@ -387,7 +404,6 @@ public class Location extends JFrame {
 				mapComboBox.removeAllItems();
 				panel.setPlan(plan);
 				changed = false;
-				object = new PosObject();
 				stationNumber = 0;
 				panel.repaint();
 			}
@@ -463,7 +479,7 @@ public class Location extends JFrame {
 						&& (plan.getStations().size() > 0)
 						&& (plan.getStation(stationNumber).getMaps().size() > 0)) {
 					Dialogs d = new Dialogs();
-					d.showCompareMapsDialog(plan, stationNumber, object);
+					d.showCompareMapsDialog(plan, stationNumber);
 				}
 			}
 			if ("model".equals(command)) {
@@ -485,7 +501,7 @@ public class Location extends JFrame {
 					String[] name = new String[1];
 					try {
 						int s = Dialogs.showTeachStationDialog(name);
-						plan.getStation(stationNumber).teach(object, plan, s,
+						plan.getStation(stationNumber).teach(plan, s,
 								name[0]);
 						mapComboBox.addItem(name[0]);
 						changed = true;
@@ -515,7 +531,7 @@ public class Location extends JFrame {
 				if ((plan != null)
 						&& (plan.getStations().size() > 0)
 						&& (plan.getStation(stationNumber).getMaps().size() > 0)) {
-					Dialogs.showEvaluateMapDialog(plan, stationNumber, object);
+					Dialogs.showEvaluateMapDialog(plan, stationNumber, tailSize);
 				}
 			}
 		}
@@ -819,14 +835,4 @@ public class Location extends JFrame {
 			}
 		}
 	}
-
-	/**
-	 * Получить позиционируемый объект.
-	 * 
-	 * @return позиционируемый объект
-	 */
-	public PosObject getPosObject() {
-		return object;
-	}
-
 }

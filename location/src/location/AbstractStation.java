@@ -27,20 +27,6 @@ public abstract class AbstractStation extends Point2D.Double {
 		name = name2;
 	}
 
-	public AbstractStation() {
-		super(0, 0);
-	}
-
-	/**
-	 * @param x
-	 *            абсцисса
-	 * @param y
-	 *            ордината
-	 */
-	public AbstractStation(double x, double y) {
-		super(x, y);
-	}
-
 	/**
 	 * Рассчитывает уровень сигнала, моделируя распространение сигнала.
 	 * 
@@ -54,22 +40,6 @@ public abstract class AbstractStation extends Point2D.Double {
 	 *            базовая сила сигнала
 	 */
 	public abstract void explode(Tail tail, int sigma, Map m, double s);
-
-	/**
-	 * Строит карту уровней сигнала, моделируя распространение сигнала, и
-	 * добавляет ее к списку карт данной базовой станции.
-	 * 
-	 * @param tails
-	 *            ячейки, для которых необходимо построить карту уровней сигнала
-	 * @param sigma
-	 *            дисперсия уровня сигнала
-	 * @param name
-	 *            имя новой карты
-	 * @param s
-	 *            базовая сила сигнала
-	 */
-	public abstract void explode(ArrayList<Tail> tails, int sigma, String name,
-			double s);
 
 	/**
 	 * Рассчитывает уровень сигнала с учетом плана помещения, моделируя
@@ -104,8 +74,6 @@ public abstract class AbstractStation extends Point2D.Double {
 	 * Строит карту уровней сигнала с учетом плана помещения, обучая станцию, и
 	 * добавляет ее к списку карт данной базовой станции.
 	 * 
-	 * @param object
-	 *            позиционируемый объект
 	 * @param plan
 	 *            план здания
 	 * @param num
@@ -113,7 +81,7 @@ public abstract class AbstractStation extends Point2D.Double {
 	 * @param name
 	 *            имя новой карты
 	 */
-	public abstract void teach(PosObject object, Plan plan, int num, String name);
+	public abstract void teach(Plan plan, int num, String name);
 
 	/**
 	 * Получить имя
