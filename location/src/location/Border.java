@@ -5,7 +5,6 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Line2D.Float;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
-import java.awt.geom.Point2D.Double;
 import java.util.ArrayList;
 
 /**
@@ -16,7 +15,7 @@ import java.util.ArrayList;
 public class Border extends Polygon {
 
 	/** Флаг того, что происходит перетаскивание участка границы. */
-	boolean dragging = false;
+	private boolean dragging = false;
 
 	/**
 	 * Координаты первой точки, зафиксированной на границе (для отметки участка

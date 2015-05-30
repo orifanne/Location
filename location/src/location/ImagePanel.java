@@ -3,7 +3,6 @@ package location;
 import javax.swing.*;
 
 import java.awt.*;
-import java.awt.image.ImageObserver;
 import java.util.ArrayList;
 
 /**
@@ -72,9 +71,9 @@ public class ImagePanel extends JPanel {
 	Plan plan = null;
 
 	/**
-	 * @param width
+	 * @param w
 	 *            ширина поля для рисования
-	 * @param height
+	 * @param h
 	 *            высота поля для рисования
 	 * @param l
 	 *            система локации для отрисовки
@@ -173,7 +172,7 @@ public class ImagePanel extends JPanel {
 	 * @param g
 	 *            графический объет для рисования
 	 */
-	public void drawMap(Graphics2D g) {
+	private void drawMap(Graphics2D g) {
 		if (plan.getStations().size() > 0) {
 			ArrayList<Tail> t = plan.getTails();
 			Station s = plan.getStation(location.getStationNumber());

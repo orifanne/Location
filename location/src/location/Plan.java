@@ -418,7 +418,7 @@ public class Plan {
 	 * @return каким образом ограничена ячейка ([0] - сверху; [1] - снизу; [2] -
 	 *         справа; [3] - слева)
 	 */
-	public boolean[] isBordered(double x1, double y1, double x2, double y2) {
+	private boolean[] isBordered(double x1, double y1, double x2, double y2) {
 		boolean up = false;
 		boolean down = false;
 		boolean right = false;

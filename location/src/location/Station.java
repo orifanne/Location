@@ -203,6 +203,9 @@ public class Station extends AbstractStation {
 
 	@Override
 	public void teach(PosObject object, Plan plan, int num, String name) {
+		for (int i = 0; i < plan.getStations().size(); i++) {
+			plan.getStation(i).getActiveMap().buildMap(plan.getTails(), plan.getSigma());
+		}
 		Map m = new Map(new HashMap<Tail, Law>(),
 				new ArrayList<HashMap<Point2D.Double, Law>>(), name);
 		for (int i = 0; i < plan.getTails().size(); i++)
@@ -343,7 +346,7 @@ public class Station extends AbstractStation {
 	 * 
 	 * @param d
 	 *            расстояние
-	 * @returns FreeSpaceLoss
+	 * @return FreeSpaceLoss
 	 */
 	private double countFSL(double d) {
 		// -27,55 + 20·log10F+20·log10d
@@ -359,7 +362,7 @@ public class Station extends AbstractStation {
 	 * 
 	 * @param d
 	 *            количество стен
-	 * @returns потеря сигнала
+	 * @return потеря сигнала
 	 */
 	private double countExtraPL(int d) {
 		// -27,55 + 20·log10F+20·log10d
@@ -380,7 +383,7 @@ public class Station extends AbstractStation {
 	 * 
 	 * @param i
 	 *            номер карты
-	 * @return
+	 * @return карта с номером i
 	 */
 	public Map getMap(int i) {
 		return maps.get(i);
